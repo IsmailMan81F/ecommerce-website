@@ -13,6 +13,7 @@ import { CartPage } from "@/pages/CartPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ContactPage } from "@/pages/ContactPage";
+import { NotFoundPage } from "@/pages/NotFoundPage";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
 import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
@@ -59,7 +60,8 @@ export default function App() {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
-                <Route path="*" element={<HomePage />} />
+                <Route path="/404" element={<NotFoundPage />} />
+                <Route path="*" element={<NotFoundPage />} />
               </Route>
 
               {/* Admin Console Route: standalone login gate + separate layout */}
