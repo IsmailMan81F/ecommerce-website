@@ -97,7 +97,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             variant="ghost"
             size="sm"
             onClick={onResetFilters}
-            className="h-9 px-2.5 text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 rounded-[18px]"
+            className="h-9 px-3 text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 rounded-[18px]"
           >
             <RotateCcw className="h-3 w-3" />
             <span>Reset</span>

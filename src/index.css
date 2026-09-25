@@ -74,12 +74,28 @@
 }
 
 /* Base typography and body style */
+html {
+  overflow-y: auto;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--canvas);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-y: auto;
+}
+
+/* Guarantee default scrolling even if popups or modals render */
+body[data-scroll-locked],
+html[data-scroll-locked],
+[data-scroll-locked] {
+  overflow: auto !important;
+  overflow-y: auto !important;
+  margin-right: 0px !important;
+  padding-right: 0px !important;
+  pointer-events: auto !important;
 }
 
 /* Typography scale utilities matching the prompt specification */

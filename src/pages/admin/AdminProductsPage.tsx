@@ -404,7 +404,7 @@ export const AdminProductsPage: React.FC = () => {
             {filteredProducts.map((p) => (
               <div
                 key={p.id}
-                className="flex flex-col justify-between rounded-[20px] border border-[var(--hairline)] bg-[var(--paper)] p-4 shadow-xs hover:border-[var(--mid-gray)]/40 transition-all"
+                className="flex flex-col justify-between rounded-[20px] border border-[var(--hairline)] bg-[var(--paper)] p-4 shadow-xs hover:border-[var(--mid-gray)]/40 transition-all min-w-0"
               >
                 <div>
                   {/* Top: Thumbnail + Name + Price */}
@@ -421,7 +421,7 @@ export const AdminProductsPage: React.FC = () => {
                       <h3 className="text-[15px] font-medium text-[var(--ink)] tracking-tight truncate">
                         {p.name}
                       </h3>
-                      <div className="flex items-baseline gap-2 mt-1">
+                      <div className="flex items-baseline gap-2 mt-1 flex-wrap">
                         <span className="text-[14px] font-semibold text-[var(--ink)] tabular-nums">
                           {formatPrice(p.price)}
                         </span>
@@ -434,7 +434,7 @@ export const AdminProductsPage: React.FC = () => {
                 </div>
 
                 {/* Bottom: Inline Switch to toggle availability + Edit/Delete action buttons */}
-                <div className="mt-4 pt-3 border-t border-[var(--hairline)] flex items-center justify-between">
+                <div className="mt-4 pt-3 border-t border-[var(--hairline)] flex flex-wrap items-center justify-between gap-2.5">
                   {/* Availability Toggle Switch */}
                   <div className="flex items-center gap-2.5">
                     <Switch
@@ -456,7 +456,7 @@ export const AdminProductsPage: React.FC = () => {
                   </div>
 
                   {/* Actions: Edit & Delete */}
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 ml-auto">
                     <Button
                       type="button"
                       variant="ghost"
@@ -599,7 +599,7 @@ export const AdminProductsPage: React.FC = () => {
 
             {/* Images Upload / Previews */}
             <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between flex-wrap gap-2">
                 <Label>Object Imagery</Label>
                 <label className="text-[12px] text-[var(--ink)] font-medium cursor-pointer flex items-center gap-1 hover:underline">
                   <Upload className="h-3.5 w-3.5" />

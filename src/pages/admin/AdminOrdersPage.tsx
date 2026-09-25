@@ -128,12 +128,12 @@ export const AdminOrdersPage: React.FC = () => {
 
             {/* Status Filter */}
             <div className="flex items-center gap-3">
-              <div className="w-[170px]">
+              <div className="w-[170px] min-w-[170px] max-w-[170px] shrink-0">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="h-10 text-[13px] rounded-[18px]">
+                  <SelectTrigger className="w-[170px] h-10 text-[13px] rounded-[18px]">
                     <SelectValue placeholder="Filter Status" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="w-[170px]">
                     <SelectItem value="all">All Statuses</SelectItem>
                     {STATUS_OPTIONS.map((opt) => (
                       <SelectItem key={opt.value} value={opt.value}>
@@ -164,89 +164,167 @@ export const AdminOrdersPage: React.FC = () => {
 
         <CardContent className="p-0 sm:p-6 sm:pt-0">
           <div className="rounded-[18px] border border-[var(--hairline)] overflow-hidden bg-[var(--paper)]">
-            <Table>
-              <TableHeader className="bg-[var(--surface-alt)]">
-                <TableRow>
-                  <TableHead className="w-[140px]">Order ID</TableHead>
-                  <TableHead>Customer Name</TableHead>
-                  <TableHead className="hidden md:table-cell">Phone</TableHead>
-                  <TableHead className="text-right">Total</TableHead>
-                  <TableHead className="hidden sm:table-cell">Date</TableHead>
-                  <TableHead className="w-[160px] text-right sm:text-left">Status</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredOrders.length > 0 ? (
-                  filteredOrders.map((order) => (
-                    <TableRow
-                      key={order.id}
-                      onClick={() => setSelectedOrder(order)}
-                      className="cursor-pointer transition-colors hover:bg-[var(--surface-alt)]/50 group"
-                    >
-                      {/* Order ID */}
-                      <TableCell className="font-mono text-[13px] font-medium text-[var(--ink)]">
-                        <div className="flex items-center gap-1.5">
-                          <span>{order.id}</span>
-                          <Eye className="h-3.5 w-3.5 text-[var(--mid-gray)] opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
-                      </TableCell>
-
-                      {/* Customer Name */}
-                      <TableCell className="font-medium text-[var(--ink)]">
-                        {order.customer.firstName} {order.customer.lastName}
-                      </TableCell>
-
-                      {/* Phone */}
-                      <TableCell className="hidden md:table-cell text-[var(--mid-gray)] tabular-nums text-[13px]">
-                        {order.customer.phoneNumber}
-                      </TableCell>
-
-                      {/* Total */}
-                      <TableCell className="text-right font-medium tabular-nums text-[var(--ink)]">
-                        {formatPrice(order.total)}
-                      </TableCell>
-
-                      {/* Date */}
-                      <TableCell className="hidden sm:table-cell text-[13px] text-[var(--mid-gray)]">
-                        {formatDate(order.createdAt)}
-                      </TableCell>
-
-                      {/* Status Column: Inline Select Dropdown per row */}
-                      <TableCell
-                        className="text-right sm:text-left"
-                        onClick={(e) => e.stopPropagation()}
+            {/* Desktop View: Full horizontal table with standard columns */}
+            <div className="hidden md:block">
+              <Table className="table-fixed w-full">
+                <TableHeader className="bg-[var(--surface-alt)]">
+                  <TableRow>
+                    <TableHead className="w-[140px]">Order ID</TableHead>
+                    <TableHead className="w-auto">Customer Name</TableHead>
+                    <TableHead className="hidden lg:table-cell w-[140px]">Phone</TableHead>
+                    <TableHead className="w-[110px] text-right">Total</TableHead>
+                    <TableHead className="w-[130px]">Date</TableHead>
+                    <TableHead className="w-[160px] text-left">Status</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredOrders.length > 0 ? (
+                    filteredOrders.map((order) => (
+                      <TableRow
+                        key={order.id}
+                        onClick={() => setSelectedOrder(order)}
+                        className="cursor-pointer transition-colors hover:bg-[var(--surface-alt)]/50 group"
                       >
-                        <div className="w-[130px] ml-auto sm:ml-0">
-                          <Select
-                            value={order.status}
-                            onValueChange={(val) =>
-                              handleStatusChange(order.id, val as OrderStatus)
-                            }
-                          >
-                            <SelectTrigger className="h-8 text-[12px] rounded-[14px] bg-[var(--surface-alt)] border-[var(--hairline)]">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              {STATUS_OPTIONS.map((opt) => (
-                                <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
-                                  {opt.label}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
+                        {/* Order ID */}
+                        <TableCell className="font-mono text-[13px] font-medium text-[var(--ink)]">
+                          <div className="flex items-center gap-1.5">
+                            <span>{order.id}</span>
+                            <Eye className="h-3.5 w-3.5 text-[var(--mid-gray)] opacity-0 group-hover:opacity-100 transition-opacity" />
+                          </div>
+                        </TableCell>
+
+                        {/* Customer Name */}
+                        <TableCell className="font-medium text-[var(--ink)] truncate">
+                          {order.customer.firstName} {order.customer.lastName}
+                        </TableCell>
+
+                        {/* Phone */}
+                        <TableCell className="hidden lg:table-cell text-[var(--mid-gray)] tabular-nums text-[13px]">
+                          {order.customer.phoneNumber}
+                        </TableCell>
+
+                        {/* Total */}
+                        <TableCell className="text-right font-medium tabular-nums text-[var(--ink)]">
+                          {formatPrice(order.total)}
+                        </TableCell>
+
+                        {/* Date */}
+                        <TableCell className="text-[13px] text-[var(--mid-gray)]">
+                          {formatDate(order.createdAt)}
+                        </TableCell>
+
+                        {/* Status Column: Inline Select Dropdown per row with strictly fixed width */}
+                        <TableCell
+                          className="w-[160px] text-left"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <div className="w-[140px] min-w-[140px] max-w-[140px] shrink-0">
+                            <Select
+                              value={order.status}
+                              onValueChange={(val) =>
+                                handleStatusChange(order.id, val as OrderStatus)
+                              }
+                            >
+                              <SelectTrigger className="w-[140px] min-w-[140px] max-w-[140px] h-8 text-[12px] rounded-[14px] bg-[var(--surface-alt)] border-[var(--hairline)] truncate">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
+                                {STATUS_OPTIONS.map((opt) => (
+                                  <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
+                                    {opt.label}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : (
+                    <TableRow>
+                      <TableCell colSpan={6} className="h-32 text-center text-[var(--mid-gray)]">
+                        No orders found matching the filter criteria.
                       </TableCell>
                     </TableRow>
-                  ))
-                ) : (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-32 text-center text-[var(--mid-gray)]">
-                      No orders found matching the filter criteria.
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            {/* Mobile / Small Screens: Spreading items inside each order row into clean, well-spaced lines */}
+            <div className="md:hidden divide-y divide-[var(--hairline)]">
+              {filteredOrders.length > 0 ? (
+                filteredOrders.map((order) => (
+                  <div
+                    key={order.id}
+                    onClick={() => setSelectedOrder(order)}
+                    className="p-4 space-y-3 cursor-pointer transition-colors hover:bg-[var(--surface-alt)]/50 active:bg-[var(--surface-alt)]"
+                  >
+                    {/* Line 1: Order ID Badge + Date + Quick Eye Icon */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-mono text-[12px] font-semibold text-[var(--ink)] px-2.5 py-1 rounded-[10px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
+                          {order.id}
+                        </span>
+                        <Eye className="h-3.5 w-3.5 text-[var(--mid-gray)]" />
+                      </div>
+                      <span className="text-[12px] text-[var(--mid-gray)] tabular-nums">
+                        {formatDate(order.createdAt)}
+                      </span>
+                    </div>
+
+                    {/* Line 2: Customer Name + Phone Number */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[14px]">
+                      <span className="font-medium text-[var(--ink)]">
+                        {order.customer.firstName} {order.customer.lastName}
+                      </span>
+                      <span className="text-[13px] text-[var(--mid-gray)] tabular-nums">
+                        {order.customer.phoneNumber}
+                      </span>
+                    </div>
+
+                    {/* Line 3: Order Total + Inline Status Select dropdown with fixed container width */}
+                    <div
+                      className="flex items-center justify-between gap-3 pt-1 border-t border-[var(--hairline)]/60"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div>
+                        <span className="text-[11px] uppercase tracking-wider text-[var(--mid-gray)] block font-medium">
+                          Total
+                        </span>
+                        <span className="text-[16px] font-semibold tabular-nums text-[var(--ink)]">
+                          {formatPrice(order.total)}
+                        </span>
+                      </div>
+
+                      <div className="w-[140px] min-w-[140px] max-w-[140px] shrink-0">
+                        <Select
+                          value={order.status}
+                          onValueChange={(val) =>
+                            handleStatusChange(order.id, val as OrderStatus)
+                          }
+                        >
+                          <SelectTrigger className="w-[140px] min-w-[140px] max-w-[140px] h-9 text-[12px] rounded-[14px] bg-[var(--surface-alt)] border-[var(--hairline)] truncate">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
+                            {STATUS_OPTIONS.map((opt) => (
+                              <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
+                                {opt.label}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-[var(--mid-gray)] text-[14px]">
+                  No orders found matching the filter criteria.
+                </div>
+              )}
+            </div>
           </div>
         </CardContent>
       </Card>
