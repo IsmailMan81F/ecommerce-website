@@ -1,0 +1,6 @@
+{
+  "name": "KØRD Minimalist Storefront",
+  "description": "High-end buyer-side storefront for curated design objects, studio audio, ceramics, and architectural apparel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
