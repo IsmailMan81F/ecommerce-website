@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import {
+  LayoutDashboard,
   ClipboardList,
   Package,
   Settings,
@@ -8,8 +9,12 @@ import {
   X,
   Shield,
   CircleDot,
+  Sun,
+  Moon,
+  Laptop,
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useAdminTheme } from "@/context/AdminThemeContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AdminSettingsDialog } from "./AdminSettingsDialog";
@@ -17,15 +22,22 @@ import { AdminSettingsDialog } from "./AdminSettingsDialog";
 export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { username } = useAuth();
+  const { theme, resolvedTheme, setTheme } = useAdminTheme();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const navItems = [
     {
-      name: "Orders",
+      name: "Dashboard",
       path: "/admin",
-      icon: ClipboardList,
+      icon: LayoutDashboard,
       exact: true,
+    },
+    {
+      name: "Orders",
+      path: "/admin/orders",
+      icon: ClipboardList,
+      exact: false,
     },
     {
       name: "Products",
@@ -35,8 +47,14 @@ export const AdminLayout: React.FC = () => {
     },
   ];
 
+  const cycleTheme = () => {
+    if (theme === "light") setTheme("dark");
+    else if (theme === "dark") setTheme("system");
+    else setTheme("light");
+  };
+
   return (
-    <div className="min-h-screen flex bg-[var(--canvas)] text-[var(--ink)]">
+    <div className="min-h-screen flex bg-[var(--canvas)] text-[var(--ink)] transition-colors duration-200">
       {/* Mobile Top Header */}
       <header className="lg:hidden fixed top-0 left-0 right-0 z-40 h-16 bg-[var(--surface-alt)] border-b border-[var(--hairline)] flex items-center justify-between px-4">
         <div className="flex items-center gap-2">
@@ -48,14 +66,30 @@ export const AdminLayout: React.FC = () => {
           </span>
         </div>
 
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          aria-label="Toggle admin sidebar"
-        >
-          {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </Button>
+        <div className="flex items-center gap-1">
+          {/* Quick Theme Cycle Button for Mobile */}
+          <Button
+            variant="ghost"
+            size="iconSm"
+            onClick={cycleTheme}
+            title={`Current theme: ${theme} (${resolvedTheme}). Click to change.`}
+            aria-label="Cycle theme"
+            className="text-[var(--mid-gray)] hover:text-[var(--ink)]"
+          >
+            {theme === "light" && <Sun className="h-4 w-4" />}
+            {theme === "dark" && <Moon className="h-4 w-4" />}
+            {theme === "system" && <Laptop className="h-4 w-4" />}
+          </Button>
+
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+            aria-label="Toggle admin sidebar"
+          >
+            {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </header>
 
       {/* Mobile backdrop */}
@@ -120,12 +154,58 @@ export const AdminLayout: React.FC = () => {
           </nav>
         </div>
 
-        {/* Bottom Area: User info + Pinned Settings Button */}
-        <div className="p-4">
-          <Separator className="mb-3" />
+        {/* Bottom Area: User info + Theme Switcher + Pinned Settings Button */}
+        <div className="p-4 space-y-2">
+          <Separator className="mb-2" />
+
+          {/* Quick Theme Selector in Sidebar */}
+          <div className="px-3 py-1.5 flex items-center justify-between text-[12px] text-[var(--mid-gray)]">
+            <span className="font-medium">Theme</span>
+            <div className="flex items-center gap-0.5 bg-[var(--paper)] p-1 rounded-[12px] border border-[var(--hairline)]">
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${
+                  theme === "light"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="Light mode"
+                aria-label="Light mode"
+              >
+                <Sun className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${
+                  theme === "dark"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="Dark mode"
+                aria-label="Dark mode"
+              >
+                <Moon className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("system")}
+                className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${
+                  theme === "system"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="System preference"
+                aria-label="System preference"
+              >
+                <Laptop className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
 
           {/* Admin User Badge */}
-          <div className="px-3 py-2 flex items-center justify-between text-[12px] text-[var(--mid-gray)] mb-1">
+          <div className="px-3 py-1 flex items-center justify-between text-[12px] text-[var(--mid-gray)]">
             <span className="truncate">Logged as <strong className="text-[var(--ink)]">{username}</strong></span>
             <Shield className="h-3.5 w-3.5 shrink-0 opacity-70" />
           </div>

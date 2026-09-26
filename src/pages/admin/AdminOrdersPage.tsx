@@ -89,14 +89,14 @@ export const AdminOrdersPage: React.FC = () => {
     switch (status) {
       case "confirmed":
       case "delivered":
-        return "bg-emerald-50 text-emerald-800 border-emerald-300 font-medium";
+        return "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-medium";
       case "cancelled":
-        return "bg-rose-50 text-rose-800 border-rose-300 font-medium";
+        return "bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 font-medium";
       case "processing":
       case "pending":
-        return "bg-amber-50 text-amber-800 border-amber-300 font-medium";
+        return "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-medium";
       case "shipped":
-        return "bg-sky-50 text-sky-800 border-sky-300 font-medium";
+        return "bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 font-medium";
       default:
         return "bg-[var(--surface-alt)] text-[var(--ink)] border-[var(--hairline)]";
     }

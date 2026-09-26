@@ -33,6 +33,41 @@
     --input: #e5e5e5;
     --ring: #0a0a0a;
     --radius: 18px;
+    color-scheme: light;
+  }
+
+  .dark {
+    /* Dark theme tokens for Admin Dashboard */
+    --canvas: #09090b;
+    --paper: #141416;
+    --surface-alt: #1e1e22;
+    --ink: #f4f4f5;
+    --ink-soft: #ffffff;
+    --mid-gray: #a1a1aa;
+    --hairline: #27272a;
+    --ember: #f43f5e;
+
+    /* shadcn mappings matching the dark palette */
+    --background: #09090b;
+    --foreground: #f4f4f5;
+    --card: #141416;
+    --card-foreground: #f4f4f5;
+    --popover: #141416;
+    --popover-foreground: #f4f4f5;
+    --primary: #ffffff;
+    --primary-foreground: #09090b;
+    --secondary: #1e1e22;
+    --secondary-foreground: #f4f4f5;
+    --muted: #1e1e22;
+    --muted-foreground: #a1a1aa;
+    --accent: #27272a;
+    --accent-foreground: #f4f4f5;
+    --destructive: #f43f5e;
+    --destructive-foreground: #ffffff;
+    --border: #27272a;
+    --input: #27272a;
+    --ring: #ffffff;
+    color-scheme: dark;
   }
 }
 

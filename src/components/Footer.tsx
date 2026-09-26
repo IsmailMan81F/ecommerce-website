@@ -8,7 +8,11 @@ import {
   Facebook,
   ArrowRight,
   Compass,
+  Sun,
+  Moon,
+  Laptop,
 } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 // Crisp WhatsApp SVG Icon for brand accuracy
 const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "h-4 w-4" }) => (
@@ -23,6 +27,8 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "h-4 w-4" 
 );
 
 export const Footer: React.FC = () => {
+  const { theme, setTheme } = useTheme();
+
   return (
     <footer className="w-full bg-[var(--surface-alt)] border-t border-[var(--hairline)] mt-24 text-[var(--ink)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
@@ -270,9 +276,55 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright, Privacy, Terms of Services, Client Support */}
+        {/* Bottom Bar: Copyright, Theme Switcher, Privacy, Terms, Support */}
         <div className="mt-14 pt-8 border-t border-[var(--hairline)] flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-[var(--mid-gray)]">
           <p>© 2026 KØRD Design Atelier Inc. All rights reserved.</p>
+
+          {/* Centered Theme Switcher */}
+          <div className="flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)]">
+            <button
+              type="button"
+              onClick={() => setTheme("light")}
+              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                theme === "light"
+                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+              }`}
+              title="Light mode"
+              aria-label="Light mode"
+            >
+              <Sun className="h-3 w-3" />
+              <span>Light</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme("dark")}
+              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                theme === "dark"
+                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+              }`}
+              title="Dark mode"
+              aria-label="Dark mode"
+            >
+              <Moon className="h-3 w-3" />
+              <span>Dark</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setTheme("system")}
+              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                theme === "system"
+                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
+                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+              }`}
+              title="System auto preference"
+              aria-label="System preference"
+            >
+              <Laptop className="h-3 w-3" />
+              <span>Auto</span>
+            </button>
+          </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
             <Link

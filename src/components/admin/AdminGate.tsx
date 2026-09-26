@@ -1,9 +1,10 @@
 import React from "react";
 import { useAuth } from "@/context/AuthContext";
+import { AdminThemeProvider } from "@/context/AdminThemeContext";
 import { AdminLogin } from "./AdminLogin";
 import { AdminLayout } from "./AdminLayout";
 
-export const AdminGate: React.FC = () => {
+const AdminGateContent: React.FC = () => {
   const { isAuthenticated } = useAuth();
 
   if (!isAuthenticated) {
@@ -12,3 +13,12 @@ export const AdminGate: React.FC = () => {
 
   return <AdminLayout />;
 };
+
+export const AdminGate: React.FC = () => {
+  return (
+    <AdminThemeProvider>
+      <AdminGateContent />
+    </AdminThemeProvider>
+  );
+};
+

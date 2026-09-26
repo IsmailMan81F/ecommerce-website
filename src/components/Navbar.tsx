@@ -1,18 +1,29 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Search, ShoppingBag, Menu, X, ArrowRight } from "lucide-react";
+import {
+  Search,
+  ShoppingBag,
+  Menu,
+  X,
+  ArrowRight,
+  Sun,
+  Moon,
+  Laptop,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useStore } from "@/context/StoreContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export const Navbar: React.FC = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { itemCount } = useCart();
   const { products } = useStore();
+  const { theme, resolvedTheme, setTheme, cycleTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -77,8 +88,8 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right: Search + Cart Icon + Mobile Menu Trigger */}
-          <div className="flex items-center gap-2">
+          {/* Right: Search + Cart Icon + Theme Toggle + Mobile Menu Trigger */}
+          <div className="flex items-center gap-1.5 sm:gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -87,6 +98,20 @@ export const Navbar: React.FC = () => {
               aria-label="Search catalog"
             >
               <Search className="h-[18px] w-[18px]" />
+            </Button>
+
+            {/* Quick Theme Cycle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={cycleTheme}
+              className="text-[var(--ink)] hover:text-[var(--ink)]"
+              title={`Current theme: ${theme} (${resolvedTheme}). Click to cycle.`}
+              aria-label="Toggle light or dark theme"
+            >
+              {theme === "light" && <Sun className="h-[18px] w-[18px]" />}
+              {theme === "dark" && <Moon className="h-[18px] w-[18px]" />}
+              {theme === "system" && <Laptop className="h-[18px] w-[18px]" />}
             </Button>
 
             <Link to="/cart">
@@ -147,9 +172,54 @@ export const Navbar: React.FC = () => {
                     </nav>
                   </div>
 
-                  <div className="pt-6 border-t border-[var(--hairline)]">
-                    <p className="text-caption text-[var(--mid-gray)] mb-2">Direct Contact</p>
-                    <p className="text-body text-[var(--ink)]">studio@kord-objects.com</p>
+                  <div className="pt-6 border-t border-[var(--hairline)] space-y-4">
+                    {/* Theme selector in mobile drawer */}
+                    <div className="space-y-1.5">
+                      <p className="text-[12px] font-medium text-[var(--mid-gray)]">Appearance Theme</p>
+                      <div className="grid grid-cols-3 gap-1 bg-[var(--surface-alt)] p-1 rounded-[14px] border border-[var(--hairline)]">
+                        <button
+                          type="button"
+                          onClick={() => setTheme("light")}
+                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                            theme === "light"
+                              ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
+                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                          }`}
+                        >
+                          <Sun className="h-3.5 w-3.5" />
+                          <span>Light</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTheme("dark")}
+                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                            theme === "dark"
+                              ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
+                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                          }`}
+                        >
+                          <Moon className="h-3.5 w-3.5" />
+                          <span>Dark</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setTheme("system")}
+                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
+                            theme === "system"
+                              ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
+                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                          }`}
+                        >
+                          <Laptop className="h-3.5 w-3.5" />
+                          <span>Auto</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <p className="text-caption text-[var(--mid-gray)] mb-1">Direct Contact</p>
+                      <p className="text-body text-[var(--ink)]">studio@kord-objects.com</p>
+                    </div>
                   </div>
                 </SheetContent>
               </Sheet>

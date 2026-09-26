@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/context/AuthContext";
+import { useAdminTheme, type ThemeSetting } from "@/context/AdminThemeContext";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -20,21 +21,12 @@ interface AdminSettingsDialogProps {
   onOpenChange: (open: boolean) => void;
 }
 
-type ThemeMode = "light" | "dark" | "system";
-
 export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
   open,
   onOpenChange,
 }) => {
   const { username, logout, updateCredentials } = useAuth();
-
-  const [theme, setTheme] = useState<ThemeMode>(() => {
-    try {
-      return (localStorage.getItem("kord_theme") as ThemeMode) || "system";
-    } catch {
-      return "system";
-    }
-  });
+  const { theme, setTheme } = useAdminTheme();
 
   const [newUsername, setNewUsername] = useState(username);
   const [currentPassword, setCurrentPassword] = useState("");
@@ -45,30 +37,6 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
   useEffect(() => {
     setNewUsername(username);
   }, [username, open]);
-
-  // Apply theme to document
-  useEffect(() => {
-    const root = document.documentElement;
-    try {
-      localStorage.setItem("kord_theme", theme);
-    } catch {
-      // ignore
-    }
-
-    if (theme === "dark") {
-      root.classList.add("dark");
-    } else if (theme === "light") {
-      root.classList.remove("dark");
-    } else {
-      // System
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      if (prefersDark) {
-        root.classList.add("dark");
-      } else {
-        root.classList.remove("dark");
-      }
-    }
-  }, [theme]);
 
   const handleSaveSettings = (e: React.FormEvent) => {
     e.preventDefault();
