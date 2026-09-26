@@ -13,6 +13,8 @@ import { CartPage } from "@/pages/CartPage";
 import { SearchPage } from "@/pages/SearchPage";
 import { AboutPage } from "@/pages/AboutPage";
 import { ContactPage } from "@/pages/ContactPage";
+import { PrivacyPage } from "@/pages/PrivacyPage";
+import { TermsPage } from "@/pages/TermsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { AdminGate } from "@/components/admin/AdminGate";
 import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
@@ -60,6 +62,9 @@ export default function App() {
                 <Route path="/search" element={<SearchPage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/policies" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
                 <Route path="/404" element={<NotFoundPage />} />
                 <Route path="*" element={<NotFoundPage />} />
               </Route>
