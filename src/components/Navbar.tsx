@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { PromotionBanner } from "@/components/PromotionBanner";
 import { useCart } from "@/context/CartContext";
 import { useStore } from "@/context/StoreContext";
 
@@ -43,7 +42,6 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <PromotionBanner />
       <header className="sticky top-0 z-40 w-full bg-[var(--paper)]/95 backdrop-blur-md border-b border-[var(--hairline)] transition-all shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Left: Brand Logo */}
