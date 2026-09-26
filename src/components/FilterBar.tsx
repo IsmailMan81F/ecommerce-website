@@ -106,7 +106,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       </div>
 
       {/* Sort By & Results Count */}
-      <div className="flex items-center justify-between sm:justify-end gap-3">
+      <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3">
         <span className="text-caption text-[var(--mid-gray)] tabular-nums">
           {totalResultsCount} {totalResultsCount === 1 ? "Object" : "Objects"}
         </span>

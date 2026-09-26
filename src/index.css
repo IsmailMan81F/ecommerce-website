@@ -75,7 +75,7 @@
 
 /* Base typography and body style */
 html {
-  overflow-y: auto;
+  scroll-behavior: smooth;
 }
 
 body {
@@ -84,18 +84,32 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-y: auto;
+  min-height: 100vh;
 }
 
-/* Guarantee default scrolling even if popups or modals render */
+/* Ensure no scroll-locking on body or html anywhere */
 body[data-scroll-locked],
 html[data-scroll-locked],
 [data-scroll-locked] {
-  overflow: auto !important;
-  overflow-y: auto !important;
+  overflow: visible !important;
   margin-right: 0px !important;
   padding-right: 0px !important;
   pointer-events: auto !important;
+  touch-action: auto !important;
+  overscroll-behavior: auto !important;
+}
+
+[class*="block-interactivity"] {
+  pointer-events: auto !important;
+}
+
+/* Button flow: push buttons down to the next line when space is constrained */
+.btn-row,
+.actions-row,
+.button-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
 }
 
 /* Typography scale utilities matching the prompt specification */

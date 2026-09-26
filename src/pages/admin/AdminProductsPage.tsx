@@ -327,7 +327,7 @@ export const AdminProductsPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Bar with Add Product Action */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-heading text-[var(--ink)]">Catalog Objects</h1>
           <p className="text-body text-[var(--mid-gray)] text-[14px]">
@@ -337,7 +337,7 @@ export const AdminProductsPage: React.FC = () => {
 
         <Button
           onClick={handleOpenAdd}
-          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2 self-start sm:self-auto"
+          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2"
         >
           <Plus className="h-4 w-4" />
           <span>Add Product</span>
@@ -361,7 +361,7 @@ export const AdminProductsPage: React.FC = () => {
             </div>
 
             {/* Category Filter */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="w-[180px]">
                 <Select
                   value={selectedCategoryFilter}
@@ -767,19 +767,19 @@ export const AdminProductsPage: React.FC = () => {
         onOpenChange={(open) => !open && setProductToDelete(null)}
       >
         <DialogContent className="sm:max-w-[420px] p-6 text-center">
-          <div className="h-12 w-12 rounded-full bg-[var(--ember)]/10 text-[var(--ember)] flex items-center justify-center mx-auto mb-2">
-            <Trash2 className="h-5 w-5" />
+          <div className="h-16 w-16 rounded-full bg-rose-50 border-2 border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <Trash2 className="h-7 w-7 text-rose-600" />
           </div>
           <DialogHeader className="text-center sm:text-center">
-            <DialogTitle className="text-heading-sm">Remove Product?</DialogTitle>
+            <DialogTitle className="text-heading-sm text-[var(--ink)]">Remove Product?</DialogTitle>
             <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px] pt-1">
               Are you sure you want to delete{" "}
-              <strong className="text-[var(--ink)]">{productToDelete?.name}</strong>?
+              <strong className="text-rose-700 font-semibold">{productToDelete?.name}</strong>?
               This action will remove it from the public catalog.
             </DialogDescription>
           </DialogHeader>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-4 flex-col sm:flex-row">
+          <DialogFooter className="flex flex-wrap items-center justify-end gap-2.5 pt-4">
             <Button
               type="button"
               variant="ghost"
@@ -792,7 +792,7 @@ export const AdminProductsPage: React.FC = () => {
               type="button"
               variant="destructive"
               onClick={handleConfirmDelete}
-              className="rounded-[18px] px-5"
+              className="rounded-[18px] px-5 bg-rose-600 hover:bg-rose-700 text-white"
             >
               Delete Product
             </Button>

@@ -86,6 +86,12 @@ export const CategoriesPage: React.FC = () => {
     return Array.from(set);
   }, [products]);
 
+  const isFiltered =
+    Boolean(filters.size && filters.size !== "all") ||
+    Boolean(filters.priceRange && filters.priceRange !== "all") ||
+    Boolean(filters.availability && filters.availability !== "all") ||
+    Boolean(filters.sortBy && filters.sortBy !== "featured");
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
       {/* Header Info */}
@@ -119,7 +125,7 @@ export const CategoriesPage: React.FC = () => {
           </div>
 
           {/* Mobile Filter Button */}
-          <div className="lg:hidden self-start">
+          <div className="lg:hidden flex flex-wrap gap-2">
             <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
               <SheetTrigger asChild>
                 <Button variant="secondary" size="sm" className="gap-2 rounded-[18px]">
@@ -127,58 +133,84 @@ export const CategoriesPage: React.FC = () => {
                   <span>Filter & Categories</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-[320px] p-6 overflow-y-auto">
-                <SheetHeader className="mb-6">
-                  <SheetTitle className="text-heading-sm">Filters & Categories</SheetTitle>
-                </SheetHeader>
+              <SheetContent side="left" className="w-full sm:max-w-md p-6 overflow-y-auto h-full flex flex-col justify-between bg-[var(--paper)]">
+                <div>
+                  <SheetHeader className="mb-6">
+                    <SheetTitle className="text-heading-sm">Filters & Categories</SheetTitle>
+                  </SheetHeader>
 
-                <div className="space-y-6">
-                  {/* Category Selection */}
-                  <div className="space-y-3">
-                    <p className="text-caption text-[var(--mid-gray)]">Categories</p>
-                    <div className="flex flex-col gap-1">
-                      <Link
-                        to="/categories"
-                        onClick={() => setMobileFilterOpen(false)}
-                        className={`px-3 py-2 rounded-[12px] text-body transition-colors ${
-                          !slug
-                            ? "bg-[var(--surface-alt)] font-medium text-[var(--ink)]"
-                            : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                        }`}
-                      >
-                        All Objects ({products.length})
-                      </Link>
-                      {categories.map((cat) => (
+                  <div className="space-y-6">
+                    {/* Category Selection */}
+                    <div className="space-y-3">
+                      <p className="text-caption text-[var(--mid-gray)]">Categories</p>
+                      <div className="flex flex-col gap-1">
                         <Link
-                          key={cat.id}
-                          to={`/categories/${cat.slug}`}
+                          to="/categories"
                           onClick={() => setMobileFilterOpen(false)}
-                          className={`px-3 py-2 rounded-[12px] text-body transition-colors flex items-center justify-between ${
-                            slug === cat.slug
+                          className={`px-3 py-2.5 rounded-[14px] text-body transition-colors flex items-center justify-between ${
+                            !slug
                               ? "bg-[var(--surface-alt)] font-medium text-[var(--ink)]"
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
                         >
-                          <span>{cat.name}</span>
+                          <span>All Objects</span>
                           <span className="text-caption text-[var(--mid-gray)] tabular-nums">
-                            {cat.itemCount}
+                            {products.length}
                           </span>
                         </Link>
-                      ))}
+                        {categories.map((cat) => (
+                          <Link
+                            key={cat.id}
+                            to={`/categories/${cat.slug}`}
+                            onClick={() => setMobileFilterOpen(false)}
+                            className={`px-3 py-2.5 rounded-[14px] text-body transition-colors flex items-center justify-between ${
+                              slug === cat.slug
+                                ? "bg-[var(--surface-alt)] font-medium text-[var(--ink)]"
+                                : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                            }`}
+                          >
+                            <span>{cat.name}</span>
+                            <span className="text-caption text-[var(--mid-gray)] tabular-nums">
+                              {cat.itemCount}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Filter Controls */}
+                    <div className="pt-4 border-t border-[var(--hairline)] space-y-4">
+                      <p className="text-caption text-[var(--mid-gray)]">Refine Specifications</p>
+                      <FilterBar
+                        filters={filters}
+                        onFilterChange={handleFilterChange}
+                        onResetFilters={handleResetFilters}
+                        availableSizes={allSizes}
+                        totalResultsCount={filteredProducts.length}
+                      />
                     </div>
                   </div>
+                </div>
 
-                  {/* Filter Controls */}
-                  <div className="pt-4 border-t border-[var(--hairline)] space-y-4">
-                    <p className="text-caption text-[var(--mid-gray)]">Refine Specifications</p>
-                    <FilterBar
-                      filters={filters}
-                      onFilterChange={handleFilterChange}
-                      onResetFilters={handleResetFilters}
-                      availableSizes={allSizes}
-                      totalResultsCount={filteredProducts.length}
-                    />
-                  </div>
+                {/* Mobile Filter Footer Actions with wrapping buttons */}
+                <div className="pt-6 border-t border-[var(--hairline)] flex flex-wrap items-center gap-3 mt-6">
+                  <Button
+                    type="button"
+                    className="flex-1 min-w-[160px] rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] h-11"
+                    onClick={() => setMobileFilterOpen(false)}
+                  >
+                    View {filteredProducts.length} Objects
+                  </Button>
+                  {isFiltered && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="rounded-[18px] h-11 px-4"
+                      onClick={handleResetFilters}
+                    >
+                      Reset All
+                    </Button>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>

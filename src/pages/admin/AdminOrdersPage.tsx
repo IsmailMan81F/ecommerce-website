@@ -74,9 +74,32 @@ export const AdminOrdersPage: React.FC = () => {
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     updateOrderStatus(orderId, newStatus);
-    toast.success("Order status updated", {
-      description: `Order ${orderId} marked as ${newStatus}.`,
-    });
+    if (newStatus === "cancelled") {
+      toast.error("Order Cancelled", {
+        description: `Order #${orderId} was updated to Cancelled.`,
+      });
+    } else {
+      toast.success("Order Status Updated", {
+        description: `Order #${orderId} marked as ${newStatus}.`,
+      });
+    }
+  };
+
+  const getStatusBadgeClass = (status: OrderStatus) => {
+    switch (status) {
+      case "confirmed":
+      case "delivered":
+        return "bg-emerald-50 text-emerald-800 border-emerald-300 font-medium";
+      case "cancelled":
+        return "bg-rose-50 text-rose-800 border-rose-300 font-medium";
+      case "processing":
+      case "pending":
+        return "bg-amber-50 text-amber-800 border-amber-300 font-medium";
+      case "shipped":
+        return "bg-sky-50 text-sky-800 border-sky-300 font-medium";
+      default:
+        return "bg-[var(--surface-alt)] text-[var(--ink)] border-[var(--hairline)]";
+    }
   };
 
   const formatDate = (isoString: string) => {
@@ -95,7 +118,7 @@ export const AdminOrdersPage: React.FC = () => {
   return (
     <div className="space-y-6">
       {/* Top Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-heading text-[var(--ink)]">Client Orders</h1>
           <p className="text-body text-[var(--mid-gray)] text-[14px]">
@@ -127,7 +150,7 @@ export const AdminOrdersPage: React.FC = () => {
             </div>
 
             {/* Status Filter */}
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-3">
               <div className="w-[170px] min-w-[170px] max-w-[170px] shrink-0">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-[170px] h-10 text-[13px] rounded-[18px]">
@@ -225,7 +248,7 @@ export const AdminOrdersPage: React.FC = () => {
                                 handleStatusChange(order.id, val as OrderStatus)
                               }
                             >
-                              <SelectTrigger className="w-[140px] min-w-[140px] max-w-[140px] h-8 text-[12px] rounded-[14px] bg-[var(--surface-alt)] border-[var(--hairline)] truncate">
+                              <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-8 text-[12px] rounded-[14px] border truncate transition-colors ${getStatusBadgeClass(order.status)}`}>
                                 <SelectValue />
                               </SelectTrigger>
                               <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
@@ -285,7 +308,7 @@ export const AdminOrdersPage: React.FC = () => {
 
                     {/* Line 3: Order Total + Inline Status Select dropdown with fixed container width */}
                     <div
-                      className="flex items-center justify-between gap-3 pt-1 border-t border-[var(--hairline)]/60"
+                      className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-[var(--hairline)]/60"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <div>
@@ -304,7 +327,7 @@ export const AdminOrdersPage: React.FC = () => {
                             handleStatusChange(order.id, val as OrderStatus)
                           }
                         >
-                          <SelectTrigger className="w-[140px] min-w-[140px] max-w-[140px] h-9 text-[12px] rounded-[14px] bg-[var(--surface-alt)] border-[var(--hairline)] truncate">
+                          <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-9 text-[12px] rounded-[14px] border truncate transition-colors ${getStatusBadgeClass(order.status)}`}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
@@ -337,7 +360,7 @@ export const AdminOrdersPage: React.FC = () => {
               <SheetHeader className="text-left space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-caption text-[var(--mid-gray)]">Order Details</span>
-                  <Badge variant="outline" className="capitalize text-[11px]">
+                  <Badge variant="outline" className={`capitalize text-[11px] border ${getStatusBadgeClass(selectedOrder.status)}`}>
                     {selectedOrder.status}
                   </Badge>
                 </div>

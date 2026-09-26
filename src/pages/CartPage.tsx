@@ -105,7 +105,7 @@ export const CartPage: React.FC = () => {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-8">
       {/* Page Title & Back Link */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)] mb-1">
             <Link to="/" className="hover:text-[var(--ink)] transition-colors">
@@ -289,16 +289,16 @@ export const CartPage: React.FC = () => {
       {/* Order Confirmation Dialog */}
       <Dialog open={orderConfirmed} onOpenChange={setOrderConfirmed}>
         <DialogContent className="sm:max-w-[500px] text-center p-8">
-          <div className="h-14 w-14 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center mx-auto text-[var(--ink)]">
-            <CheckCircle2 className="h-7 w-7" />
+          <div className="h-16 w-16 rounded-full bg-emerald-50 border-2 border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto mb-2 shadow-xs">
+            <CheckCircle2 className="h-8 w-8 text-emerald-600" />
           </div>
           <DialogHeader className="text-center sm:text-center mt-2">
-            <DialogTitle className="text-heading-sm">
+            <DialogTitle className="text-heading-sm text-[var(--ink)]">
               Order Confirmed
             </DialogTitle>
             <DialogDescription className="text-body text-[var(--mid-gray)] pt-1">
               Thank you, {firstName}. Your reservation reference is{" "}
-              <span className="font-semibold text-[var(--ink)] tabular-nums font-mono">
+              <span className="font-semibold text-emerald-700 tabular-nums font-mono">
                 {confirmedOrderId}
               </span>
               . Our concierge will contact you at {phoneNumber} with dispatch tracking.
@@ -314,17 +314,19 @@ export const CartPage: React.FC = () => {
               <span className="text-[var(--mid-gray)]">Total Amount:</span>
               <span className="font-medium text-[var(--ink)] tabular-nums">{formatPrice(total)}</span>
             </div>
-            <div className="flex justify-between">
+            <div className="flex justify-between items-center">
               <span className="text-[var(--mid-gray)]">Status:</span>
-              <span className="font-medium text-[var(--ink)]">Preparing Atelier Batch</span>
+              <span className="font-medium text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-[8px] text-[12px]">
+                Confirmed · Atelier Batch
+              </span>
             </div>
           </div>
 
-          <div className="mt-6">
+          <div className="mt-6 flex flex-wrap gap-2">
             <Button
               type="button"
               onClick={handleFinishOrder}
-              className="w-full rounded-[18px]"
+              className="w-full rounded-[18px] bg-emerald-700 hover:bg-emerald-800 text-white"
             >
               Back to Storefront
             </Button>

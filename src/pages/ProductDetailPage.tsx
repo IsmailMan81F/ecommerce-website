@@ -264,8 +264,8 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Quantity Stepper & Add to Cart Action */}
           <div className="space-y-4 pt-2">
-            <div className="flex items-center gap-4">
-              <div className="flex items-center rounded-[18px] border border-[var(--hairline)] bg-[var(--paper)] p-1">
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center rounded-[18px] border border-[var(--hairline)] bg-[var(--paper)] p-1 shrink-0">
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -289,13 +289,13 @@ export const ProductDetailPage: React.FC = () => {
                 </button>
               </div>
 
-              {/* Full-width "Add to Cart" button */}
+              {/* Full-width / wrapping "Add to Cart" button */}
               <Button
                 type="button"
                 onClick={handleAddToCart}
                 disabled={!product.isAvailable}
                 size="lg"
-                className="flex-1 h-12 rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] text-[15px] font-medium disabled:opacity-50"
+                className="flex-1 min-w-[220px] h-12 rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] text-[15px] font-medium disabled:opacity-50"
               >
                 {product.isAvailable
                   ? `Add to Bag · ${formatPrice(product.price * quantity)}`

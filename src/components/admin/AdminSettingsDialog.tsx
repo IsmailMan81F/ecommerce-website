@@ -242,7 +242,7 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
           <Separator />
 
           {/* Log Out Action: Clearly separated, destructive-styled */}
-          <div className="flex items-center justify-between p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
+          <div className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
             <div>
               <p className="text-[14px] font-medium text-[var(--ink)]">Terminate Session</p>
               <p className="text-[12px] text-[var(--mid-gray)]">Sign out of this console on this machine</p>
@@ -252,14 +252,14 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
               variant="destructive"
               size="sm"
               onClick={handleLogout}
-              className="gap-1.5 rounded-[14px] px-3.5"
+              className="gap-1.5 rounded-[14px] px-3.5 bg-rose-600 hover:bg-rose-700 text-white"
             >
               <LogOut className="h-3.5 w-3.5" />
               <span>Log Out</span>
             </Button>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0 pt-2">
+          <DialogFooter className="flex flex-wrap items-center justify-end gap-2.5 pt-2">
             <Button
               type="button"
               variant="ghost"
