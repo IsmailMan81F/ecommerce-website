@@ -415,6 +415,23 @@ export const AdminOrdersPage: React.FC = () => {
                     </p>
                   </div>
 
+                  {(selectedOrder.customer.wilaya || selectedOrder.customer.commune) && (
+                    <div className="flex items-start gap-2.5">
+                      <MapPin className="h-4 w-4 text-[var(--mid-gray)] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[var(--ink)] font-medium">
+                          {selectedOrder.customer.commune ? `${selectedOrder.customer.commune}, ` : ""}
+                          {selectedOrder.customer.wilaya}
+                        </p>
+                        {selectedOrder.customer.deliveryType && (
+                          <span className="text-[11px] text-[var(--mid-gray)] block">
+                            Mode: {selectedOrder.customer.deliveryType === "home" ? "Direct Home Delivery" : "Office Stop Desk"}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {selectedOrder.customer.address && (
                     <div className="flex items-start gap-2.5">
                       <MapPin className="h-4 w-4 text-[var(--mid-gray)] shrink-0 mt-0.5" />

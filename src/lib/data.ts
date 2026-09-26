@@ -61,10 +61,10 @@ export const PRODUCTS: Product[] = [
     originalPrice: 920,
     description: "A precision belt-driven analog turntable machined from solid anodized aluminum and dampening composite. Designed to eliminate mechanical resonance while presenting an ultra-pure acoustic frequency response.",
     features: [
-      "Machined 6061 billet aluminum tonearm with counterweight balance",
-      "Low-noise synchronous DC motor with optical speed regulation",
-      "Solid resonance-dampened platter with silicone decoupling mat",
-      "Balanced gold-plated RCA and ground terminal outputs"
+      "Crafted from premium sustainable materials with exceptional structural integrity",
+      "Designed for spatial balance, minimalist clarity, and long-lasting durability",
+      "Finished by hand in small artisanal batches with natural protective treatments",
+      "Accompanied by an individual certificate of authenticity and numbered release"
     ],
     images: [audioTurntableImg, heroLivingImg, audioTurntableImg],
     sizes: ["Standard", "Audiophile Pro Platter"],
@@ -73,12 +73,6 @@ export const PRODUCTS: Product[] = [
     isAvailable: true,
     isBestSeller: true,
     isNew: false,
-    specs: {
-      "Speeds": "33 1/3, 45 RPM electronic switch",
-      "Dimensions": "420 x 360 x 125 mm",
-      "Weight": "9.4 kg",
-      "Signal-to-Noise": "> 72 dB",
-    },
   },
   {
     id: "prod-2",

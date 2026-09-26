@@ -80,6 +80,9 @@ export const AdminProductsPage: React.FC = () => {
   const [images, setImages] = useState<string[]>([]);
   const [variants, setVariants] = useState<VariantRow[]>([]);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [detailsText, setDetailsText] = useState(
+    "Crafted from premium sustainable materials with exceptional structural integrity\nDesigned for spatial balance, minimalist clarity, and long-lasting durability\nFinished by hand in small artisanal batches with natural protective treatments\nAccompanied by an individual certificate of authenticity and numbered release"
+  );
 
   // Delete Confirmation Dialog
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
@@ -123,6 +126,9 @@ export const AdminProductsPage: React.FC = () => {
         isAvailable: true,
       },
     ]);
+    setDetailsText(
+      "Crafted from premium sustainable materials with exceptional structural integrity\nDesigned for spatial balance, minimalist clarity, and long-lasting durability\nFinished by hand in small artisanal batches with natural protective treatments\nAccompanied by an individual certificate of authenticity and numbered release"
+    );
     setIsAvailable(true);
     setFormOpen(true);
   };
@@ -136,6 +142,11 @@ export const AdminProductsPage: React.FC = () => {
     setIsCreatingNewCategory(false);
     setNewCategoryName("");
     setImages(p.images && p.images.length > 0 ? [...p.images] : []);
+    setDetailsText(
+      p.features && p.features.length > 0
+        ? p.features.join("\n")
+        : "Crafted from premium sustainable materials with exceptional structural integrity\nDesigned for spatial balance, minimalist clarity, and long-lasting durability\nFinished by hand in small artisanal batches with natural protective treatments\nAccompanied by an individual certificate of authenticity and numbered release"
+    );
 
     if (p.variants && p.variants.length > 0) {
       setVariants(
@@ -208,7 +219,7 @@ export const AdminProductsPage: React.FC = () => {
       {
         id: `var-${Date.now()}`,
         size: "Standard",
-        color: "Custom Finish",
+        color: "Matte Black",
         stock: 5,
         isAvailable: true,
       },
@@ -270,6 +281,11 @@ export const AdminProductsPage: React.FC = () => {
     const uniqueColors = Array.from(new Set(variants.map((v) => v.color).filter(Boolean)));
     const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
 
+    const parsedDetails = detailsText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean);
+
     const productPayload = {
       name: name.trim(),
       description: description.trim() || "Sculptural architectural object.",
@@ -288,15 +304,15 @@ export const AdminProductsPage: React.FC = () => {
       })),
       stock: totalStock,
       isAvailable,
-      features: editingProduct?.features || [
-        "Machined from solid raw materials",
-        "Hand-finished in small batch atelier",
-        "Natural non-toxic plant wax finish",
-      ],
-      specs: editingProduct?.specs || {
-        Finish: uniqueColors.join(", ") || "Raw Natural",
-        Origin: "Atelier Studio",
-      },
+      features:
+        parsedDetails.length > 0
+          ? parsedDetails
+          : [
+              "Crafted from premium sustainable materials with exceptional structural integrity",
+              "Designed for spatial balance, minimalist clarity, and long-lasting durability",
+              "Finished by hand in small artisanal batches with natural protective treatments",
+              "Accompanied by an individual certificate of authenticity and numbered release",
+            ],
     };
 
     if (editingProduct) {
@@ -597,6 +613,23 @@ export const AdminProductsPage: React.FC = () => {
               />
             </div>
 
+            {/* Details (Lines) */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="prod-details">Details (one item per line)</Label>
+                <span className="text-[11px] text-[var(--mid-gray)]">
+                  Bullet lines shown on object detail page
+                </span>
+              </div>
+              <Textarea
+                id="prod-details"
+                value={detailsText}
+                onChange={(e) => setDetailsText(e.target.value)}
+                placeholder="Enter each object detail on a new line..."
+                rows={4}
+              />
+            </div>
+
             {/* Images Upload / Previews */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between flex-wrap gap-2">
@@ -651,7 +684,7 @@ export const AdminProductsPage: React.FC = () => {
                 <div>
                   <Label>Variants & Stock Inventory</Label>
                   <p className="text-[12px] text-[var(--mid-gray)]">
-                    Define sizes, finishes, and individual stock quantities.
+                    Define sizes, colors, and individual stock quantities.
                   </p>
                 </div>
                 <Button
@@ -684,7 +717,7 @@ export const AdminProductsPage: React.FC = () => {
                     </div>
                     <div className="flex-1">
                       <Input
-                        placeholder="Finish / Color"
+                        placeholder="Color"
                         value={variant.color}
                         onChange={(e) =>
                           handleUpdateVariant(variant.id, "color", e.target.value)

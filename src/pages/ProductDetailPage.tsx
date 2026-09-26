@@ -5,8 +5,6 @@ import {
   Plus,
   ArrowLeft,
   Check,
-  Truck,
-  ShieldCheck,
   Maximize2,
 } from "lucide-react";
 import { PRODUCTS } from "@/lib/data";
@@ -233,11 +231,11 @@ export const ProductDetailPage: React.FC = () => {
             </div>
           )}
 
-          {/* Option Selectors: Colors / Finishes */}
+          {/* Option Selectors: Colors */}
           {product.colors && product.colors.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-caption">
-                <span className="text-[var(--ink)]">Material Finish</span>
+                <span className="text-[var(--ink)]">Color</span>
                 <span className="text-[var(--mid-gray)]">{selectedColor}</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -302,42 +300,27 @@ export const ProductDetailPage: React.FC = () => {
                   : "Currently Out of Stock"}
               </Button>
             </div>
-
-            {/* Delivery & Guarantee badges */}
-            <div className="grid grid-cols-2 gap-3 pt-3 text-[12px] text-[var(--mid-gray)]">
-              <div className="flex items-center gap-2">
-                <Truck className="h-4 w-4 text-[var(--ink)] shrink-0" />
-                <span>Complimentary insured shipping over $500</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="h-4 w-4 text-[var(--ink)] shrink-0" />
-                <span>10-year atelier craftsmanship guarantee</span>
-              </div>
-            </div>
           </div>
 
-          {/* Features and Specifications Accordion / Cards */}
+          {/* Details Section */}
           <div className="pt-6 border-t border-[var(--hairline)] space-y-4">
-            <h3 className="text-subheading text-[var(--ink)]">Engineering Details</h3>
+            <h3 className="text-subheading font-medium text-[var(--ink)]">Details</h3>
             <ul className="space-y-2.5">
-              {product.features.map((feature, i) => (
-                <li key={i} className="flex items-start gap-2.5 text-body text-[var(--mid-gray)]">
+              {(product.features && product.features.length > 0
+                ? product.features
+                : [
+                    "Crafted from premium sustainable materials with exceptional structural integrity",
+                    "Designed for spatial balance, minimalist clarity, and long-lasting durability",
+                    "Finished by hand in small artisanal batches with natural protective treatments",
+                    "Accompanied by an individual certificate of authenticity and numbered release",
+                  ]
+              ).map((detail, i) => (
+                <li key={i} className="flex items-start gap-2.5 text-body text-[var(--mid-gray)] text-[14px]">
                   <span className="h-1.5 w-1.5 rounded-full bg-[var(--ink)] mt-2 shrink-0" />
-                  <span>{feature}</span>
+                  <span>{detail}</span>
                 </li>
               ))}
             </ul>
-
-            {product.specs && (
-              <div className="mt-6 pt-4 border-t border-[var(--hairline)] divide-y divide-[var(--hairline)]">
-                {Object.entries(product.specs).map(([key, val]) => (
-                  <div key={key} className="py-2.5 flex items-center justify-between text-[13px]">
-                    <span className="text-[var(--mid-gray)]">{key}</span>
-                    <span className="text-[var(--ink)] font-medium">{val}</span>
-                  </div>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </div>

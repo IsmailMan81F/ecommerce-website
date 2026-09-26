@@ -56,6 +56,9 @@ export interface OrderCustomer {
   firstName: string;
   lastName: string;
   phoneNumber: string;
+  wilaya?: string;
+  commune?: string;
+  deliveryType?: 'home' | 'office';
   address?: string;
   notes?: string;
 }
