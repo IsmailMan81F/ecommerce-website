@@ -17,7 +17,7 @@ import { CONTACT_INFO } from "@/lib/data";
 import { useStore } from "@/context/StoreContext";
 
 export const ContactPage: React.FC = () => {
-  const { addMessage } = useStore();
+  const { addMessage, storeSettings } = useStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -78,10 +78,10 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">Concierge Email</p>
                   <a
-                    href={`mailto:${CONTACT_INFO.conciergeEmail}`}
+                    href={`mailto:${storeSettings?.general?.email || CONTACT_INFO.conciergeEmail}`}
                     className="font-medium text-[var(--ink)] hover:underline"
                   >
-                    {CONTACT_INFO.conciergeEmail}
+                    {storeSettings?.general?.email || CONTACT_INFO.conciergeEmail}
                   </a>
                 </div>
               </div>
@@ -93,10 +93,10 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">Order Inquiries</p>
                   <a
-                    href={`tel:${CONTACT_INFO.orderAssistance}`}
+                    href={`tel:${storeSettings?.general?.phone || CONTACT_INFO.orderAssistance}`}
                     className="font-medium text-[var(--ink)] hover:underline tabular-nums"
                   >
-                    {CONTACT_INFO.orderAssistance}
+                    {storeSettings?.general?.phone || CONTACT_INFO.orderAssistance}
                   </a>
                 </div>
               </div>
@@ -108,7 +108,9 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">Studio & Showroom</p>
                   <p className="font-medium text-[var(--ink)]">
-                    {CONTACT_INFO.studioAddress}
+                    {storeSettings?.location?.address
+                      ? `${storeSettings.location.address}, ${storeSettings.location.city}, ${storeSettings.location.country}`
+                      : CONTACT_INFO.studioAddress}
                   </p>
                 </div>
               </div>
@@ -120,7 +122,9 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">Consultation Hours</p>
                   <p className="font-medium text-[var(--ink)]">
-                    {CONTACT_INFO.hours}
+                    {storeSettings?.hours?.saturdayToThursday
+                      ? `Sat – Thu: ${storeSettings.hours.saturdayToThursday.isOpen ? `${storeSettings.hours.saturdayToThursday.openTime} – ${storeSettings.hours.saturdayToThursday.closeTime}` : "Closed"} · Fri: ${storeSettings.hours.friday.isOpen ? `${storeSettings.hours.friday.openTime} – ${storeSettings.hours.friday.closeTime}` : "Closed"}`
+                      : CONTACT_INFO.hours}
                   </p>
                 </div>
               </div>

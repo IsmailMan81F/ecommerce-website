@@ -3,7 +3,7 @@ import audioTurntableImg from "@/assets/images/product_audio_turntable_179037471
 import ceramicVesselImg from "@/assets/images/product_ceramic_vessel_1790374728437.jpg";
 import leatherToteImg from "@/assets/images/product_leather_tote_1790374738935.jpg";
 import loungeChairImg from "@/assets/images/product_lounge_chair_1790374749725.jpg";
-import { Category, Product, Order, ContactMessage } from "@/types";
+import { Category, Product, Order, ContactMessage, StoreSettings } from "@/types";
 
 export const HERO_IMAGE = heroLivingImg;
 
@@ -507,5 +507,106 @@ export const INITIAL_CONTACT_MESSAGES: ContactMessage[] = [
     isRead: true,
     notes: "Quotation sent via concierge email on Sept 22.",
   },
+];
+
+export const INITIAL_STORE_SETTINGS: StoreSettings = {
+  general: {
+    storeName: "KØRD",
+    description: "Quiet material presence. Objects engineered for spatial harmony, analog purity, and enduring tactile longevity.",
+    email: "studio@kord-objects.com",
+    phone: "+213 550 12 34 56",
+  },
+  location: {
+    country: "Algeria",
+    wilaya: "16 - Algiers",
+    city: "Hydra",
+    address: "14 Rue du Plateau, Atelier 4B",
+    googleMapsUrl: "https://maps.google.com/?q=Hydra+Algiers",
+    whatsapp: "+213 550 12 34 56",
+  },
+  hours: {
+    saturdayToThursday: {
+      isOpen: true,
+      openTime: "09:00",
+      closeTime: "19:00",
+    },
+    friday: {
+      isOpen: false,
+      openTime: "14:30",
+      closeTime: "19:00",
+    },
+  },
+  social: {
+    instagram: "https://instagram.com/kord.objects",
+    facebook: "https://facebook.com/kordobjects",
+    tiktok: "https://tiktok.com/@kordobjects",
+    whatsapp: "+213 550 12 34 56",
+  },
+  delivery: {
+    deliveryEnabled: true,
+    officeFee: 15,
+    homeFee: 25,
+  },
+};
+
+export const ALGERIAN_WILAYAS = [
+  "01 - Adrar",
+  "02 - Chlef",
+  "03 - Laghouat",
+  "04 - Oum El Bouaghi",
+  "05 - Batna",
+  "06 - Béjaïa",
+  "07 - Biskra",
+  "08 - Béchar",
+  "09 - Blida",
+  "10 - Bouira",
+  "11 - Tamanrasset",
+  "12 - Tébessa",
+  "13 - Tlemcen",
+  "14 - Tiaret",
+  "15 - Tizi Ouzou",
+  "16 - Alger (Algiers)",
+  "17 - Djelfa",
+  "18 - Jijel",
+  "19 - Sétif",
+  "20 - Saïda",
+  "21 - Skikda",
+  "22 - Sidi Bel Abbès",
+  "23 - Annaba",
+  "24 - Guelma",
+  "25 - Constantine",
+  "26 - Médéa",
+  "27 - Mostaganem",
+  "28 - M'Sila",
+  "29 - Mascara",
+  "30 - Ouargla",
+  "31 - Oran",
+  "32 - El Bayadh",
+  "33 - Illizi",
+  "34 - Bordj Bou Arréridj",
+  "35 - Boumerdès",
+  "36 - El Tarf",
+  "37 - Tindouf",
+  "38 - Tissemsilt",
+  "39 - El Oued",
+  "40 - Khenchela",
+  "41 - Souk Ahras",
+  "42 - Tipaza",
+  "43 - Mila",
+  "44 - Aïn Defla",
+  "45 - Naâma",
+  "46 - Aïn Témouchent",
+  "47 - Ghardaïa",
+  "48 - Relizane",
+  "49 - El M'Ghair",
+  "50 - El Meniaa",
+  "51 - Ouled Djellal",
+  "52 - Bordj Baji Mokhtar",
+  "53 - Béni Abbès",
+  "54 - Timimoun",
+  "55 - Touggourt",
+  "56 - Djanet",
+  "57 - In Salah",
+  "58 - In Guezzam",
 ];
 

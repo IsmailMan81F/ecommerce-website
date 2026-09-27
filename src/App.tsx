@@ -22,6 +22,7 @@ import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
 import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
 import { AdminCategoriesPage } from "@/pages/admin/AdminCategoriesPage";
 import { AdminMessagesPage } from "@/pages/admin/AdminMessagesPage";
+import { AdminStorePage } from "@/pages/admin/AdminStorePage";
 
 // Helper component to scroll window to top on route change
 function ScrollToTop() {
@@ -80,6 +81,7 @@ export default function App() {
                   <Route path="products" element={<AdminProductsPage />} />
                   <Route path="categories" element={<AdminCategoriesPage />} />
                   <Route path="messages" element={<AdminMessagesPage />} />
+                  <Route path="store" element={<AdminStorePage />} />
                 </Route>
               </Routes>
               <Toaster position="bottom-right" />

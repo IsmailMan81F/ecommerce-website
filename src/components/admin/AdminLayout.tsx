@@ -5,6 +5,7 @@ import {
   Package,
   FolderTree,
   MessageSquare,
+  Store,
   Settings,
   Menu,
   X,
@@ -50,6 +51,11 @@ export const AdminLayout: React.FC = () => {
       path: "/admin/messages",
       icon: MessageSquare,
       badge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
+    },
+    {
+      name: "Store",
+      path: "/admin/store",
+      icon: Store,
     },
   ];
 

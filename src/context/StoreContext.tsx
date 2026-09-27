@@ -1,6 +1,24 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
-import { Product, Category, Order, OrderStatus, ContactMessage } from "@/types";
-import { PRODUCTS, CATEGORIES, INITIAL_ORDERS, INITIAL_CONTACT_MESSAGES } from "@/lib/data";
+import {
+  Product,
+  Category,
+  Order,
+  OrderStatus,
+  ContactMessage,
+  StoreSettings,
+  StoreGeneralInfo,
+  StoreLocationInfo,
+  StoreHours,
+  StoreSocialMedia,
+  StoreDeliverySettings,
+} from "@/types";
+import {
+  PRODUCTS,
+  CATEGORIES,
+  INITIAL_ORDERS,
+  INITIAL_CONTACT_MESSAGES,
+  INITIAL_STORE_SETTINGS,
+} from "@/lib/data";
 
 interface StoreContextType {
   products: Product[];
@@ -8,6 +26,12 @@ interface StoreContextType {
   orders: Order[];
   messages: ContactMessage[];
   unreadMessagesCount: number;
+  storeSettings: StoreSettings;
+  updateStoreGeneral: (general: Partial<StoreGeneralInfo>) => void;
+  updateStoreLocation: (location: Partial<StoreLocationInfo>) => void;
+  updateStoreHours: (hours: StoreHours) => void;
+  updateStoreSocial: (social: Partial<StoreSocialMedia>) => void;
+  updateStoreDelivery: (delivery: Partial<StoreDeliverySettings>) => void;
   toggleProductAvailability: (productId: string) => void;
   addProduct: (productData: Omit<Product, "id" | "slug"> & { slug?: string }) => Product;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
@@ -40,6 +64,7 @@ const PRODUCTS_STORAGE_KEY = "kord_store_products";
 const CATEGORIES_STORAGE_KEY = "kord_store_categories";
 const ORDERS_STORAGE_KEY = "kord_store_orders";
 const MESSAGES_STORAGE_KEY = "kord_store_messages";
+const STORE_SETTINGS_STORAGE_KEY = "kord_store_settings";
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -84,7 +109,21 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     return INITIAL_CONTACT_MESSAGES;
   });
 
-  // Sync to sessionStorage
+  const [storeSettings, setStoreSettings] = useState<StoreSettings>(() => {
+    try {
+      const stored =
+        localStorage.getItem(STORE_SETTINGS_STORAGE_KEY) ||
+        sessionStorage.getItem(STORE_SETTINGS_STORAGE_KEY);
+      if (stored) {
+        return { ...INITIAL_STORE_SETTINGS, ...JSON.parse(stored) };
+      }
+    } catch {
+      // ignore
+    }
+    return INITIAL_STORE_SETTINGS;
+  });
+
+  // Sync to sessionStorage & localStorage
   useEffect(() => {
     try {
       sessionStorage.setItem(PRODUCTS_STORAGE_KEY, JSON.stringify(products));
@@ -116,6 +155,15 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       // ignore
     }
   }, [messages]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORE_SETTINGS_STORAGE_KEY, JSON.stringify(storeSettings));
+      sessionStorage.setItem(STORE_SETTINGS_STORAGE_KEY, JSON.stringify(storeSettings));
+    } catch {
+      // ignore
+    }
+  }, [storeSettings]);
 
   const unreadMessagesCount = useMemo(() => {
     return messages.filter((m) => m.status === "unread" || m.isRead === false).length;
@@ -420,6 +468,41 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
+  const updateStoreGeneral = (general: Partial<StoreGeneralInfo>) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      general: { ...prev.general, ...general },
+    }));
+  };
+
+  const updateStoreLocation = (location: Partial<StoreLocationInfo>) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      location: { ...prev.location, ...location },
+    }));
+  };
+
+  const updateStoreHours = (hours: StoreHours) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      hours,
+    }));
+  };
+
+  const updateStoreSocial = (social: Partial<StoreSocialMedia>) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      social: { ...prev.social, ...social },
+    }));
+  };
+
+  const updateStoreDelivery = (delivery: Partial<StoreDeliverySettings>) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      delivery: { ...prev.delivery, ...delivery },
+    }));
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -428,6 +511,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         orders,
         messages,
         unreadMessagesCount,
+        storeSettings,
+        updateStoreGeneral,
+        updateStoreLocation,
+        updateStoreHours,
+        updateStoreSocial,
+        updateStoreDelivery,
         toggleProductAvailability,
         addProduct,
         updateProduct,
