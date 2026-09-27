@@ -94,10 +94,14 @@ export interface ContactMessage {
   id: string;
   name: string;
   email: string;
+  phone?: string;
   subject?: string;
+  inquiryType?: string;
+  orderNumber?: string;
   message: string;
   createdAt: string;
   status: "unread" | "read" | "replied";
+  isRead?: boolean;
   notes?: string;
 }
 

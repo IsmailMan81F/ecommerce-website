@@ -1,16 +1,28 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Clock, ArrowRight } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ArrowRight, Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CONTACT_INFO } from "@/lib/data";
+import { useStore } from "@/context/StoreContext";
 
 export const ContactPage: React.FC = () => {
+  const { addMessage } = useStore();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [inquiryType, setInquiryType] = useState("Product Inquiry");
+  const [orderNumber, setOrderNumber] = useState("");
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
@@ -21,6 +33,18 @@ export const ContactPage: React.FC = () => {
       toast.error("Please fill in your name, email and message");
       return;
     }
+
+    addMessage({
+      name: name.trim(),
+      email: email.trim(),
+      phone: phone.trim() || undefined,
+      subject: subject.trim() || `${inquiryType} from ${name.trim()}`,
+      inquiryType: inquiryType,
+      orderNumber: orderNumber.trim() || undefined,
+      message: message.trim(),
+      status: "unread",
+      isRead: false,
+    });
 
     setSubmitted(true);
     toast.success("Inquiry Dispatched", {
@@ -162,14 +186,55 @@ export const ContactPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="space-y-2">
-                    <Label htmlFor="contactSubject">Subject / Piece of Interest</Label>
-                    <Input
-                      id="contactSubject"
-                      value={subject}
-                      onChange={(e) => setSubject(e.target.value)}
-                      placeholder="e.g. Custom finish inquiry for K-01 Turntable"
-                    />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactPhone">Phone Number</Label>
+                      <Input
+                        id="contactPhone"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder="e.g. +213 550 12 34 56"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactInquiryType">Inquiry Department</Label>
+                      <Select value={inquiryType} onValueChange={setInquiryType}>
+                        <SelectTrigger id="contactInquiryType" className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Product Inquiry">Product Inquiry</SelectItem>
+                          <SelectItem value="Custom Atelier Commission">Custom Atelier Commission</SelectItem>
+                          <SelectItem value="Order & Shipping Support">Order & Shipping Support</SelectItem>
+                          <SelectItem value="Technical & Hardware">Technical & Hardware</SelectItem>
+                          <SelectItem value="Trade & Commercial">Trade & Commercial</SelectItem>
+                          <SelectItem value="Product Care & Maintenance">Product Care & Maintenance</SelectItem>
+                          <SelectItem value="General">General Inquiries</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="contactSubject">Subject / Piece of Interest</Label>
+                      <Input
+                        id="contactSubject"
+                        value={subject}
+                        onChange={(e) => setSubject(e.target.value)}
+                        placeholder="e.g. Custom finish inquiry for K-01 Turntable"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="contactOrderNumber">Order Reference (Optional)</Label>
+                      <Input
+                        id="contactOrderNumber"
+                        value={orderNumber}
+                        onChange={(e) => setOrderNumber(e.target.value)}
+                        placeholder="e.g. KRD-104820"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">

@@ -4,6 +4,7 @@ import {
   ClipboardList,
   Package,
   FolderTree,
+  MessageSquare,
   Settings,
   Menu,
   X,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useAdminTheme } from "@/context/AdminThemeContext";
+import { useStore } from "@/context/StoreContext";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AdminSettingsDialog } from "./AdminSettingsDialog";
@@ -23,6 +25,7 @@ export const AdminLayout: React.FC = () => {
   const location = useLocation();
   const { username } = useAuth();
   const { theme, resolvedTheme, setTheme } = useAdminTheme();
+  const { unreadMessagesCount } = useStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -41,6 +44,12 @@ export const AdminLayout: React.FC = () => {
       name: "Categories",
       path: "/admin/categories",
       icon: FolderTree,
+    },
+    {
+      name: "Messages",
+      path: "/admin/messages",
+      icon: MessageSquare,
+      badge: unreadMessagesCount > 0 ? unreadMessagesCount : undefined,
     },
   ];
 
@@ -138,14 +147,21 @@ export const AdminLayout: React.FC = () => {
                   key={item.name}
                   to={item.path}
                   onClick={() => setMobileSidebarOpen(false)}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-[16px] text-[14px] font-medium transition-all ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-[16px] text-[14px] font-medium transition-all ${
                     isActive
                       ? "bg-[var(--paper)] text-[var(--ink)] shadow-xs border border-[var(--hairline)]"
                       : "text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--canvas)]/60"
                   }`}
                 >
-                  <Icon className={`h-4 w-4 ${isActive ? "text-[var(--ink)]" : "text-[var(--mid-gray)]"}`} />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className={`h-4 w-4 ${isActive ? "text-[var(--ink)]" : "text-[var(--mid-gray)]"}`} />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge !== undefined && (
+                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-300 border border-amber-500/30">
+                      {item.badge}
+                    </span>
+                  )}
                 </Link>
               );
             })}

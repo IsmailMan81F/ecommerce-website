@@ -1,11 +1,13 @@
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { Product, Category, Order, OrderStatus } from "@/types";
-import { PRODUCTS, CATEGORIES, INITIAL_ORDERS } from "@/lib/data";
+import React, { createContext, useContext, useState, useEffect, useMemo } from "react";
+import { Product, Category, Order, OrderStatus, ContactMessage } from "@/types";
+import { PRODUCTS, CATEGORIES, INITIAL_ORDERS, INITIAL_CONTACT_MESSAGES } from "@/lib/data";
 
 interface StoreContextType {
   products: Product[];
   categories: Category[];
   orders: Order[];
+  messages: ContactMessage[];
+  unreadMessagesCount: number;
   toggleProductAvailability: (productId: string) => void;
   addProduct: (productData: Omit<Product, "id" | "slug"> & { slug?: string }) => Product;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
@@ -19,6 +21,17 @@ interface StoreContextType {
   deleteCategory: (categoryId: string) => { deletedProductsCount: number };
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   createOrder: (order: Omit<Order, "id" | "createdAt">) => Order;
+  addMessage: (
+    messageData: Omit<ContactMessage, "id" | "createdAt" | "status" | "isRead"> & {
+      status?: "unread" | "read" | "replied";
+      isRead?: boolean;
+    }
+  ) => ContactMessage;
+  markMessageRead: (messageId: string, isRead?: boolean) => void;
+  toggleMessageRead: (messageId: string) => void;
+  updateMessageStatus: (messageId: string, status: "unread" | "read" | "replied") => void;
+  deleteMessage: (messageId: string) => void;
+  updateMessageNotes: (messageId: string, notes: string) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -26,6 +39,7 @@ const StoreContext = createContext<StoreContextType | undefined>(undefined);
 const PRODUCTS_STORAGE_KEY = "kord_store_products";
 const CATEGORIES_STORAGE_KEY = "kord_store_categories";
 const ORDERS_STORAGE_KEY = "kord_store_orders";
+const MESSAGES_STORAGE_KEY = "kord_store_messages";
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -60,6 +74,16 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     return INITIAL_ORDERS;
   });
 
+  const [messages, setMessages] = useState<ContactMessage[]>(() => {
+    try {
+      const stored = sessionStorage.getItem(MESSAGES_STORAGE_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {
+      // ignore
+    }
+    return INITIAL_CONTACT_MESSAGES;
+  });
+
   // Sync to sessionStorage
   useEffect(() => {
     try {
@@ -84,6 +108,18 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       // ignore
     }
   }, [orders]);
+
+  useEffect(() => {
+    try {
+      sessionStorage.setItem(MESSAGES_STORAGE_KEY, JSON.stringify(messages));
+    } catch {
+      // ignore
+    }
+  }, [messages]);
+
+  const unreadMessagesCount = useMemo(() => {
+    return messages.filter((m) => m.status === "unread" || m.isRead === false).length;
+  }, [messages]);
 
   // Auto-sync category itemCount with active products
   useEffect(() => {
@@ -310,12 +346,88 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     return newOrder;
   };
 
+  const addMessage = (
+    messageData: Omit<ContactMessage, "id" | "createdAt" | "status" | "isRead"> & {
+      status?: "unread" | "read" | "replied";
+      isRead?: boolean;
+    }
+  ): ContactMessage => {
+    const newMessage: ContactMessage = {
+      ...messageData,
+      id: `msg-${Date.now().toString().slice(-6)}`,
+      createdAt: new Date().toISOString(),
+      status: messageData.status || "unread",
+      isRead: messageData.isRead ?? false,
+    };
+    setMessages((prev) => [newMessage, ...prev]);
+    return newMessage;
+  };
+
+  const markMessageRead = (messageId: string, isRead = true) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              isRead,
+              status: isRead ? (msg.status === "unread" ? "read" : msg.status) : "unread",
+            }
+          : msg
+      )
+    );
+  };
+
+  const toggleMessageRead = (messageId: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => {
+        if (msg.id === messageId) {
+          const nextIsRead = !(msg.status === "read" || msg.isRead === true);
+          return {
+            ...msg,
+            isRead: nextIsRead,
+            status: nextIsRead ? "read" : "unread",
+          };
+        }
+        return msg;
+      })
+    );
+  };
+
+  const updateMessageStatus = (
+    messageId: string,
+    status: "unread" | "read" | "replied"
+  ) => {
+    setMessages((prev) =>
+      prev.map((msg) =>
+        msg.id === messageId
+          ? {
+              ...msg,
+              status,
+              isRead: status !== "unread",
+            }
+          : msg
+      )
+    );
+  };
+
+  const deleteMessage = (messageId: string) => {
+    setMessages((prev) => prev.filter((msg) => msg.id !== messageId));
+  };
+
+  const updateMessageNotes = (messageId: string, notes: string) => {
+    setMessages((prev) =>
+      prev.map((msg) => (msg.id === messageId ? { ...msg, notes } : msg))
+    );
+  };
+
   return (
     <StoreContext.Provider
       value={{
         products,
         categories,
         orders,
+        messages,
+        unreadMessagesCount,
         toggleProductAvailability,
         addProduct,
         updateProduct,
@@ -325,6 +437,12 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         deleteCategory,
         updateOrderStatus,
         createOrder,
+        addMessage,
+        markMessageRead,
+        toggleMessageRead,
+        updateMessageStatus,
+        deleteMessage,
+        updateMessageNotes,
       }}
     >
       {children}
