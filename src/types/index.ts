@@ -89,3 +89,15 @@ export interface FilterState {
   availability?: string; // "all" | "in-stock"
   sortBy?: string; // "featured" | "price-asc" | "price-desc" | "name-asc"
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  subject?: string;
+  message: string;
+  createdAt: string;
+  status: "unread" | "read" | "replied";
+  notes?: string;
+}
+

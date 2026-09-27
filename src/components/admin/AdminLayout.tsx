@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import {
-  LayoutDashboard,
   ClipboardList,
   Package,
+  FolderTree,
   Settings,
   Menu,
   X,
@@ -28,22 +28,19 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     {
-      name: "Dashboard",
-      path: "/admin",
-      icon: LayoutDashboard,
-      exact: true,
-    },
-    {
       name: "Orders",
-      path: "/admin/orders",
+      path: "/admin",
       icon: ClipboardList,
-      exact: false,
     },
     {
       name: "Products",
       path: "/admin/products",
       icon: Package,
-      exact: false,
+    },
+    {
+      name: "Categories",
+      path: "/admin/categories",
+      icon: FolderTree,
     },
   ];
 
@@ -129,9 +126,10 @@ export const AdminLayout: React.FC = () => {
               Store Management
             </p>
             {navItems.map((item) => {
-              const isActive = item.exact
-                ? location.pathname === item.path
-                : location.pathname.startsWith(item.path);
+              const isActive =
+                item.path === "/admin"
+                  ? location.pathname === "/admin" || location.pathname === "/admin/orders"
+                  : location.pathname.startsWith(item.path);
 
               const Icon = item.icon;
 

@@ -3,7 +3,7 @@ import audioTurntableImg from "@/assets/images/product_audio_turntable_179037471
 import ceramicVesselImg from "@/assets/images/product_ceramic_vessel_1790374728437.jpg";
 import leatherToteImg from "@/assets/images/product_leather_tote_1790374738935.jpg";
 import loungeChairImg from "@/assets/images/product_lounge_chair_1790374749725.jpg";
-import { Category, Product } from "@/types";
+import { Category, Product, Order, ContactMessage } from "@/types";
 
 export const HERO_IMAGE = heroLivingImg;
 
@@ -455,3 +455,44 @@ export const INITIAL_ORDERS: import("@/types").Order[] = [
     status: "cancelled",
   },
 ];
+
+export const INITIAL_CONTACT_MESSAGES: ContactMessage[] = [
+  {
+    id: "msg-101",
+    name: "Yacine Belkacem",
+    email: "yacine.b@archidesign.dz",
+    subject: "Custom dimension inquiry for M-02 Lounge Chair",
+    message: "Bonjour, we are specifying furniture for an architectural studio in Hydra, Algiers. Can the solid ash frame of the M-02 Lounge Chair be treated with a bespoke matte walnut stain, and what would be the lead time for 4 units?",
+    createdAt: "2026-09-25T14:32:00Z",
+    status: "unread",
+  },
+  {
+    id: "msg-102",
+    name: "Elena Rostova",
+    email: "elena.rostova@designhaus.com",
+    subject: "K-01 Linear Precision Turntable cartridge compatibility",
+    message: "Does the K-01 turntable tonearm support balanced XLR output or standard gold-plated RCA with dedicated grounding? Also inquiring about international express courier options to Oran.",
+    createdAt: "2026-09-24T09:15:00Z",
+    status: "unread",
+  },
+  {
+    id: "msg-103",
+    name: "Karim Mebarki",
+    email: "karim.mebarki@gmail.com",
+    subject: "Ceramic vessel stoneware care instructions",
+    message: "I received the C-03 vessel yesterday in pristine condition. I would like to confirm if the inner mineral glaze is safe for fresh flower water, or if it is purely meant for dry botanical stems.",
+    createdAt: "2026-09-23T18:40:00Z",
+    status: "read",
+  },
+  {
+    id: "msg-104",
+    name: "Nadia Benali",
+    email: "nadia.b@studioalger.com",
+    subject: "Corporate order for atelier leather sleeves",
+    message: "We would like to place an order of 15 L-01 Architect Folios embossed with our studio logo. Could you provide a formal quote and delivery timeframe?",
+    createdAt: "2026-09-21T11:20:00Z",
+    status: "replied",
+    notes: "Quotation sent via concierge email on Sept 22.",
+  },
+];
+

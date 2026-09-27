@@ -18,9 +18,9 @@ import { PrivacyPage } from "@/pages/PrivacyPage";
 import { TermsPage } from "@/pages/TermsPage";
 import { NotFoundPage } from "@/pages/NotFoundPage";
 import { AdminGate } from "@/components/admin/AdminGate";
-import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
 import { AdminOrdersPage } from "@/pages/admin/AdminOrdersPage";
 import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
+import { AdminCategoriesPage } from "@/pages/admin/AdminCategoriesPage";
 
 // Helper component to scroll window to top on route change
 function ScrollToTop() {
@@ -74,9 +74,10 @@ export default function App() {
 
                 {/* Admin Console Route: standalone login gate + separate layout */}
                 <Route path="/admin" element={<AdminGate />}>
-                  <Route index element={<AdminDashboardPage />} />
+                  <Route index element={<AdminOrdersPage />} />
                   <Route path="orders" element={<AdminOrdersPage />} />
                   <Route path="products" element={<AdminProductsPage />} />
+                  <Route path="categories" element={<AdminCategoriesPage />} />
                 </Route>
               </Routes>
               <Toaster position="bottom-right" />

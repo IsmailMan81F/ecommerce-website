@@ -10,7 +10,13 @@ interface StoreContextType {
   addProduct: (productData: Omit<Product, "id" | "slug"> & { slug?: string }) => Product;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
   deleteProduct: (productId: string) => void;
-  addCategory: (name: string, description?: string) => Category;
+  addCategory: (
+    categoryDataOrName: string | { name: string; description?: string; image?: string; slug?: string },
+    descriptionArg?: string,
+    imageArg?: string
+  ) => Category;
+  updateCategory: (categoryId: string, updates: Partial<Category>) => void;
+  deleteCategory: (categoryId: string) => { deletedProductsCount: number };
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
   createOrder: (order: Omit<Order, "id" | "createdAt">) => Order;
 }
@@ -78,6 +84,22 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       // ignore
     }
   }, [orders]);
+
+  // Auto-sync category itemCount with active products
+  useEffect(() => {
+    setCategories((prev) => {
+      let changed = false;
+      const next = prev.map((cat) => {
+        const count = products.filter((p) => p.categorySlug === cat.slug).length;
+        if (cat.itemCount !== count) {
+          changed = true;
+          return { ...cat, itemCount: count };
+        }
+        return cat;
+      });
+      return changed ? next : prev;
+    });
+  }, [products]);
 
   const toggleProductAvailability = (productId: string) => {
     setProducts((prev) =>
@@ -149,23 +171,121 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     });
   };
 
-  const addCategory = (name: string, description: string = ""): Category => {
-    const slug = name
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)+/g, "");
+  const addCategory = (
+    categoryDataOrName: string | { name: string; description?: string; image?: string; slug?: string },
+    descriptionArg?: string,
+    imageArg?: string
+  ): Category => {
+    let name = "";
+    let description = "";
+    let image = "";
+    let customSlug = "";
+
+    if (typeof categoryDataOrName === "object" && categoryDataOrName !== null) {
+      name = categoryDataOrName.name;
+      description = categoryDataOrName.description || "";
+      image = categoryDataOrName.image || "";
+      customSlug = categoryDataOrName.slug || "";
+    } else {
+      name = categoryDataOrName;
+      description = descriptionArg || "";
+      image = imageArg || "";
+    }
+
+    const baseSlug = (
+      customSlug ||
+      name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)+/g, "")
+    ) || `cat-${Date.now()}`;
+
+    // ensure slug uniqueness
+    let finalSlug = baseSlug;
+    let counter = 1;
+    while (categories.some((c) => c.slug === finalSlug)) {
+      finalSlug = `${baseSlug}-${counter}`;
+      counter++;
+    }
+
+    const fallbackImage =
+      image ||
+      products[0]?.images[0] ||
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1200&q=80";
 
     const newCategory: Category = {
       id: `cat-${Date.now()}`,
-      name,
-      slug: slug || `cat-${Date.now()}`,
-      description: description || `Curated ${name} collection.`,
-      image: products[0]?.images[0] || "",
+      name: name.trim(),
+      slug: finalSlug,
+      description: description.trim() || `Curated ${name} collection.`,
+      image: fallbackImage,
       itemCount: 0,
     };
 
     setCategories((prev) => [...prev, newCategory]);
     return newCategory;
+  };
+
+  const updateCategory = (categoryId: string, updates: Partial<Category>) => {
+    const oldCat = categories.find((c) => c.id === categoryId);
+    if (!oldCat) return;
+
+    const oldSlug = oldCat.slug;
+    const newName = updates.name !== undefined ? updates.name.trim() : oldCat.name;
+    const newSlug = updates.slug
+      ? updates.slug
+      : updates.name && updates.name !== oldCat.name
+      ? updates.name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)+/g, "")
+      : oldSlug;
+
+    setCategories((prev) =>
+      prev.map((c) => {
+        if (c.id === categoryId) {
+          return {
+            ...c,
+            ...updates,
+            name: newName,
+            slug: newSlug,
+            description: updates.description !== undefined ? updates.description.trim() : c.description,
+            image: updates.image !== undefined ? updates.image : c.image,
+          };
+        }
+        return c;
+      })
+    );
+
+    // If slug or name changed, cascade update to corresponding products
+    if (newSlug !== oldSlug || newName !== oldCat.name) {
+      setProducts((prev) =>
+        prev.map((p) => {
+          if (p.categorySlug === oldSlug) {
+            return {
+              ...p,
+              categorySlug: newSlug,
+              categoryName: newName,
+            };
+          }
+          return p;
+        })
+      );
+    }
+  };
+
+  const deleteCategory = (categoryId: string): { deletedProductsCount: number } => {
+    const target = categories.find((c) => c.id === categoryId);
+    if (!target) return { deletedProductsCount: 0 };
+
+    const targetSlug = target.slug;
+    const affectedProducts = products.filter((p) => p.categorySlug === targetSlug);
+    const deletedProductsCount = affectedProducts.length;
+
+    // Delete all products belonging to this category
+    setProducts((prev) => prev.filter((p) => p.categorySlug !== targetSlug));
+
+    // Delete category
+    setCategories((prev) => prev.filter((c) => c.id !== categoryId));
+
+    return { deletedProductsCount };
   };
 
   const updateOrderStatus = (orderId: string, status: OrderStatus) => {
@@ -201,6 +321,8 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         updateProduct,
         deleteProduct,
         addCategory,
+        updateCategory,
+        deleteCategory,
         updateOrderStatus,
         createOrder,
       }}
