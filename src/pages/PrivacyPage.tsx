@@ -1,19 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { ShieldCheck, Lock, EyeOff, FileText, ArrowRight, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export const PrivacyPage: React.FC = () => {
+  const { t } = useTranslation();
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-12">
       {/* Breadcrumb & Header */}
       <div className="space-y-3">
         <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)]">
           <Link to="/" className="hover:text-[var(--ink)] transition-colors">
-            Storefront
+            {t("categories.breadcrumbsHome")}
           </Link>
           <span>/</span>
-          <span className="text-[var(--ink)]">Privacy Standard</span>
+          <span className="text-[var(--ink)]">{t("footer.privacyPolicy")}</span>
         </div>
         <h1 className="text-heading-lg text-[var(--ink)] tracking-tight">
           Privacy Standard & Data Policies

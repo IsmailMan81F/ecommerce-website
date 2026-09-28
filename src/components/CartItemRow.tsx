@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { X, Pencil, Minus, Plus, Check } from "lucide-react";
 import { CartItem } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ interface CartItemRowProps {
 }
 
 export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
+  const { t } = useTranslation();
   const { updateQuantity, removeItem } = useCart();
   const [editOpen, setEditOpen] = useState(false);
   const [editingSize, setEditingSize] = useState(item.selectedSize || item.product.sizes[0] || "");
@@ -20,7 +22,6 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
   const [editingQty, setEditingQty] = useState(item.quantity);
 
   const handleSaveEdit = () => {
-    // If options changed, we update
     item.selectedSize = editingSize;
     item.selectedColor = editingColor;
     updateQuantity(item.id, editingQty, true);
@@ -95,27 +96,27 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
           </div>
 
           {/* Subtotal for this line item */}
-          <div className="hidden sm:block text-right min-w-[80px]">
+          <div className="hidden sm:block text-end min-w-[80px]">
             <p className="text-[15px] font-medium text-[var(--ink)] tabular-nums">
               {formatPrice(item.price * item.quantity)}
             </p>
             {item.quantity > 1 && (
               <p className="text-[12px] text-[var(--mid-gray)] tabular-nums">
-                {formatPrice(item.price)} each
+                {formatPrice(item.price)}
               </p>
             )}
           </div>
 
-          {/* Action Buttons: Edit (Neutral) & Remove (Colored #e7000b) */}
+          {/* Action Buttons: Edit & Remove */}
           <div className="flex items-center gap-1">
             <Button
               type="button"
               variant="ghost"
               size="iconSm"
               onClick={() => setEditOpen(true)}
-              className="text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--surface-alt)]"
+              className="text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--surface-alt)] cursor-pointer"
               aria-label={`Edit ${item.product.name} options`}
-              title="Edit configuration"
+              title={t("common.edit")}
             >
               <Pencil className="h-4 w-4" />
             </Button>
@@ -125,9 +126,9 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
               variant="ghost"
               size="iconSm"
               onClick={() => removeItem(item.id)}
-              className="text-[var(--ember)] hover:text-[var(--ember)] hover:bg-[var(--ember)]/10"
+              className="text-[var(--ember)] hover:text-[var(--ember)] hover:bg-[var(--ember)]/10 cursor-pointer"
               aria-label={`Remove ${item.product.name} from cart`}
-              title="Remove item"
+              title={t("common.delete")}
             >
               <X className="h-4 w-4" />
             </Button>
@@ -138,13 +139,13 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
       {/* Edit Options Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent className="sm:max-w-[440px]">
-          <DialogHeader>
-            <DialogTitle>Edit Item Configuration</DialogTitle>
+          <DialogHeader className="text-start">
+            <DialogTitle>{t("common.edit")}</DialogTitle>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <label className="text-caption text-[var(--mid-gray)]">Option / Size</label>
+              <label className="text-caption text-[var(--mid-gray)]">{t("productDetail.selectDimension")}</label>
               <Select value={editingSize} onValueChange={setEditingSize}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select size" />
@@ -161,7 +162,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
 
             {item.product.colors && item.product.colors.length > 0 && (
               <div className="space-y-1.5">
-                <label className="text-caption text-[var(--mid-gray)]">Material / Finish</label>
+                <label className="text-caption text-[var(--mid-gray)]">{t("productDetail.selectFinish")}</label>
                 <Select value={editingColor} onValueChange={setEditingColor}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select finish" />
@@ -178,7 +179,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
             )}
 
             <div className="space-y-1.5">
-              <label className="text-caption text-[var(--mid-gray)]">Quantity</label>
+              <label className="text-caption text-[var(--mid-gray)]">{t("common.quantity")}</label>
               <div className="flex items-center gap-3">
                 <Button
                   type="button"
@@ -186,6 +187,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
                   size="iconSm"
                   disabled={editingQty <= 1}
                   onClick={() => setEditingQty((q) => Math.max(1, q - 1))}
+                  className="cursor-pointer"
                 >
                   <Minus className="h-3 w-3" />
                 </Button>
@@ -195,6 +197,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
                   variant="outline"
                   size="iconSm"
                   onClick={() => setEditingQty((q) => q + 1)}
+                  className="cursor-pointer"
                 >
                   <Plus className="h-3 w-3" />
                 </Button>
@@ -203,12 +206,12 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
           </div>
 
           <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="secondary" onClick={() => setEditOpen(false)}>
-              Cancel
+            <Button variant="secondary" onClick={() => setEditOpen(false)} className="cursor-pointer">
+              {t("common.cancel")}
             </Button>
-            <Button onClick={handleSaveEdit} className="gap-1.5">
+            <Button onClick={handleSaveEdit} className="gap-1.5 cursor-pointer">
               <Check className="h-4 w-4" />
-              <span>Update Item</span>
+              <span>{t("common.saveChanges")}</span>
             </Button>
           </DialogFooter>
         </DialogContent>

@@ -1,14 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Minus,
   Plus,
-  ArrowLeft,
-  Check,
   Maximize2,
 } from "lucide-react";
-import { PRODUCTS } from "@/lib/data";
-import { Product } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
 import { Button } from "@/components/ui/button";
@@ -25,6 +22,7 @@ import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/context/StoreContext";
 
 export const ProductDetailPage: React.FC = () => {
+  const { t } = useTranslation();
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -60,13 +58,15 @@ export const ProductDetailPage: React.FC = () => {
   if (!product) {
     return (
       <div className="max-w-7xl mx-auto px-4 py-20 text-center space-y-4">
-        <h1 className="text-heading text-[var(--ink)]">Object Not Found</h1>
+        <h1 className="text-heading text-[var(--ink)]">
+          {t("productDetail.notFoundTitle")}
+        </h1>
         <p className="text-body text-[var(--mid-gray)]">
-          The requested design piece is not part of our current edition catalog.
+          {t("productDetail.notFoundDesc")}
         </p>
         <Link to="/categories">
-          <Button variant="secondary" className="rounded-[18px]">
-            Back to Catalog
+          <Button variant="secondary" className="rounded-[18px] cursor-pointer">
+            {t("productDetail.backToCatalog")}
           </Button>
         </Link>
       </div>
@@ -86,7 +86,7 @@ export const ProductDetailPage: React.FC = () => {
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)] mb-8">
         <Link to="/" className="hover:text-[var(--ink)] transition-colors">
-          Home
+          {t("categories.breadcrumbsHome")}
         </Link>
         <span aria-hidden="true">/</span>
         <Link
@@ -123,7 +123,7 @@ export const ProductDetailPage: React.FC = () => {
                         referrerPolicy="no-referrer"
                         className="h-full w-full object-cover object-center"
                       />
-                      <div className="absolute top-4 right-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-4 end-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
                         <Maximize2 className="h-4 w-4" />
                       </div>
                     </div>
@@ -133,8 +133,8 @@ export const ProductDetailPage: React.FC = () => {
 
               {product.images.length > 1 && (
                 <>
-                  <CarouselPrevious className="left-4 opacity-80 group-hover:opacity-100 transition-opacity" />
-                  <CarouselNext className="right-4 opacity-80 group-hover:opacity-100 transition-opacity" />
+                  <CarouselPrevious className="start-4 opacity-80 group-hover:opacity-100 transition-opacity rtl:rotate-180" />
+                  <CarouselNext className="end-4 opacity-80 group-hover:opacity-100 transition-opacity rtl:rotate-180" />
                 </>
               )}
             </Carousel>
@@ -188,12 +188,12 @@ export const ProductDetailPage: React.FC = () => {
                   {formatPrice(product.originalPrice)}
                 </span>
               )}
-              <span className="text-[12px] font-medium text-[var(--mid-gray)] ml-auto">
+              <span className="text-[12px] font-medium text-[var(--mid-gray)] ms-auto">
                 {product.isAvailable
                   ? product.stock > 0
-                    ? `In Stock (${product.stock} units)`
-                    : "Made to order"
-                  : "Out of Stock"}
+                    ? `${t("common.inStock")} (${product.stock})`
+                    : t("productDetail.inStockStatus")
+                  : t("common.outOfStock")}
               </span>
             </div>
 
@@ -206,7 +206,7 @@ export const ProductDetailPage: React.FC = () => {
           {product.sizes && product.sizes.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-caption">
-                <span className="text-[var(--ink)]">Selected Size / Format</span>
+                <span className="text-[var(--ink)]">{t("productDetail.selectDimension")}</span>
                 <span className="text-[var(--mid-gray)]">{selectedSize}</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -235,7 +235,7 @@ export const ProductDetailPage: React.FC = () => {
           {product.colors && product.colors.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center justify-between text-caption">
-                <span className="text-[var(--ink)]">Color</span>
+                <span className="text-[var(--ink)]">{t("productDetail.selectFinish")}</span>
                 <span className="text-[var(--mid-gray)]">{selectedColor}</span>
               </div>
               <div className="flex flex-wrap gap-2">
@@ -293,18 +293,20 @@ export const ProductDetailPage: React.FC = () => {
                 onClick={handleAddToCart}
                 disabled={!product.isAvailable}
                 size="lg"
-                className="flex-1 min-w-[220px] h-12 rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] text-[15px] font-medium disabled:opacity-50"
+                className="flex-1 min-w-[220px] h-12 rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] text-[15px] font-medium disabled:opacity-50 cursor-pointer"
               >
                 {product.isAvailable
-                  ? `Add to Bag · ${formatPrice(product.price * quantity)}`
-                  : "Currently Out of Stock"}
+                  ? `${t("productDetail.addToCart")} · ${formatPrice(product.price * quantity)}`
+                  : t("common.outOfStock")}
               </Button>
             </div>
           </div>
 
           {/* Details Section */}
           <div className="pt-6 border-t border-[var(--hairline)] space-y-4">
-            <h3 className="text-subheading font-medium text-[var(--ink)]">Details</h3>
+            <h3 className="text-subheading font-medium text-[var(--ink)]">
+              {t("common.details")}
+            </h3>
             <ul className="space-y-2.5">
               {(product.features && product.features.length > 0
                 ? product.features
@@ -346,14 +348,18 @@ export const ProductDetailPage: React.FC = () => {
         <section className="mt-24 pt-12 border-t border-[var(--hairline)]">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <p className="text-caption text-[var(--mid-gray)]">Companion Objects</p>
-              <h2 className="text-heading text-[var(--ink)]">You May Also Appreciate</h2>
+              <p className="text-caption text-[var(--mid-gray)]">
+                {t("productDetail.relatedSubtitle")}
+              </p>
+              <h2 className="text-heading text-[var(--ink)]">
+                {t("productDetail.relatedTitle")}
+              </h2>
             </div>
             <Link
               to={`/categories/${product.categorySlug}`}
               className="text-[14px] font-medium text-[var(--ink)] hover:underline underline-offset-4"
             >
-              View Category
+              {t("categories.viewObject")}
             </Link>
           </div>
 

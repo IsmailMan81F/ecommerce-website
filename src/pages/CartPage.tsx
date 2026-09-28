@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   ArrowLeft,
   ArrowRight,
@@ -7,12 +8,7 @@ import {
   ShoppingBag,
   Building2,
   Home,
-  MapPin,
-  User,
-  Phone,
-  MessageSquare,
   PackageCheck,
-  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -33,12 +29,14 @@ import { Separator } from "@/components/ui/separator";
 import { formatPrice } from "@/lib/utils";
 import { useStore } from "@/context/StoreContext";
 import { ALGERIAN_WILAYAS } from "@/lib/data";
+import { formatWilaya } from "@/i18n/wilayas";
 
 // Delivery pricing templates
 const OFFICE_DELIVERY_PRICE = 15;
 const HOME_DELIVERY_PRICE = 25;
 
 export const CartPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
   const { createOrder } = useStore();
@@ -70,23 +68,23 @@ export const CartPage: React.FC = () => {
     e.preventDefault();
 
     const errors: Record<string, string> = {};
-    if (!firstName.trim()) errors.firstName = "First name is required";
-    if (!lastName.trim()) errors.lastName = "Last name is required";
+    if (!firstName.trim()) errors.firstName = t("common.required");
+    if (!lastName.trim()) errors.lastName = t("common.required");
     if (!phoneNumber.trim()) {
-      errors.phoneNumber = "Phone number is required";
+      errors.phoneNumber = t("common.required");
     } else if (!/^[0-9+() -]{7,20}$/.test(phoneNumber.trim())) {
       errors.phoneNumber = "Please enter a valid phone number";
     }
 
     if (!wilaya) {
-      errors.wilaya = "Please select your Wilaya";
+      errors.wilaya = t("common.required");
     }
     if (!commune.trim()) {
-      errors.commune = "Please enter your Commune / City";
+      errors.commune = t("common.required");
     }
 
     if (deliveryType === "home" && !deliveryAddress.trim()) {
-      errors.deliveryAddress = "Street address is required for home delivery";
+      errors.deliveryAddress = t("common.required");
     }
 
     if (Object.keys(errors).length > 0) {
@@ -103,12 +101,11 @@ export const CartPage: React.FC = () => {
   // Final Order Submission in Step 3
   const handleFinalOrderSubmit = () => {
     if (items.length === 0) {
-      toast.error("Your bag is empty");
+      toast.error(t("cart.emptyTitle"));
       setStep(1);
       return;
     }
 
-    // Create real order in shared store
     const created = createOrder({
       customer: {
         firstName: firstName.trim(),
@@ -131,14 +128,14 @@ export const CartPage: React.FC = () => {
     setOrderConfirmed(true);
     clearCart();
 
-    toast.success("Order Placed Successfully", {
-      description: `Order #${created.id} has been registered for atelier dispatch.`,
+    toast.success(t("cart.orderConfirmedTitle"), {
+      description: `Order #${created.id} has been registered.`,
       duration: 4500,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  // Empty Bag state (when not just confirmed)
+  // Empty Bag state
   if (items.length === 0 && !orderConfirmed) {
     return (
       <div className="max-w-3xl mx-auto px-4 py-20 text-center space-y-6">
@@ -146,16 +143,16 @@ export const CartPage: React.FC = () => {
           <ShoppingBag className="h-7 w-7" />
         </div>
         <div className="space-y-2">
-          <h1 className="text-heading text-[var(--ink)]">Your Bag is Empty</h1>
+          <h1 className="text-heading text-[var(--ink)]">{t("cart.emptyTitle")}</h1>
           <p className="text-body text-[var(--mid-gray)] max-w-sm mx-auto">
-            You have not selected any design pieces yet. Explore our curated collections.
+            {t("cart.emptyDesc")}
           </p>
         </div>
         <div>
           <Link to="/categories">
-            <Button size="lg" className="rounded-[18px] gap-2 px-8">
-              <span>Explore Collections</span>
-              <ArrowRight className="h-4 w-4" />
+            <Button size="lg" className="rounded-[18px] gap-2 px-8 cursor-pointer">
+              <span>{t("cart.exploreButton")}</span>
+              <ArrowRight className="h-4 w-4 rtl:rotate-180" />
             </Button>
           </Link>
         </div>
@@ -163,7 +160,7 @@ export const CartPage: React.FC = () => {
     );
   }
 
-  // Order Confirmed Celebration Screen
+  // Order Confirmed Screen
   if (orderConfirmed) {
     return (
       <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-24">
@@ -174,41 +171,40 @@ export const CartPage: React.FC = () => {
 
           <div className="space-y-2">
             <p className="text-caption text-[var(--mid-gray)] uppercase tracking-wider font-medium">
-              Order Confirmed
+              {t("cart.orderConfirmedTitle")}
             </p>
-            <h1 className="text-heading text-[var(--ink)]">Thank You for Your Acquisition</h1>
+            <h1 className="text-heading text-[var(--ink)]">{t("cart.orderConfirmedSubtitle")}</h1>
             <p className="text-body text-[var(--mid-gray)] text-[14px] max-w-md mx-auto leading-relaxed">
-              Order <span className="font-mono font-medium text-[var(--ink)]">#{confirmedOrderId}</span> has
-              been submitted to our dispatch desk. Our concierge will contact you via phone prior to courier departure.
+              {t("cart.orderRefNumber")}: <span className="font-mono font-medium text-[var(--ink)]">#{confirmedOrderId}</span>. {t("cart.orderNotice")}
             </p>
           </div>
 
-          <div className="rounded-[18px] bg-[var(--surface-alt)] p-4 text-left text-[13px] space-y-2 border border-[var(--hairline)]">
+          <div className="rounded-[18px] bg-[var(--surface-alt)] p-4 text-start text-[13px] space-y-2 border border-[var(--hairline)]">
             <div className="flex items-center justify-between text-[var(--mid-gray)]">
-              <span>Recipient</span>
+              <span>{t("cart.recipient")}</span>
               <span className="text-[var(--ink)] font-medium">{firstName} {lastName}</span>
             </div>
             <div className="flex items-center justify-between text-[var(--mid-gray)]">
-              <span>Destination</span>
+              <span>{t("cart.destination")}</span>
               <span className="text-[var(--ink)] font-medium">{commune}, {wilaya}</span>
             </div>
             <div className="flex items-center justify-between text-[var(--mid-gray)]">
-              <span>Delivery Method</span>
+              <span>{t("cart.method")}</span>
               <span className="text-[var(--ink)] font-medium">
-                {deliveryType === "home" ? "Direct Home Delivery" : "Office / Stop Desk Pickup"}
+                {deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")}
               </span>
             </div>
           </div>
 
           <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
             <Link to="/" className="w-full sm:w-auto">
-              <Button size="lg" className="w-full sm:w-auto rounded-[18px] px-8">
-                Return to Atelier Storefront
+              <Button size="lg" className="w-full sm:w-auto rounded-[18px] px-8 cursor-pointer">
+                {t("nav.home")}
               </Button>
             </Link>
             <Link to="/categories" className="w-full sm:w-auto">
-              <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-[18px]">
-                Browse Other Objects
+              <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-[18px] cursor-pointer">
+                {t("cart.continueShopping")}
               </Button>
             </Link>
           </div>
@@ -224,25 +220,24 @@ export const CartPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)] mb-1">
             <Link to="/" className="hover:text-[var(--ink)] transition-colors">
-              Storefront
+              {t("categories.breadcrumbsHome")}
             </Link>
             <span aria-hidden="true">/</span>
-            <span className="text-[var(--ink)] font-medium">Acquisition Workflow</span>
+            <span className="text-[var(--ink)] font-medium">{t("cart.title")}</span>
           </div>
-          <h1 className="text-heading-lg text-[var(--ink)]">Checkout Bag</h1>
+          <h1 className="text-heading-lg text-[var(--ink)]">{t("cart.title")}</h1>
         </div>
 
         <Link to="/categories">
-          <Button variant="ghost" size="sm" className="gap-1.5 text-[var(--mid-gray)] hover:text-[var(--ink)]">
-            <ArrowLeft className="h-4 w-4" />
-            <span>Continue Browsing</span>
+          <Button variant="ghost" size="sm" className="gap-1.5 text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer">
+            <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+            <span>{t("cart.continueShopping")}</span>
           </Button>
         </Link>
       </div>
 
       {/* 3-Bar Interactive Step Timeline */}
       <nav aria-label="Checkout Progress" className="w-full space-y-2.5 pt-2">
-        {/* Dedicated 3-Bar Track: 100% horizontally aligned across all screen sizes */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full items-center">
           <div
             onClick={() => setStep(1)}
@@ -284,33 +279,30 @@ export const CartPage: React.FC = () => {
           />
         </div>
 
-        {/* Labels Track: Perfectly synchronized with the 3 bars */}
+        {/* Labels Track */}
         <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full items-start">
-          {/* Step 1 Label */}
           <button
             type="button"
             onClick={() => setStep(1)}
-            className="text-left w-full cursor-pointer focus:outline-hidden group"
+            className="text-start w-full cursor-pointer focus:outline-hidden group"
           >
             <span
               className={`block text-[11px] sm:text-[12px] font-medium leading-tight transition-colors truncate ${
                 step === 1 ? "text-[var(--ink)] font-semibold" : "text-[var(--mid-gray)]"
               }`}
             >
-              <span className="sm:hidden">1. Bag</span>
-              <span className="hidden sm:inline">01. Bag Review</span>
+              {t("cart.step1")}
             </span>
             <span className="hidden md:block text-[10px] text-[var(--mid-gray)] font-mono mt-0.5">
-              {items.reduce((acc, i) => acc + i.quantity, 0)} items
+              {items.reduce((acc, i) => acc + i.quantity, 0)} {t("cart.itemsOrdered")}
             </span>
           </button>
 
-          {/* Step 2 Label */}
           <button
             type="button"
             onClick={() => step > 1 && setStep(2)}
             disabled={step < 2}
-            className={`text-left w-full focus:outline-hidden group ${
+            className={`text-start w-full focus:outline-hidden group ${
               step >= 2 ? "cursor-pointer" : "cursor-default"
             }`}
           >
@@ -319,15 +311,13 @@ export const CartPage: React.FC = () => {
                 step === 2 ? "text-[var(--ink)] font-semibold" : "text-[var(--mid-gray)]"
               }`}
             >
-              <span className="sm:hidden">2. Shipping</span>
-              <span className="hidden sm:inline">02. Shipping & Details</span>
+              {t("cart.step2")}
             </span>
             <span className="hidden md:block text-[10px] text-[var(--mid-gray)] font-mono mt-0.5">
-              Wilaya & Mode
+              {t("cart.wilaya")}
             </span>
           </button>
 
-          {/* Step 3 Label */}
           <button
             type="button"
             onClick={() => {
@@ -336,7 +326,7 @@ export const CartPage: React.FC = () => {
               }
             }}
             disabled={step < 3}
-            className={`text-left w-full focus:outline-hidden group ${
+            className={`text-start w-full focus:outline-hidden group ${
               step >= 3 ? "cursor-pointer" : "cursor-default"
             }`}
           >
@@ -345,17 +335,16 @@ export const CartPage: React.FC = () => {
                 step === 3 ? "text-[var(--ink)] font-semibold" : "text-[var(--mid-gray)]"
               }`}
             >
-              <span className="sm:hidden">3. Summary</span>
-              <span className="hidden sm:inline">03. Summary & Order</span>
+              {t("cart.step3")}
             </span>
             <span className="hidden md:block text-[10px] text-[var(--mid-gray)] font-mono mt-0.5">
-              Final Review
+              {t("cart.reviewOrder")}
             </span>
           </button>
         </div>
       </nav>
 
-      {/* STEP 1: Bag Container (View & Update Items) */}
+      {/* STEP 1: Bag Container */}
       {step === 1 && (
         <div className="space-y-8 animate-in fade-in-50 duration-300">
           <Card className="rounded-[24px]">
@@ -363,11 +352,8 @@ export const CartPage: React.FC = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-subheading font-medium">
-                    Selected Objects ({items.reduce((acc, i) => acc + i.quantity, 0)})
+                    {t("cart.itemsOrdered")} ({items.reduce((acc, i) => acc + i.quantity, 0)})
                   </CardTitle>
-                  <p className="text-caption text-[var(--mid-gray)] mt-0.5">
-                    Review and adjust quantities or remove items prior to checkout dispatch.
-                  </p>
                 </div>
               </div>
             </CardHeader>
@@ -380,12 +366,12 @@ export const CartPage: React.FC = () => {
             </CardContent>
           </Card>
 
-          {/* Step 1 Bottom Action & Preliminary Price Card */}
+          {/* Step 1 Bottom Action */}
           <div className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-body">
               <div>
                 <span className="text-[13px] text-[var(--mid-gray)] block font-normal">
-                  Items Subtotal
+                  {t("common.subtotal")}
                 </span>
                 <span className="text-[24px] font-semibold tabular-nums text-[var(--ink)]">
                   {formatPrice(subtotal)}
@@ -399,10 +385,10 @@ export const CartPage: React.FC = () => {
                   setStep(2);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px]"
+                className="rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] cursor-pointer"
               >
-                <span>Continue to Shipping Form</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>{t("cart.proceedToShipping")}</span>
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>
             </div>
           </div>
@@ -418,10 +404,10 @@ export const CartPage: React.FC = () => {
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <CardTitle className="text-subheading font-medium">
-                      Recipient & Delivery Details
+                      {t("cart.shippingDetailsTitle")}
                     </CardTitle>
                     <p className="text-body text-[var(--mid-gray)] text-[13px] mt-0.5">
-                      Provide recipient contact info, select your Wilaya, and choose your preferred delivery method.
+                      {t("cart.shippingDetailsSubtitle")}
                     </p>
                   </div>
                   <Button
@@ -432,10 +418,10 @@ export const CartPage: React.FC = () => {
                       setStep(1);
                       window.scrollTo({ top: 0, behavior: "smooth" });
                     }}
-                    className="text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 text-[13px]"
+                    className="text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 text-[13px] cursor-pointer"
                   >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    <span>Back to Bag</span>
+                    <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
+                    <span>{t("cart.backToBag")}</span>
                   </Button>
                 </div>
               </CardHeader>
@@ -443,7 +429,7 @@ export const CartPage: React.FC = () => {
                 {/* First Name & Last Name */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="firstName">First Name *</Label>
+                    <Label htmlFor="firstName">{t("cart.firstName")} *</Label>
                     <Input
                       id="firstName"
                       type="text"
@@ -463,7 +449,7 @@ export const CartPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="lastName">Last Name *</Label>
+                    <Label htmlFor="lastName">{t("cart.lastName")} *</Label>
                     <Input
                       id="lastName"
                       type="text"
@@ -485,11 +471,11 @@ export const CartPage: React.FC = () => {
 
                 {/* Phone Number */}
                 <div className="space-y-1.5">
-                  <Label htmlFor="phoneNumber">Phone Number (Required for Courier Dispatch) *</Label>
+                  <Label htmlFor="phoneNumber">{t("cart.phoneNumber")} *</Label>
                   <Input
                     id="phoneNumber"
                     type="tel"
-                    placeholder="e.g. 0550 12 34 56 or +213 550 12 34 56"
+                    placeholder={t("cart.phonePlaceholder")}
                     value={phoneNumber}
                     onChange={(e) => {
                       setPhoneNumber(e.target.value);
@@ -507,7 +493,7 @@ export const CartPage: React.FC = () => {
                 {/* Wilaya & Commune Selection */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="wilaya">Wilaya (Province) *</Label>
+                    <Label htmlFor="wilaya">{t("cart.wilaya")} *</Label>
                     <Select
                       value={wilaya}
                       onValueChange={(val) => {
@@ -518,12 +504,14 @@ export const CartPage: React.FC = () => {
                       }}
                     >
                       <SelectTrigger id="wilaya" className={`h-11 ${formErrors.wilaya ? "border-[var(--ember)]" : ""}`}>
-                        <SelectValue placeholder="Select your Wilaya" />
+                        <SelectValue placeholder={t("cart.selectWilaya")}>
+                          {wilaya ? formatWilaya(wilaya, i18n.language) : t("cart.selectWilaya")}
+                        </SelectValue>
                       </SelectTrigger>
                       <SelectContent className="max-h-60">
                         {ALGERIAN_WILAYAS.map((w) => (
                           <SelectItem key={w} value={w}>
-                            {w}
+                            {formatWilaya(w, i18n.language)}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -534,11 +522,11 @@ export const CartPage: React.FC = () => {
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="commune">Commune (City / District) *</Label>
+                    <Label htmlFor="commune">{t("cart.commune")} *</Label>
                     <Input
                       id="commune"
                       type="text"
-                      placeholder="e.g. Sidi M'Hamed, Hydra, Bab Ezzouar"
+                      placeholder={t("cart.communePlaceholder")}
                       value={commune}
                       onChange={(e) => {
                         setCommune(e.target.value);
@@ -556,7 +544,7 @@ export const CartPage: React.FC = () => {
 
                 {/* Delivery Type Option Selector */}
                 <div className="space-y-2.5 pt-2">
-                  <Label>Delivery Type *</Label>
+                  <Label>{t("cart.deliveryTypeLabel")} *</Label>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                     {/* Home Delivery Card */}
                     <div
@@ -571,7 +559,7 @@ export const CartPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <Home className="h-4 w-4 text-[var(--ink)]" />
                           <span className="text-[14px] font-medium text-[var(--ink)]">
-                            Home Delivery
+                            {t("cart.homeDelivery")}
                           </span>
                         </div>
                         <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
@@ -579,7 +567,7 @@ export const CartPage: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
-                        Hand-delivered directly to your residential or office address.
+                        {t("cart.homeDeliveryDesc")}
                       </p>
                     </div>
 
@@ -596,7 +584,7 @@ export const CartPage: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <Building2 className="h-4 w-4 text-[var(--ink)]" />
                           <span className="text-[14px] font-medium text-[var(--ink)]">
-                            Delivery Office (Stop Desk)
+                            {t("cart.officeDelivery")}
                           </span>
                         </div>
                         <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
@@ -604,20 +592,20 @@ export const CartPage: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
-                        Pickup package at the local courier office desk in your commune.
+                        {t("cart.officeDeliveryDesc")}
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* Conditional Address Label when Home Delivery is selected */}
+                {/* Street Address */}
                 {deliveryType === "home" && (
                   <div className="space-y-1.5 pt-1 animate-in fade-in duration-200">
-                    <Label htmlFor="deliveryAddress">Street Address & Residence Details *</Label>
+                    <Label htmlFor="deliveryAddress">{t("cart.streetAddress")} *</Label>
                     <Input
                       id="deliveryAddress"
                       type="text"
-                      placeholder="e.g. 14 Rue Didouche Mourad, Building B, 3rd Floor"
+                      placeholder={t("cart.streetAddressPlaceholder")}
                       value={deliveryAddress}
                       onChange={(e) => {
                         setDeliveryAddress(e.target.value);
@@ -633,12 +621,12 @@ export const CartPage: React.FC = () => {
                   </div>
                 )}
 
-                {/* More Details / Special Notes Label */}
+                {/* Order Notes */}
                 <div className="space-y-1.5 pt-1">
-                  <Label htmlFor="notes">More Details / Delivery Notes (Optional)</Label>
+                  <Label htmlFor="notes">{t("cart.orderNotes")}</Label>
                   <Textarea
                     id="notes"
-                    placeholder="Nearby landmarks, preferred delivery times, or building entry code..."
+                    placeholder={t("cart.orderNotesPlaceholder")}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
                     rows={3}
@@ -656,26 +644,26 @@ export const CartPage: React.FC = () => {
                   setStep(1);
                   window.scrollTo({ top: 0, behavior: "smooth" });
                 }}
-                className="w-full sm:w-auto rounded-[18px] gap-2 h-11"
+                className="w-full sm:w-auto rounded-[18px] gap-2 h-11 cursor-pointer"
               >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Previous: Bag Review</span>
+                <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+                <span>{t("cart.backToBag")}</span>
               </Button>
 
               <Button
                 type="submit"
                 size="lg"
-                className="w-full sm:w-auto rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px]"
+                className="w-full sm:w-auto rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] cursor-pointer"
               >
-                <span>Next: Review & Summary</span>
-                <ArrowRight className="h-4 w-4" />
+                <span>{t("cart.reviewOrder")}</span>
+                <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>
             </div>
           </form>
         </div>
       )}
 
-      {/* STEP 3: Summary Container (Items Summary, User Info Summary, Order Now) */}
+      {/* STEP 3: Summary Container */}
       {step === 3 && (
         <div className="space-y-8 animate-in fade-in-50 duration-300">
           <Card className="rounded-[24px]">
@@ -683,10 +671,10 @@ export const CartPage: React.FC = () => {
               <div className="flex items-center justify-between flex-wrap gap-2">
                 <div>
                   <CardTitle className="text-subheading font-medium">
-                    Order Verification & Summary
+                    {t("cart.confirmationTitle")}
                   </CardTitle>
                   <p className="text-body text-[var(--mid-gray)] text-[13px] mt-0.5">
-                    Verify purchased pieces and recipient dispatch coordination before confirming.
+                    {t("cart.confirmationSubtitle")}
                   </p>
                 </div>
                 <Button
@@ -697,19 +685,19 @@ export const CartPage: React.FC = () => {
                     setStep(2);
                     window.scrollTo({ top: 0, behavior: "smooth" });
                   }}
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 text-[13px]"
+                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 text-[13px] cursor-pointer"
                 >
-                  <ArrowLeft className="h-3.5 w-3.5" />
-                  <span>Edit Shipping Details</span>
+                  <ArrowLeft className="h-3.5 w-3.5 rtl:rotate-180" />
+                  <span>{t("cart.step2")}</span>
                 </Button>
               </div>
             </CardHeader>
 
             <CardContent className="space-y-8">
-              {/* 1. Items List Summary with Images */}
+              {/* Items List Summary */}
               <div className="space-y-3">
                 <p className="text-caption text-[var(--ink)] font-semibold">
-                  Purchased Pieces ({items.reduce((acc, i) => acc + i.quantity, 0)})
+                  {t("cart.itemsOrdered")} ({items.reduce((acc, i) => acc + i.quantity, 0)})
                 </p>
                 <div className="rounded-[18px] border border-[var(--hairline)] divide-y divide-[var(--hairline)] overflow-hidden">
                   {items.map((item) => (
@@ -728,9 +716,9 @@ export const CartPage: React.FC = () => {
                             {item.product.name}
                           </h4>
                           <div className="flex flex-wrap items-center gap-2 text-[12px] text-[var(--mid-gray)] mt-0.5">
-                            {item.selectedSize && <span>Size: {item.selectedSize}</span>}
+                            {item.selectedSize && <span>{item.selectedSize}</span>}
                             {item.selectedSize && item.selectedColor && <span>·</span>}
-                            {item.selectedColor && <span>Color: {item.selectedColor}</span>}
+                            {item.selectedColor && <span>{item.selectedColor}</span>}
                             <span>·</span>
                             <span className="font-mono text-[var(--ink)] font-medium">
                               Qty: {item.quantity}
@@ -739,13 +727,13 @@ export const CartPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="text-right shrink-0">
+                      <div className="text-end shrink-0">
                         <span className="text-[14px] font-semibold tabular-nums text-[var(--ink)] block">
                           {formatPrice(item.price * item.quantity)}
                         </span>
                         {item.quantity > 1 && (
                           <span className="text-[11px] text-[var(--mid-gray)] block font-mono">
-                            {formatPrice(item.price)} each
+                            {formatPrice(item.price)}
                           </span>
                         )}
                       </div>
@@ -754,11 +742,11 @@ export const CartPage: React.FC = () => {
                 </div>
               </div>
 
-              {/* 2. User & Delivery Information Summary Box */}
+              {/* User & Delivery Information Summary Box */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <p className="text-caption text-[var(--ink)] font-semibold">
-                    Recipient & Dispatch Information
+                    {t("cart.shippingDetailsTitle")}
                   </p>
                   <button
                     type="button"
@@ -768,14 +756,14 @@ export const CartPage: React.FC = () => {
                     }}
                     className="text-[12px] text-[var(--ink)] underline hover:opacity-80 cursor-pointer"
                   >
-                    Edit details
+                    {t("common.edit")}
                   </button>
                 </div>
 
                 <div className="rounded-[18px] bg-[var(--surface-alt)] border border-[var(--hairline)] p-4 sm:p-5 grid grid-cols-1 sm:grid-cols-2 gap-4 text-[13px]">
                   <div className="space-y-1">
                     <span className="text-[11px] uppercase tracking-wider text-[var(--mid-gray)] font-medium block">
-                      Recipient
+                      {t("cart.recipient")}
                     </span>
                     <p className="font-medium text-[var(--ink)]">
                       {firstName} {lastName}
@@ -785,16 +773,16 @@ export const CartPage: React.FC = () => {
 
                   <div className="space-y-1">
                     <span className="text-[11px] uppercase tracking-wider text-[var(--mid-gray)] font-medium block">
-                      Delivery Location
+                      {t("cart.destination")}
                     </span>
                     <p className="font-medium text-[var(--ink)]">
-                      {commune}, {wilaya}
+                      {commune}, {formatWilaya(wilaya, i18n.language)}
                     </p>
                     {deliveryType === "home" ? (
                       <p className="text-[var(--mid-gray)]">{deliveryAddress}</p>
                     ) : (
                       <p className="text-[var(--mid-gray)] italic">
-                        Pickup at courier delivery office (Stop Desk)
+                        {t("cart.officeDeliveryDesc")}
                       </p>
                     )}
                   </div>
@@ -807,27 +795,27 @@ export const CartPage: React.FC = () => {
                         <Building2 className="h-4 w-4 text-[var(--ink)]" />
                       )}
                       <span className="font-medium text-[var(--ink)]">
-                        {deliveryType === "home" ? "Home Delivery" : "Office Stop Desk Delivery"}
+                        {deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")}
                       </span>
                     </div>
                     <span className="font-mono text-[13px] text-[var(--ink)] font-medium">
-                      Fee: {formatPrice(deliveryFee)}
+                      {t("common.shipping")}: {formatPrice(deliveryFee)}
                     </span>
                   </div>
 
                   {notes && (
                     <div className="sm:col-span-2 pt-2 border-t border-[var(--hairline)] text-[12px]">
-                      <span className="text-[var(--mid-gray)] font-medium">Special Notes: </span>
+                      <span className="text-[var(--mid-gray)] font-medium">{t("cart.orderNotes")}: </span>
                       <span className="text-[var(--ink)] italic">&ldquo;{notes}&rdquo;</span>
                     </div>
                   )}
                 </div>
               </div>
 
-              {/* 3. Financial Summary Card */}
+              {/* Financial Summary Card */}
               <div className="rounded-[18px] border border-[var(--hairline)] p-5 space-y-2.5 bg-[var(--paper)]">
                 <div className="flex items-center justify-between text-[14px] text-[var(--mid-gray)]">
-                  <span>Items Subtotal</span>
+                  <span>{t("common.subtotal")}</span>
                   <span className="text-[var(--ink)] font-medium tabular-nums">
                     {formatPrice(subtotal)}
                   </span>
@@ -835,7 +823,7 @@ export const CartPage: React.FC = () => {
 
                 <div className="flex items-center justify-between text-[14px] text-[var(--mid-gray)]">
                   <span>
-                    Delivery ({deliveryType === "home" ? "Home Delivery" : "Office Stop Desk"})
+                    {t("common.shipping")} ({deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")})
                   </span>
                   <span className="text-[var(--ink)] font-medium tabular-nums">
                     {formatPrice(deliveryFee)}
@@ -845,11 +833,15 @@ export const CartPage: React.FC = () => {
                 <Separator className="my-2" />
 
                 <div className="flex items-baseline justify-between text-[18px] font-semibold text-[var(--ink)] pt-1">
-                  <span>Total Amount</span>
+                  <span>{t("cart.grandTotal")}</span>
                   <span className="text-[26px] tabular-nums font-semibold">
                     {formatPrice(grandTotal)}
                   </span>
                 </div>
+
+                <p className="text-[12px] text-[var(--mid-gray)] pt-1">
+                  {t("cart.cashOnDeliveryNotice")}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -863,20 +855,20 @@ export const CartPage: React.FC = () => {
                 setStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              className="w-full sm:w-auto rounded-[18px] gap-2 h-11"
+              className="w-full sm:w-auto rounded-[18px] gap-2 h-11 cursor-pointer"
             >
-              <ArrowLeft className="h-4 w-4" />
-              <span>Previous: Edit Details</span>
+              <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
+              <span>{t("cart.step2")}</span>
             </Button>
 
             <Button
               type="button"
               size="lg"
               onClick={handleFinalOrderSubmit}
-              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs"
+              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs cursor-pointer"
             >
               <PackageCheck className="h-4 w-4" />
-              <span>Order Now · {formatPrice(grandTotal)}</span>
+              <span>{t("cart.placeOrderBtn")} · {formatPrice(grandTotal)}</span>
             </Button>
           </div>
         </div>

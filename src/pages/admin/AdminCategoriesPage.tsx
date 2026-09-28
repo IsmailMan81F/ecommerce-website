@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef } from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useStore } from "@/context/StoreContext";
 import { Category, Product } from "@/types";
 import { toast } from "sonner";
@@ -70,6 +71,7 @@ interface DeleteModalState {
 }
 
 export const AdminCategoriesPage: React.FC = () => {
+  const { t } = useTranslation();
   const { categories, products, addCategory, updateCategory, deleteCategory } = useStore();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -175,8 +177,8 @@ export const AdminCategoriesPage: React.FC = () => {
         description: finalDescription,
         image: finalImage,
       });
-      toast.success("Category Updated", {
-        description: `"${trimmedName}" changes have been saved.`,
+      toast.success(t("admin.categoryUpdated"), {
+        description: `"${trimmedName}"`,
       });
     } else {
       addCategory({
@@ -185,8 +187,8 @@ export const AdminCategoriesPage: React.FC = () => {
         description: finalDescription,
         image: finalImage,
       });
-      toast.success("Category Created", {
-        description: `"${trimmedName}" is now active in your catalog.`,
+      toast.success(t("admin.categoryCreated"), {
+        description: `"${trimmedName}"`,
       });
     }
 
@@ -209,10 +211,8 @@ export const AdminCategoriesPage: React.FC = () => {
     if (!deleteModal.category) return;
 
     if (deleteModal.affectedProducts.length === 0) {
-      // No items belong to this category, single confirmation is sufficient!
       executeDeletion();
     } else {
-      // Items belong to this category, advance to step 2 with critical alert
       setDeleteModal((prev) => ({ ...prev, step: 2 }));
     }
   };
@@ -221,19 +221,11 @@ export const AdminCategoriesPage: React.FC = () => {
   const executeDeletion = () => {
     if (!deleteModal.category) return;
     const cat = deleteModal.category;
-    const result = deleteCategory(cat.id);
+    deleteCategory(cat.id);
 
-    if (result.deletedProductsCount > 0) {
-      toast.success("Category and Products Deleted", {
-        description: `"${cat.name}" and ${result.deletedProductsCount} ${
-          result.deletedProductsCount === 1 ? "product" : "products"
-        } were removed from the catalog.`,
-      });
-    } else {
-      toast.success("Category Deleted", {
-        description: `"${cat.name}" was removed.`,
-      });
-    }
+    toast.success(t("admin.categoryDeleted"), {
+      description: `"${cat.name}"`,
+    });
 
     setDeleteModal({
       isOpen: false,
@@ -249,22 +241,22 @@ export const AdminCategoriesPage: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-heading text-[var(--ink)]">Categories</h1>
+            <h1 className="text-heading text-[var(--ink)]">{t("admin.categories")}</h1>
             <span className="text-[12px] font-medium px-2 py-0.5 rounded-[12px] bg-[var(--surface-alt)] border border-[var(--hairline)] text-[var(--mid-gray)]">
-              {categories.length} {categories.length === 1 ? "discipline" : "disciplines"}
+              {categories.length}
             </span>
           </div>
           <p className="text-body text-[var(--mid-gray)] text-[14px] mt-0.5">
-            Organize catalog disciplines, configure hero visuals, and manage departmental taxonomies.
+            {t("admin.categoriesSubtitle")}
           </p>
         </div>
 
         <Button
           onClick={handleOpenAdd}
-          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2 transition-all shadow-xs"
+          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2 transition-all shadow-xs cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          <span>Add Category</span>
+          <span>{t("admin.addCategory")}</span>
         </Button>
       </div>
 
@@ -274,18 +266,19 @@ export const AdminCategoriesPage: React.FC = () => {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
             {/* Search Input */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Filter categories by name, slug, or description..."
-                className="pl-9.5 pr-8 rounded-[12px] bg-[var(--canvas)] border-[var(--hairline)] text-[14px]"
+                placeholder={t("admin.searchCategories")}
+                className="ps-10 pe-8 rounded-[12px] bg-[var(--canvas)] border-[var(--hairline)] text-[14px]"
               />
               {searchQuery && (
                 <button
                   type="button"
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer"
+                  aria-label={t("admin.clearSearch")}
                 >
                   <X className="h-3.5 w-3.5" />
                 </button>
@@ -297,15 +290,17 @@ export const AdminCategoriesPage: React.FC = () => {
               <div className="flex items-center gap-1.5">
                 <FolderTree className="h-4 w-4 text-[var(--ink-soft)]" />
                 <span>
-                  Showing <strong className="text-[var(--ink)]">{filteredCategories.length}</strong> of{" "}
-                  {categories.length}
+                  {t("admin.showingCategoriesCount", {
+                    filtered: filteredCategories.length,
+                    total: categories.length,
+                  })}
                 </span>
               </div>
               <div className="h-4 w-px bg-[var(--hairline)] hidden sm:block" />
               <div className="flex items-center gap-1.5">
                 <Package className="h-4 w-4 text-[var(--ink-soft)]" />
                 <span>
-                  <strong className="text-[var(--ink)]">{products.length}</strong> Total Objects
+                  <strong className="text-[var(--ink)]">{products.length}</strong> {t("admin.totalObjects")}
                 </span>
               </div>
             </div>
@@ -322,12 +317,12 @@ export const AdminCategoriesPage: React.FC = () => {
             </div>
             <div>
               <p className="text-[16px] font-medium text-[var(--ink)]">
-                {searchQuery ? "No matching categories" : "No categories yet"}
+                {searchQuery ? t("admin.noMatchingCategories") : t("admin.noCategoriesYet")}
               </p>
               <p className="text-[14px] text-[var(--mid-gray)] mt-1">
                 {searchQuery
-                  ? `No categories match "${searchQuery}". Clear your search or add a new category.`
-                  : "Create your first category to organize your catalog products."}
+                  ? t("admin.noMatchingCategoriesDesc", { query: searchQuery })
+                  : t("admin.noCategoriesYetDesc")}
               </p>
             </div>
             {searchQuery ? (
@@ -337,7 +332,7 @@ export const AdminCategoriesPage: React.FC = () => {
                 onClick={() => setSearchQuery("")}
                 className="rounded-[14px] border-[var(--hairline)]"
               >
-                Clear Search
+                {t("admin.clearSearch")}
               </Button>
             ) : (
               <Button
@@ -345,8 +340,8 @@ export const AdminCategoriesPage: React.FC = () => {
                 onClick={handleOpenAdd}
                 className="rounded-[14px] bg-[var(--ink-soft)] text-[var(--paper)]"
               >
-                <Plus className="h-4 w-4 mr-1.5" />
-                Add Category
+                <Plus className="h-4 w-4 mr-1.5 rtl:ml-1.5 rtl:mr-0" />
+                {t("admin.addCategory")}
               </Button>
             )}
           </CardContent>
@@ -375,24 +370,24 @@ export const AdminCategoriesPage: React.FC = () => {
                   ) : (
                     <div className="w-full h-full flex flex-col items-center justify-center text-[var(--mid-gray)] bg-[var(--surface-alt)]">
                       <ImageIcon className="h-8 w-8 mb-1 stroke-1" />
-                      <span className="text-[12px]">No image assigned</span>
+                      <span className="text-[12px]">{t("admin.noImageAssigned")}</span>
                     </div>
                   )}
 
                   {/* Product Count Pill */}
-                  <div className="absolute top-3 right-3 bg-[var(--paper)]/90 backdrop-blur-xs px-2.5 py-1 rounded-[12px] border border-[var(--hairline)] text-[12px] font-medium text-[var(--ink)] shadow-xs flex items-center gap-1.5">
+                  <div className="absolute top-3 end-3 bg-[var(--paper)]/90 backdrop-blur-xs px-2.5 py-1 rounded-[12px] border border-[var(--hairline)] text-[12px] font-medium text-[var(--ink)] shadow-xs flex items-center gap-1.5">
                     <span
                       className={`w-1.5 h-1.5 rounded-full ${
                         productCount > 0 ? "bg-emerald-500" : "bg-neutral-300 dark:bg-neutral-600"
                       }`}
                     />
                     <span>
-                      {productCount} {productCount === 1 ? "Item" : "Items"}
+                      {productCount === 1 ? t("admin.itemSingle") : t("admin.itemsCount", { count: productCount })}
                     </span>
                   </div>
 
                   {/* Slug Pill */}
-                  <div className="absolute bottom-3 left-3 bg-[var(--ink)]/80 backdrop-blur-xs text-[var(--paper)] px-2.5 py-0.5 rounded-[8px] text-[11px] font-mono tracking-tight shadow-xs">
+                  <div className="absolute bottom-3 start-3 bg-[var(--ink)]/80 backdrop-blur-xs text-[var(--paper)] px-2.5 py-0.5 rounded-[8px] text-[11px] font-mono tracking-tight shadow-xs">
                     /{category.slug}
                   </div>
                 </div>
@@ -408,14 +403,14 @@ export const AdminCategoriesPage: React.FC = () => {
                         to={`/categories/${category.slug}`}
                         target="_blank"
                         rel="noreferrer"
-                        title="View category page in live store"
+                        title={t("admin.viewCategoryInStore")}
                         className="text-[var(--mid-gray)] hover:text-[var(--ink)] p-1 rounded-md transition-colors"
                       >
                         <ExternalLink className="h-4 w-4" />
                       </Link>
                     </div>
                     <p className="text-[13px] text-[var(--mid-gray)] line-clamp-2 leading-relaxed">
-                      {category.description || "No description provided."}
+                      {category.description || t("admin.categoryDescPlaceholder")}
                     </p>
                   </div>
 
@@ -423,8 +418,10 @@ export const AdminCategoriesPage: React.FC = () => {
                   <div className="pt-3 border-t border-[var(--hairline)] flex items-center justify-between gap-2">
                     <span className="text-[12px] text-[var(--mid-gray)]">
                       {productCount === 0
-                        ? "Empty discipline"
-                        : `${productCount} active ${productCount === 1 ? "catalog item" : "catalog items"}`}
+                        ? t("admin.emptyDiscipline")
+                        : productCount === 1
+                        ? t("admin.activeCatalogItemSingle")
+                        : t("admin.activeCatalogItems", { count: productCount })}
                     </span>
 
                     <div className="flex items-center gap-1.5">
@@ -432,17 +429,17 @@ export const AdminCategoriesPage: React.FC = () => {
                         variant="outline"
                         size="sm"
                         onClick={() => handleOpenEdit(category)}
-                        className="h-8 px-2.5 rounded-[12px] border-[var(--hairline)] text-[var(--ink)] hover:bg-[var(--surface-alt)] text-[12px] gap-1"
+                        className="h-8 px-2.5 rounded-[12px] border-[var(--hairline)] text-[var(--ink)] hover:bg-[var(--surface-alt)] text-[12px] gap-1 cursor-pointer"
                       >
                         <Pencil className="h-3.5 w-3.5" />
-                        <span>Edit</span>
+                        <span>{t("admin.edit")}</span>
                       </Button>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleInitiateDelete(category)}
-                        className="h-8 w-8 p-0 rounded-[12px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40"
-                        title="Delete category"
+                        className="h-8 w-8 p-0 rounded-[12px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-950/40 cursor-pointer"
+                        title={t("admin.delete")}
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>
@@ -463,12 +460,12 @@ export const AdminCategoriesPage: React.FC = () => {
           <form onSubmit={handleSaveCategory}>
             <DialogHeader className="p-6 pb-4 border-b border-[var(--hairline)]">
               <DialogTitle className="text-heading text-[var(--ink)]">
-                {editingCategory ? "Edit Category" : "Add New Category"}
+                {editingCategory ? t("admin.editCategory") : t("admin.addNewCategory")}
               </DialogTitle>
               <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px]">
                 {editingCategory
-                  ? "Update category naming, description, and visual representation."
-                  : "Create a new discipline for organizing atelier objects."}
+                  ? t("admin.categoryDescPlaceholder")
+                  : t("admin.categoriesSubtitle")}
               </DialogDescription>
             </DialogHeader>
 
@@ -476,7 +473,7 @@ export const AdminCategoriesPage: React.FC = () => {
               {/* Category Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="category-name" className="text-[13px] font-medium text-[var(--ink)]">
-                  Category Name <span className="text-red-500">*</span>
+                  {t("admin.categoryName")} <span className="text-red-500">*</span>
                 </Label>
                 <Input
                   id="category-name"
@@ -484,7 +481,6 @@ export const AdminCategoriesPage: React.FC = () => {
                   onChange={(e) => {
                     setName(e.target.value);
                     if (!editingCategory && !slug) {
-                      // auto suggest slug
                       setSlug(
                         e.target.value
                           .toLowerCase()
@@ -493,7 +489,7 @@ export const AdminCategoriesPage: React.FC = () => {
                       );
                     }
                   }}
-                  placeholder="e.g. Studio Audio, Tactile Homeware"
+                  placeholder={t("admin.categoryNamePlaceholder")}
                   className="rounded-[12px] bg-[var(--canvas)] border-[var(--hairline)]"
                   required
                 />
@@ -503,17 +499,17 @@ export const AdminCategoriesPage: React.FC = () => {
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="category-slug" className="text-[13px] font-medium text-[var(--ink)]">
-                    URL Slug
+                    {t("admin.urlSlug")}
                   </Label>
-                  <span className="text-[11px] text-[var(--mid-gray)]">
-                    Used in web URL: /categories/{slug || "category-slug"}
+                  <span className="text-[11px] text-[var(--mid-gray)] font-mono">
+                    /categories/{slug || "slug"}
                   </span>
                 </div>
                 <Input
                   id="category-slug"
                   value={slug}
                   onChange={(e) => setSlug(e.target.value)}
-                  placeholder="e.g. studio-audio"
+                  placeholder={t("admin.urlSlugPlaceholder")}
                   className="rounded-[12px] font-mono text-[13px] bg-[var(--canvas)] border-[var(--hairline)]"
                 />
               </div>
@@ -521,13 +517,13 @@ export const AdminCategoriesPage: React.FC = () => {
               {/* Description */}
               <div className="space-y-1.5">
                 <Label htmlFor="category-desc" className="text-[13px] font-medium text-[var(--ink)]">
-                  Description
+                  {t("admin.categoryDesc")}
                 </Label>
                 <Textarea
                   id="category-desc"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  placeholder="Short editorial summary of the aesthetic and material philosophy of this category..."
+                  placeholder={t("admin.categoryDescPlaceholder")}
                   rows={3}
                   className="rounded-[12px] bg-[var(--canvas)] border-[var(--hairline)] text-[13px] resize-none"
                 />
@@ -536,14 +532,14 @@ export const AdminCategoriesPage: React.FC = () => {
               {/* Image Upload & Preview */}
               <div className="space-y-3">
                 <Label className="text-[13px] font-medium text-[var(--ink)] flex items-center justify-between">
-                  <span>Category Image</span>
+                  <span>{t("admin.visualBanner")}</span>
                   {imageUrl && (
                     <button
                       type="button"
                       onClick={() => setImageUrl("")}
-                      className="text-[12px] text-red-500 hover:underline inline-flex items-center gap-1"
+                      className="text-[12px] text-red-500 hover:underline inline-flex items-center gap-1 cursor-pointer"
                     >
-                      <X className="h-3 w-3" /> Remove image
+                      <X className="h-3 w-3" /> {t("common.delete")}
                     </button>
                   )}
                 </Label>
@@ -564,7 +560,7 @@ export const AdminCategoriesPage: React.FC = () => {
                         onClick={() => fileInputRef.current?.click()}
                         className="rounded-[10px] text-[12px] h-8 bg-white text-black hover:bg-neutral-100"
                       >
-                        Change Photo
+                        {t("admin.uploadImage")}
                       </Button>
                     </div>
                   </div>
@@ -578,10 +574,10 @@ export const AdminCategoriesPage: React.FC = () => {
                     </div>
                     <div>
                       <p className="text-[13px] font-medium text-[var(--ink)]">
-                        Click to upload an image file
+                        {t("admin.uploadImage")}
                       </p>
                       <p className="text-[11px] text-[var(--mid-gray)]">
-                        Supports PNG, JPG, or WebP. Stored locally.
+                        PNG, JPG, WebP
                       </p>
                     </div>
                   </div>
@@ -598,7 +594,7 @@ export const AdminCategoriesPage: React.FC = () => {
 
                 {/* Direct URL input alternative */}
                 <div className="space-y-1 pt-1">
-                  <span className="text-[11px] text-[var(--mid-gray)]">Or paste an image web link:</span>
+                  <span className="text-[11px] text-[var(--mid-gray)]">{t("admin.visualBanner")}</span>
                   <Input
                     value={imageUrl.startsWith("data:") ? "" : imageUrl}
                     onChange={(e) => setImageUrl(e.target.value)}
@@ -609,7 +605,7 @@ export const AdminCategoriesPage: React.FC = () => {
 
                 {/* Visual Preset Suggestions */}
                 <div className="pt-2">
-                  <p className="text-[11px] text-[var(--mid-gray)] mb-2">Or select a curated mood visual:</p>
+                  <p className="text-[11px] text-[var(--mid-gray)] mb-2">{t("admin.curatedPresets")}</p>
                   <div className="grid grid-cols-4 gap-2">
                     {SUGGESTED_PRESETS.map((preset, idx) => (
                       <button
@@ -619,7 +615,7 @@ export const AdminCategoriesPage: React.FC = () => {
                           setImageUrl(preset.image);
                           if (!description) setDescription(preset.desc);
                         }}
-                        className={`relative rounded-[10px] overflow-hidden h-14 border transition-all ${
+                        className={`relative rounded-[10px] overflow-hidden h-14 border transition-all cursor-pointer ${
                           imageUrl === preset.image
                             ? "border-[var(--ink)] ring-2 ring-[var(--ink)]/20"
                             : "border-[var(--hairline)] opacity-70 hover:opacity-100"
@@ -648,16 +644,16 @@ export const AdminCategoriesPage: React.FC = () => {
                 type="button"
                 variant="outline"
                 onClick={() => setFormOpen(false)}
-                className="rounded-[14px] border-[var(--hairline)]"
+                className="rounded-[14px] border-[var(--hairline)] cursor-pointer"
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 disabled={isUploading}
-                className="rounded-[14px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5"
+                className="rounded-[14px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 cursor-pointer"
               >
-                {editingCategory ? "Save Changes" : "Create Category"}
+                {editingCategory ? t("admin.saveCategory") : t("admin.createCategory")}
               </Button>
             </DialogFooter>
           </form>
@@ -692,15 +688,10 @@ export const AdminCategoriesPage: React.FC = () => {
 
                   <div className="space-y-2">
                     <DialogTitle className="text-[18px] font-semibold text-[var(--ink)]">
-                      Delete Category?
+                      {t("admin.deleteCategoryTitle")}
                     </DialogTitle>
                     <DialogDescription className="text-[14px] text-[var(--mid-gray)] leading-relaxed">
-                      Are you sure you want to delete{" "}
-                      <strong className="text-[var(--ink)]">{deleteModal.category.name}</strong>?
-                      <br />
-                      <span className="text-emerald-600 dark:text-emerald-400 text-[13px] block mt-1">
-                        ✓ No products currently belong to this category.
-                      </span>
+                      {t("admin.deleteCategoryWarningSafe", { name: deleteModal.category.name })}
                     </DialogDescription>
                   </div>
 
@@ -718,7 +709,7 @@ export const AdminCategoriesPage: React.FC = () => {
                       }
                       className="rounded-[14px] border-[var(--hairline)]"
                     >
-                      Cancel
+                      {t("common.cancel")}
                     </Button>
                     <Button
                       type="button"
@@ -726,7 +717,7 @@ export const AdminCategoriesPage: React.FC = () => {
                       className="rounded-[14px] bg-red-600 hover:bg-red-700 text-white gap-1.5"
                     >
                       <Trash2 className="h-4 w-4" />
-                      Delete Category
+                      {t("admin.delete")}
                     </Button>
                   </DialogFooter>
                 </div>
@@ -742,13 +733,13 @@ export const AdminCategoriesPage: React.FC = () => {
 
                       <div className="space-y-2">
                         <DialogTitle className="text-[18px] font-semibold text-[var(--ink)]">
-                          Delete Category &quot;{deleteModal.category.name}&quot;?
+                          {t("admin.deleteCategoryTitle")}
                         </DialogTitle>
                         <DialogDescription className="text-[14px] text-[var(--mid-gray)] leading-relaxed">
-                          Do you really want to delete this category?
-                          <span className="block mt-2 font-medium text-amber-700 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-[10px] border border-amber-200 dark:border-amber-900/50">
-                            Notice: This discipline has active products linked to it in the catalog.
-                          </span>
+                          {t("admin.deleteCategoryWarningWithProducts", {
+                            name: deleteModal.category.name,
+                            count: deleteModal.affectedProducts.length,
+                          })}
                         </DialogDescription>
                       </div>
 
@@ -766,14 +757,14 @@ export const AdminCategoriesPage: React.FC = () => {
                           }
                           className="rounded-[14px] border-[var(--hairline)]"
                         >
-                          Cancel
+                          {t("common.cancel")}
                         </Button>
                         <Button
                           type="button"
                           onClick={handleFirstStepConfirm}
                           className="rounded-[14px] bg-amber-600 hover:bg-amber-700 text-white"
                         >
-                          Continue to Confirmation
+                          {t("admin.continueStep")}
                         </Button>
                       </DialogFooter>
                     </div>
@@ -786,14 +777,10 @@ export const AdminCategoriesPage: React.FC = () => {
 
                       <div className="space-y-2">
                         <DialogTitle className="text-[18px] font-semibold text-red-600">
-                          Critical Alert: {deleteModal.affectedProducts.length}{" "}
-                          {deleteModal.affectedProducts.length === 1 ? "Item" : "Items"} Will Be Deleted!
+                          {t("admin.deleteStep2Title")}
                         </DialogTitle>
                         <p className="text-[13px] text-[var(--mid-gray)] leading-relaxed">
-                          Deleting the category{" "}
-                          <strong className="text-[var(--ink)]">{deleteModal.category.name}</strong> will{" "}
-                          <strong className="text-red-600">permanently delete all ({deleteModal.affectedProducts.length}) catalog items</strong>{" "}
-                          belonging to this category:
+                          {t("admin.deleteStep2Warning")}
                         </p>
                       </div>
 
@@ -806,15 +793,11 @@ export const AdminCategoriesPage: React.FC = () => {
                           >
                             <span className="font-medium truncate mr-2">• {p.name}</span>
                             <span className="font-mono text-[var(--mid-gray)] shrink-0">
-                              {p.price} DZD
+                              {p.price} USD
                             </span>
                           </div>
                         ))}
                       </div>
-
-                      <p className="text-[12px] text-red-600 dark:text-red-400 font-medium">
-                        This action cannot be undone. All affected inventory, images, and catalog entries will be removed.
-                      </p>
 
                       <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2 sm:justify-end">
                         <Button
@@ -823,14 +806,14 @@ export const AdminCategoriesPage: React.FC = () => {
                           onClick={() => setDeleteModal((prev) => ({ ...prev, step: 1 }))}
                           className="rounded-[14px] border-[var(--hairline)]"
                         >
-                          Go Back
+                          {t("common.back")}
                         </Button>
                         <Button
                           type="button"
                           onClick={executeDeletion}
                           className="rounded-[14px] bg-red-600 hover:bg-red-700 text-white font-medium shadow-xs"
                         >
-                          Delete Category &amp; {deleteModal.affectedProducts.length} Items
+                          {t("admin.confirmDeleteCategory")}
                         </Button>
                       </DialogFooter>
                     </div>

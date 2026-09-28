@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
-import { SlidersHorizontal, ArrowLeft, RotateCcw } from "lucide-react";
-import { FilterState, Product } from "@/types";
+import { useParams, Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { SlidersHorizontal, RotateCcw } from "lucide-react";
+import { FilterState } from "@/types";
 import { ProductCard } from "@/components/ProductCard";
 import { FilterBar } from "@/components/FilterBar";
 import { Button } from "@/components/ui/button";
@@ -9,9 +10,11 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useStore } from "@/context/StoreContext";
 
 export const CategoriesPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
-  const navigate = useNavigate();
   const { products, categories } = useStore();
+
+  const isRtl = i18n.language === "ar";
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -98,11 +101,11 @@ export const CategoriesPage: React.FC = () => {
       <div className="mb-8 space-y-2">
         <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)]">
           <Link to="/" className="hover:text-[var(--ink)] transition-colors">
-            Home
+            {t("categories.breadcrumbsHome")}
           </Link>
           <span aria-hidden="true">/</span>
           <Link to="/categories" className="hover:text-[var(--ink)] transition-colors">
-            Categories
+            {t("categories.breadcrumbsCategories")}
           </Link>
           {activeCategory && (
             <>
@@ -115,12 +118,12 @@ export const CategoriesPage: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-4">
           <div>
             <h1 className="text-heading-lg text-[var(--ink)]">
-              {activeCategory ? activeCategory.name : "All Design Objects"}
+              {activeCategory ? activeCategory.name : t("categories.pageTitle")}
             </h1>
             <p className="text-body text-[var(--mid-gray)] mt-1 max-w-2xl">
               {activeCategory
                 ? activeCategory.description
-                : "Explore our complete catalog of tactile audio, furniture, ceramic stoneware, and handcrafted leather artifacts."}
+                : t("categories.allObjectsSubtitle")}
             </p>
           </div>
 
@@ -128,21 +131,25 @@ export const CategoriesPage: React.FC = () => {
           <div className="lg:hidden flex flex-wrap gap-2">
             <Sheet open={mobileFilterOpen} onOpenChange={setMobileFilterOpen}>
               <SheetTrigger asChild>
-                <Button variant="secondary" size="sm" className="gap-2 rounded-[18px]">
+                <Button variant="secondary" size="sm" className="gap-2 rounded-[18px] cursor-pointer">
                   <SlidersHorizontal className="h-4 w-4" />
-                  <span>Filter & Categories</span>
+                  <span>{t("categories.filterHeading")}</span>
                 </Button>
               </SheetTrigger>
-              <SheetContent side="left" className="w-full sm:max-w-md p-6 overflow-y-auto h-full flex flex-col justify-between bg-[var(--paper)]">
+              {/* Sidebar opens on right for Arabic, left for LTR as requested */}
+              <SheetContent
+                side={isRtl ? "right" : "left"}
+                className="w-full sm:max-w-md p-6 overflow-y-auto h-full flex flex-col justify-between bg-[var(--paper)]"
+              >
                 <div>
-                  <SheetHeader className="mb-6">
-                    <SheetTitle className="text-heading-sm">Filters & Categories</SheetTitle>
+                  <SheetHeader className="mb-6 text-start">
+                    <SheetTitle className="text-heading-sm">{t("categories.filterHeading")}</SheetTitle>
                   </SheetHeader>
 
                   <div className="space-y-6">
                     {/* Category Selection */}
                     <div className="space-y-3">
-                      <p className="text-caption text-[var(--mid-gray)]">Categories</p>
+                      <p className="text-caption text-[var(--mid-gray)]">{t("nav.categories")}</p>
                       <div className="flex flex-col gap-1">
                         <Link
                           to="/categories"
@@ -153,7 +160,7 @@ export const CategoriesPage: React.FC = () => {
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
                         >
-                          <span>All Objects</span>
+                          <span>{t("footer.allObjects")}</span>
                           <span className="text-caption text-[var(--mid-gray)] tabular-nums">
                             {products.length}
                           </span>
@@ -180,7 +187,6 @@ export const CategoriesPage: React.FC = () => {
 
                     {/* Filter Controls */}
                     <div className="pt-4 border-t border-[var(--hairline)] space-y-4">
-                      <p className="text-caption text-[var(--mid-gray)]">Refine Specifications</p>
                       <FilterBar
                         filters={filters}
                         onFilterChange={handleFilterChange}
@@ -196,19 +202,19 @@ export const CategoriesPage: React.FC = () => {
                 <div className="pt-6 border-t border-[var(--hairline)] flex flex-wrap items-center gap-3 mt-6">
                   <Button
                     type="button"
-                    className="flex-1 min-w-[160px] rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] h-11"
+                    className="flex-1 min-w-[160px] rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] h-11 cursor-pointer"
                     onClick={() => setMobileFilterOpen(false)}
                   >
-                    View {filteredProducts.length} Objects
+                    {t("categories.viewObject")} ({filteredProducts.length})
                   </Button>
                   {isFiltered && (
                     <Button
                       type="button"
                       variant="outline"
-                      className="rounded-[18px] h-11 px-4"
+                      className="rounded-[18px] h-11 px-4 cursor-pointer"
                       onClick={handleResetFilters}
                     >
-                      Reset All
+                      {t("categories.resetFilters")}
                     </Button>
                   )}
                 </div>
@@ -218,14 +224,14 @@ export const CategoriesPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Layout: Left Sidebar + Right Products Grid */}
+      {/* Main Layout: Sidebar + Products Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-        {/* Left Sidebar on Desktop */}
+        {/* Categories Sidebar on Desktop */}
         <aside className="hidden lg:block lg:col-span-3 sticky top-24">
           <div className="rounded-[24px] border border-[var(--hairline)] bg-[var(--surface-alt)] p-5 space-y-6">
             <div>
               <p className="text-caption text-[var(--mid-gray)] px-3 mb-2">
-                Disciplines
+                {t("home.disciplines")}
               </p>
               <nav className="flex flex-col gap-1">
                 <Link
@@ -236,7 +242,7 @@ export const CategoriesPage: React.FC = () => {
                       : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                   }`}
                 >
-                  <span>All Objects</span>
+                  <span>{t("footer.allObjects")}</span>
                   <span className="text-[12px] tabular-nums font-mono">
                     {products.length}
                   </span>
@@ -254,7 +260,7 @@ export const CategoriesPage: React.FC = () => {
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
                     >
-                      <span className="truncate pr-2">{cat.name}</span>
+                      <span className="truncate pe-2">{cat.name}</span>
                       <span className="text-[12px] tabular-nums font-mono text-[var(--mid-gray)]">
                         {cat.itemCount}
                       </span>
@@ -271,7 +277,7 @@ export const CategoriesPage: React.FC = () => {
           </div>
         </aside>
 
-        {/* Right Content Area */}
+        {/* Products Content Area */}
         <div className="lg:col-span-9 space-y-6">
           {/* Top Filter Bar on Desktop/Tablet */}
           <FilterBar
@@ -294,19 +300,16 @@ export const CategoriesPage: React.FC = () => {
             <div className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] p-12 text-center space-y-4 my-8">
               <div className="space-y-1">
                 <h3 className="text-subheading text-[var(--ink)]">
-                  No objects matched the selected criteria
+                  {t("categories.noObjectsFound")}
                 </h3>
-                <p className="text-body text-[var(--mid-gray)] max-w-md mx-auto">
-                  Try adjusting your size, price range, or category filter to discover available pieces.
-                </p>
               </div>
               <Button
                 variant="secondary"
                 onClick={handleResetFilters}
-                className="gap-2 rounded-[18px]"
+                className="gap-2 rounded-[18px] cursor-pointer"
               >
-                <RotateCcw className="h-4 w-4" />
-                <span>Reset All Filters</span>
+                <RotateCcw className="h-4 w-4 rtl:rotate-180" />
+                <span>{t("categories.resetFilters")}</span>
               </Button>
             </div>
           )}

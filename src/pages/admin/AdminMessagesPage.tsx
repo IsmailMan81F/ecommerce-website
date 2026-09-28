@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "@/context/StoreContext";
 import { ContactMessage } from "@/types";
 import { toast } from "sonner";
@@ -44,6 +45,8 @@ import {
 } from "@/components/ui/dialog";
 
 export const AdminMessagesPage: React.FC = () => {
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === "ar";
   const {
     messages,
     unreadMessagesCount,
@@ -122,7 +125,7 @@ export const AdminMessagesPage: React.FC = () => {
     if (!selectedMessage) return;
     updateMessageNotes(selectedMessage.id, internalNotes);
     setSelectedMessage({ ...selectedMessage, notes: internalNotes });
-    toast.success("Concierge notes updated");
+    toast.success(t("admin.noteSaved"));
   };
 
   const handleCopy = (text: string, field: string) => {
@@ -144,7 +147,7 @@ export const AdminMessagesPage: React.FC = () => {
     if (selectedMessage?.id === messageToDelete.id) {
       setSelectedMessage(null);
     }
-    toast.success("Message removed");
+    toast.success(t("admin.deleteTransmission"));
     setDeleteConfirmOpen(false);
     setMessageToDelete(null);
   };
@@ -155,13 +158,13 @@ export const AdminMessagesPage: React.FC = () => {
         markMessageRead(m.id, true);
       }
     });
-    toast.success("All messages marked as read");
+    toast.success(t("admin.allMarkedRead"));
   };
 
   const formatDate = (isoString: string) => {
     try {
       const date = new Date(isoString);
-      return date.toLocaleDateString("en-US", {
+      return date.toLocaleDateString(i18n.language === "ar" ? "ar-DZ" : i18n.language === "fr" ? "fr-FR" : "en-US", {
         month: "short",
         day: "numeric",
         year: "numeric",
@@ -177,14 +180,14 @@ export const AdminMessagesPage: React.FC = () => {
     try {
       const date = new Date(isoString);
       const diffSec = Math.floor((Date.now() - date.getTime()) / 1000);
-      if (diffSec < 60) return "Just now";
+      if (diffSec < 60) return t("admin.justNow");
       const diffMin = Math.floor(diffSec / 60);
-      if (diffMin < 60) return `${diffMin}m ago`;
+      if (diffMin < 60) return t("admin.minutesAgo", { count: diffMin });
       const diffHours = Math.floor(diffMin / 60);
-      if (diffHours < 24) return `${diffHours}h ago`;
+      if (diffHours < 24) return t("admin.hoursAgo", { count: diffHours });
       const diffDays = Math.floor(diffHours / 24);
-      if (diffDays < 7) return `${diffDays}d ago`;
-      return date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      if (diffDays < 7) return t("admin.daysAgo", { count: diffDays });
+      return date.toLocaleDateString(i18n.language === "ar" ? "ar-DZ" : i18n.language === "fr" ? "fr-FR" : "en-US", { month: "short", day: "numeric" });
     } catch {
       return "";
     }
@@ -197,20 +200,20 @@ export const AdminMessagesPage: React.FC = () => {
         <div>
           <div className="flex items-center gap-3">
             <h1 className="text-heading-md font-semibold tracking-tight text-[var(--ink)]">
-              Client Inquiries
+              {t("admin.inquiriesTitle")}
             </h1>
             {unreadMessagesCount > 0 ? (
               <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[12px] px-2 py-0.5 font-medium">
-                {unreadMessagesCount} Unread
+                {t("admin.unreadBadge", { count: unreadMessagesCount })}
               </Badge>
             ) : (
               <Badge variant="outline" className="text-[12px] text-[var(--mid-gray)]">
-                All Read
+                {t("admin.allReadBadge")}
               </Badge>
             )}
           </div>
           <p className="text-body text-[var(--mid-gray)] mt-1 text-[13px]">
-            Incoming customer support transmissions, custom commissions, and private consultation inquiries.
+            {t("admin.inquiriesSubtitle")}
           </p>
         </div>
 
@@ -219,10 +222,10 @@ export const AdminMessagesPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleMarkAllAsRead}
-            className="text-[13px] rounded-[14px] border-[var(--hairline)] hover:bg-[var(--canvas)] self-start sm:self-auto"
+            className="text-[13px] rounded-[14px] border-[var(--hairline)] hover:bg-[var(--canvas)] self-start sm:self-auto cursor-pointer"
           >
-            <CheckCircle2 className="h-4 w-4 mr-2 text-[var(--mid-gray)]" />
-            Mark all read
+            <CheckCircle2 className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0 text-[var(--mid-gray)]" />
+            <span>{t("admin.markAllRead")}</span>
           </Button>
         )}
       </div>
@@ -230,26 +233,23 @@ export const AdminMessagesPage: React.FC = () => {
       {/* Search & Filter Bar */}
       <div className="bg-[var(--surface-alt)] p-4 rounded-[20px] border border-[var(--hairline)] space-y-4">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-          {/* Client Name Search Input with explicit label as requested */}
+          {/* Client Name Search Input */}
           <div className="relative flex-1">
-            <label htmlFor="client-search" className="sr-only">
-              Search by client name
-            </label>
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+            <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
             <Input
               id="client-search"
               type="text"
-              placeholder="Search by client name, email, or keywords..."
+              placeholder={t("admin.searchMessages")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 pr-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs placeholder:text-[var(--mid-gray)]"
+              className="ps-10 pe-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs placeholder:text-[var(--mid-gray)]"
             />
             {searchQuery && (
               <button
                 type="button"
                 onClick={() => setSearchQuery("")}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-[var(--mid-gray)] hover:text-[var(--ink)] p-0.5 rounded-full"
-                aria-label="Clear search"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-[var(--mid-gray)] hover:text-[var(--ink)] p-0.5 rounded-full cursor-pointer"
+                aria-label={t("admin.clearSearch")}
               >
                 <X className="h-3.5 w-3.5" />
               </button>
@@ -267,7 +267,7 @@ export const AdminMessagesPage: React.FC = () => {
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              All ({messages.length})
+              {t("admin.tabAll", { count: messages.length })}
             </button>
             <button
               type="button"
@@ -279,7 +279,7 @@ export const AdminMessagesPage: React.FC = () => {
               }`}
             >
               <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              Unread ({unreadMessagesCount})
+              {t("admin.tabUnread", { count: unreadMessagesCount })}
             </button>
             <button
               type="button"
@@ -290,7 +290,7 @@ export const AdminMessagesPage: React.FC = () => {
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              Read ({messages.length - unreadMessagesCount})
+              {t("admin.tabRead", { count: messages.length - unreadMessagesCount })}
             </button>
             <button
               type="button"
@@ -301,17 +301,10 @@ export const AdminMessagesPage: React.FC = () => {
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              Replied ({messages.filter((m) => m.status === "replied").length})
+              {t("admin.tabReplied", { count: messages.filter((m) => m.status === "replied").length })}
             </button>
           </div>
         </div>
-
-        {searchQuery && (
-          <p className="text-[12px] text-[var(--mid-gray)] px-1">
-            Found {filteredMessages.length} message{filteredMessages.length !== 1 ? "s" : ""} matching &ldquo;
-            <span className="text-[var(--ink)] font-medium">{searchQuery}</span>&rdquo;
-          </p>
-        )}
       </div>
 
       {/* Messages List */}
@@ -389,7 +382,7 @@ export const AdminMessagesPage: React.FC = () => {
                             : "text-[var(--mid-gray)]"
                         }`}
                       >
-                        {msg.subject || "No subject provided"}
+                        {msg.subject || t("contact.subject")}
                       </p>
 
                       {/* Line 3: Message Snippet */}
@@ -412,7 +405,7 @@ export const AdminMessagesPage: React.FC = () => {
                         {msg.notes && (
                           <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
                             <MessageSquare className="h-3 w-3 shrink-0" />
-                            <span>Has studio notes</span>
+                            <span>{t("admin.internalNotes")}</span>
                           </span>
                         )}
                       </div>
@@ -428,18 +421,18 @@ export const AdminMessagesPage: React.FC = () => {
                       variant="ghost"
                       size="sm"
                       onClick={(e) => handleToggleReadStatus(msg.id, e)}
-                      title={isUnread ? "Mark as Read" : "Mark as Unread"}
+                      title={isUnread ? t("admin.markAsRead") : t("admin.markAsUnread")}
                       className="h-8 px-2.5 text-[12px] rounded-[10px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
                     >
                       {isUnread ? (
                         <>
                           <MailOpen className="h-3.5 w-3.5 mr-1.5 text-amber-600 dark:text-amber-400" />
-                          <span>Mark Read</span>
+                          <span>{t("admin.markAsRead")}</span>
                         </>
                       ) : (
                         <>
                           <Mail className="h-3.5 w-3.5 mr-1.5" />
-                          <span>Mark Unread</span>
+                          <span>{t("admin.markAsUnread")}</span>
                         </>
                       )}
                     </Button>
@@ -448,7 +441,7 @@ export const AdminMessagesPage: React.FC = () => {
                       variant="ghost"
                       size="iconSm"
                       onClick={(e) => confirmDelete(msg, e)}
-                      title="Delete inquiry"
+                      title={t("admin.deleteTransmission")}
                       className="h-8 w-8 text-[var(--mid-gray)] hover:text-rose-600 hover:bg-rose-500/10 rounded-[10px]"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -464,12 +457,12 @@ export const AdminMessagesPage: React.FC = () => {
               <Mail className="h-5 w-5" />
             </div>
             <h3 className="text-subheading font-medium text-[var(--ink)]">
-              No inquiries found
+              {t("admin.noMessages")}
             </h3>
             <p className="text-body text-[var(--mid-gray)] text-[13px] max-w-sm mx-auto">
               {searchQuery
-                ? `No messages match your search "${searchQuery}". Try searching another client name or keyword.`
-                : "Your customer support inbox is clear. Messages submitted through the Contact page will appear here."}
+                ? t("admin.noMessagesDesc")
+                : t("admin.noMessagesDesc")}
             </p>
             {searchQuery && (
               <Button
@@ -478,20 +471,20 @@ export const AdminMessagesPage: React.FC = () => {
                 onClick={() => setSearchQuery("")}
                 className="rounded-[14px]"
               >
-                Clear Search
+                {t("admin.reset")}
               </Button>
             )}
           </div>
         )}
       </div>
 
-      {/* Right Sidebar Detail Drawer (Sheet side="right") */}
+      {/* Right Sidebar Detail Drawer (Reversed for RTL) */}
       <Sheet open={!!selectedMessage} onOpenChange={(open) => !open && setSelectedMessage(null)}>
-        <SheetContent side="right" className="w-full sm:max-w-md p-6 overflow-y-auto space-y-6">
+        <SheetContent side={isRtl ? "left" : "right"} className="w-full sm:max-w-md p-6 overflow-y-auto space-y-6">
           {selectedMessage && (
             <>
               {/* Sheet Header */}
-              <SheetHeader className="text-left space-y-2 border-b border-[var(--hairline)] pb-5">
+              <SheetHeader className="text-start space-y-2 border-b border-[var(--hairline)] pb-5">
                 <div className="flex items-center justify-between">
                   <span className="text-caption font-mono text-[var(--mid-gray)]">
                     {selectedMessage.id}
@@ -507,8 +500,10 @@ export const AdminMessagesPage: React.FC = () => {
                     }`}
                   >
                     {selectedMessage.status === "unread" || selectedMessage.isRead === false
-                      ? "Unread"
-                      : selectedMessage.status}
+                      ? t("admin.statusUnread")
+                      : selectedMessage.status === "replied"
+                      ? t("admin.statusReplied")
+                      : t("admin.statusRead")}
                   </Badge>
                 </div>
 
@@ -518,7 +513,7 @@ export const AdminMessagesPage: React.FC = () => {
 
                 <SheetDescription className="text-caption text-[var(--mid-gray)] flex items-center gap-1.5">
                   <Calendar className="h-3.5 w-3.5 shrink-0" />
-                  <span>Received {formatDate(selectedMessage.createdAt)}</span>
+                  <span>{t("admin.transmissionDetailsDesc", { date: formatDate(selectedMessage.createdAt) })}</span>
                 </SheetDescription>
               </SheetHeader>
 
@@ -534,12 +529,12 @@ export const AdminMessagesPage: React.FC = () => {
                     {selectedMessage.isRead || selectedMessage.status !== "unread" ? (
                       <>
                         <Mail className="h-3.5 w-3.5 mr-1.5" />
-                        Mark as Unread
+                        {t("admin.markAsUnread")}
                       </>
                     ) : (
                       <>
                         <CheckCircle2 className="h-3.5 w-3.5 mr-1.5" />
-                        Mark as Read
+                        {t("admin.markAsRead")}
                       </>
                     )}
                   </Button>
@@ -550,11 +545,11 @@ export const AdminMessagesPage: React.FC = () => {
                     onClick={() => {
                       updateMessageStatus(selectedMessage.id, "replied");
                       setSelectedMessage({ ...selectedMessage, status: "replied", isRead: true });
-                      toast.success("Marked as Replied");
+                      toast.success(t("admin.markReplied"));
                     }}
                     className="h-8 text-[12px] rounded-[10px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
                   >
-                    Mark Replied
+                    {t("admin.markReplied")}
                   </Button>
                 </div>
 
@@ -563,7 +558,7 @@ export const AdminMessagesPage: React.FC = () => {
                   size="iconSm"
                   onClick={() => confirmDelete(selectedMessage)}
                   className="h-8 w-8 text-[var(--mid-gray)] hover:text-rose-600 rounded-[10px]"
-                  title="Delete message"
+                  title={t("admin.deleteTransmission")}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
@@ -572,7 +567,7 @@ export const AdminMessagesPage: React.FC = () => {
               {/* Client Contact Profile Card */}
               <div className="space-y-3">
                 <p className="text-caption text-[var(--ink)] font-semibold tracking-wider uppercase">
-                  Client Coordinates
+                  {t("admin.senderInfo")}
                 </p>
 
                 <div className="rounded-[18px] border border-[var(--hairline)] p-4 bg-[var(--surface-alt)] space-y-3 text-[13px]">
@@ -581,7 +576,7 @@ export const AdminMessagesPage: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <User className="h-4 w-4 text-[var(--mid-gray)] shrink-0" />
                       <div>
-                        <span className="text-[11px] text-[var(--mid-gray)] block">Client Name</span>
+                        <span className="text-[11px] text-[var(--mid-gray)] block">{t("admin.clientName")}</span>
                         <span className="font-medium text-[var(--ink)]">{selectedMessage.name}</span>
                       </div>
                     </div>
@@ -600,7 +595,7 @@ export const AdminMessagesPage: React.FC = () => {
                     <div className="flex items-center gap-2.5 min-w-0">
                       <Mail className="h-4 w-4 text-[var(--mid-gray)] shrink-0" />
                       <div className="min-w-0">
-                        <span className="text-[11px] text-[var(--mid-gray)] block">Email Address</span>
+                        <span className="text-[11px] text-[var(--mid-gray)] block">{t("admin.emailAddress")}</span>
                         <a
                           href={`mailto:${selectedMessage.email}?subject=Re: ${encodeURIComponent(selectedMessage.subject || "Atelier Inquiry")}`}
                           className="font-medium text-[var(--ink)] hover:underline truncate block"
@@ -615,7 +610,7 @@ export const AdminMessagesPage: React.FC = () => {
                         size="iconSm"
                         onClick={() => handleCopy(selectedMessage.email, "email")}
                         className="h-7 w-7 text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                        title="Copy email"
+                        title={t("admin.emailAddress")}
                       >
                         {copiedField === "email" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                       </Button>
@@ -634,7 +629,7 @@ export const AdminMessagesPage: React.FC = () => {
                     <div className="flex items-center gap-2.5">
                       <Phone className="h-4 w-4 text-[var(--mid-gray)] shrink-0" />
                       <div>
-                        <span className="text-[11px] text-[var(--mid-gray)] block">Phone Number</span>
+                        <span className="text-[11px] text-[var(--mid-gray)] block">{t("admin.phoneNumber")}</span>
                         {selectedMessage.phone ? (
                           <a
                             href={`tel:${selectedMessage.phone}`}
@@ -643,7 +638,7 @@ export const AdminMessagesPage: React.FC = () => {
                             {selectedMessage.phone}
                           </a>
                         ) : (
-                          <span className="text-[var(--mid-gray)] italic">Not provided</span>
+                          <span className="text-[var(--mid-gray)] italic">-</span>
                         )}
                       </div>
                     </div>
@@ -654,7 +649,7 @@ export const AdminMessagesPage: React.FC = () => {
                           size="iconSm"
                           onClick={() => handleCopy(selectedMessage.phone!, "phone")}
                           className="h-7 w-7 text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                          title="Copy phone"
+                          title={t("admin.phoneNumber")}
                         >
                           {copiedField === "phone" ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
                         </Button>
@@ -674,23 +669,23 @@ export const AdminMessagesPage: React.FC = () => {
               {/* Inquiry & Context Details */}
               <div className="space-y-3">
                 <p className="text-caption text-[var(--ink)] font-semibold tracking-wider uppercase">
-                  Inquiry Specifications
+                  {t("admin.inquiryType")}
                 </p>
 
                 <div className="rounded-[18px] border border-[var(--hairline)] p-4 bg-[var(--surface-alt)] space-y-3 text-[13px]">
                   {/* Department */}
                   <div>
-                    <span className="text-[11px] text-[var(--mid-gray)] block mb-1">Inquiry Department</span>
+                    <span className="text-[11px] text-[var(--mid-gray)] block mb-1">{t("admin.inquiryType")}</span>
                     <Badge variant="outline" className="bg-[var(--paper)] text-[12px]">
-                      {selectedMessage.inquiryType || "General Inquiry"}
+                      {selectedMessage.inquiryType || t("contact.generalInquiry")}
                     </Badge>
                   </div>
 
                   {/* Subject */}
                   <div className="pt-2 border-t border-[var(--hairline)]/60">
-                    <span className="text-[11px] text-[var(--mid-gray)] block mb-1">Subject / Piece</span>
+                    <span className="text-[11px] text-[var(--mid-gray)] block mb-1">{t("contact.subject")}</span>
                     <p className="font-medium text-[var(--ink)] text-[14px]">
-                      {selectedMessage.subject || "No subject specified"}
+                      {selectedMessage.subject || "-"}
                     </p>
                   </div>
 
@@ -698,13 +693,13 @@ export const AdminMessagesPage: React.FC = () => {
                   {selectedMessage.orderNumber && (
                     <div className="pt-2 border-t border-[var(--hairline)]/60 flex items-center justify-between">
                       <div>
-                        <span className="text-[11px] text-[var(--mid-gray)] block">Order Reference</span>
+                        <span className="text-[11px] text-[var(--mid-gray)] block">{t("admin.orderReference")}</span>
                         <span className="font-mono font-medium text-[var(--ink)]">
                           {selectedMessage.orderNumber}
                         </span>
                       </div>
                       <Badge variant="secondary" className="text-[11px]">
-                        Linked Order
+                        {t("admin.orderReference")}
                       </Badge>
                     </div>
                   )}
@@ -715,7 +710,7 @@ export const AdminMessagesPage: React.FC = () => {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <p className="text-caption text-[var(--ink)] font-semibold tracking-wider uppercase">
-                    Message Content
+                    {t("admin.messageContent")}
                   </p>
                   <Button
                     variant="ghost"
@@ -726,12 +721,12 @@ export const AdminMessagesPage: React.FC = () => {
                     {copiedField === "message" ? (
                       <>
                         <Check className="h-3 w-3 mr-1 text-emerald-600" />
-                        Copied
+                        {t("admin.noteSaved")}
                       </>
                     ) : (
                       <>
                         <Copy className="h-3 w-3 mr-1" />
-                        Copy text
+                        {t("common.search")}
                       </>
                     )}
                   </Button>
@@ -745,11 +740,11 @@ export const AdminMessagesPage: React.FC = () => {
               {/* Internal Atelier Notes */}
               <div className="space-y-2 pt-2 border-t border-[var(--hairline)]">
                 <label htmlFor="staff-notes" className="text-caption text-[var(--ink)] font-semibold block">
-                  Studio Concierge Notes
+                  {t("admin.internalNotes")}
                 </label>
                 <Textarea
                   id="staff-notes"
-                  placeholder="Record internal notes (e.g. Quotation sent, follow-up scheduled for next Tuesday, telephone discussion summary)..."
+                  placeholder={t("admin.internalNotesPlaceholder")}
                   value={internalNotes}
                   onChange={(e) => setInternalNotes(e.target.value)}
                   rows={3}
@@ -761,7 +756,7 @@ export const AdminMessagesPage: React.FC = () => {
                   onClick={handleSaveNotes}
                   className="rounded-[12px] text-[12px] h-8 mt-1"
                 >
-                  Save Internal Note
+                  {t("admin.saveNote")}
                 </Button>
               </div>
 
@@ -774,7 +769,7 @@ export const AdminMessagesPage: React.FC = () => {
                   className="w-full inline-flex items-center justify-center gap-2 h-10 px-4 rounded-[16px] bg-[var(--ink)] text-[var(--paper)] font-medium text-[13px] hover:opacity-90 transition-opacity"
                 >
                   <Reply className="h-4 w-4" />
-                  <span>Reply via Email Client</span>
+                  <span>{t("admin.replyViaEmail")}</span>
                 </a>
               </div>
             </>
@@ -790,11 +785,10 @@ export const AdminMessagesPage: React.FC = () => {
               <AlertTriangle className="h-5 w-5" />
             </div>
             <DialogTitle className="text-subheading font-medium">
-              Delete Client Inquiry?
+              {t("admin.deleteInquiryTitle")}
             </DialogTitle>
             <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px]">
-              Are you sure you want to permanently remove this inquiry from{" "}
-              <strong className="text-[var(--ink)]">{messageToDelete?.name}</strong>? This action cannot be reversed.
+              {t("admin.deleteInquiryConfirm", { name: messageToDelete?.name })}
             </DialogDescription>
           </DialogHeader>
 
@@ -804,14 +798,14 @@ export const AdminMessagesPage: React.FC = () => {
               onClick={() => setDeleteConfirmOpen(false)}
               className="rounded-[14px]"
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               variant="destructive"
               onClick={executeDelete}
               className="rounded-[14px]"
             >
-              Delete Inquiry
+              {t("admin.deleteInquiryBtn")}
             </Button>
           </DialogFooter>
         </DialogContent>

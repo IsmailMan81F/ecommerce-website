@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
 import {
@@ -7,10 +8,8 @@ import {
   Clock,
   Share2,
   Truck,
-  Check,
   ExternalLink,
   Globe,
-  Building,
   Phone,
   Mail,
   Instagram,
@@ -32,8 +31,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ALGERIAN_WILAYAS } from "@/lib/data";
+import { formatWilaya } from "@/i18n/wilayas";
 
 export const AdminStorePage: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const {
     storeSettings,
     updateStoreGeneral,
@@ -63,35 +64,35 @@ export const AdminStorePage: React.FC = () => {
   const handleSaveGeneral = (e: React.FormEvent) => {
     e.preventDefault();
     if (!generalForm.storeName.trim()) {
-      toast.error("Store name cannot be empty");
+      toast.error(t("admin.storeName"));
       return;
     }
     updateStoreGeneral(generalForm);
-    toast.success("General information saved successfully");
+    toast.success(t("admin.saveGeneralSuccess"));
   };
 
   const handleSaveLocation = (e: React.FormEvent) => {
     e.preventDefault();
     updateStoreLocation(locationForm);
-    toast.success("Store location saved successfully");
+    toast.success(t("admin.saveLocationSuccess"));
   };
 
   const handleSaveHours = (e: React.FormEvent) => {
     e.preventDefault();
     updateStoreHours(hoursForm);
-    toast.success("Opening hours saved successfully");
+    toast.success(t("admin.saveHoursSuccess"));
   };
 
   const handleSaveSocial = (e: React.FormEvent) => {
     e.preventDefault();
     updateStoreSocial(socialForm);
-    toast.success("Social links saved successfully");
+    toast.success(t("admin.saveSocialSuccess"));
   };
 
   const handleSaveDelivery = (e: React.FormEvent) => {
     e.preventDefault();
     updateStoreDelivery(deliveryForm);
-    toast.success("Delivery settings saved successfully");
+    toast.success(t("admin.saveDeliverySuccess"));
   };
 
   return (
@@ -99,10 +100,10 @@ export const AdminStorePage: React.FC = () => {
       {/* Page Title & Intro */}
       <div>
         <h1 className="text-heading-md font-semibold tracking-tight text-[var(--ink)]">
-          Store Information
+          {t("admin.storeSettingsTitle")}
         </h1>
         <p className="text-body text-[var(--mid-gray)] mt-1 text-[13px]">
-          Manage basic information, physical showroom location, opening schedule, and delivery parameters.
+          {t("admin.storeSettingsSubtitle")}
         </p>
       </div>
 
@@ -115,10 +116,10 @@ export const AdminStorePage: React.FC = () => {
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                General Information
+                {t("admin.generalInfoTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                Core brand identity, atelier summary, and official contact credentials
+                {t("admin.generalInfoDesc")}
               </CardDescription>
             </div>
           </div>
@@ -130,7 +131,7 @@ export const AdminStorePage: React.FC = () => {
               {/* Store Name */}
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="storeName" className="text-[13px] font-medium text-[var(--ink)]">
-                  Store Name
+                  {t("admin.storeName")}
                 </Label>
                 <Input
                   id="storeName"
@@ -138,7 +139,7 @@ export const AdminStorePage: React.FC = () => {
                   onChange={(e) =>
                     setGeneralForm({ ...generalForm, storeName: e.target.value })
                   }
-                  placeholder="e.g. KØRD"
+                  placeholder="KØRD"
                   className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                   required
                 />
@@ -147,7 +148,7 @@ export const AdminStorePage: React.FC = () => {
               {/* Description */}
               <div className="space-y-2 md:col-span-2">
                 <Label htmlFor="storeDescription" className="text-[13px] font-medium text-[var(--ink)]">
-                  Store Description
+                  {t("admin.storeDesc")}
                 </Label>
                 <Textarea
                   id="storeDescription"
@@ -156,7 +157,7 @@ export const AdminStorePage: React.FC = () => {
                     setGeneralForm({ ...generalForm, description: e.target.value })
                   }
                   rows={3}
-                  placeholder="Brief description of your store philosophy and collections..."
+                  placeholder={t("admin.storeDescPlaceholder")}
                   className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] resize-none"
                 />
               </div>
@@ -164,10 +165,10 @@ export const AdminStorePage: React.FC = () => {
               {/* Store Email */}
               <div className="space-y-2">
                 <Label htmlFor="storeEmail" className="text-[13px] font-medium text-[var(--ink)]">
-                  Store Email
+                  {t("admin.storeEmail")}
                 </Label>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+                  <Mail className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
                   <Input
                     id="storeEmail"
                     type="email"
@@ -176,7 +177,7 @@ export const AdminStorePage: React.FC = () => {
                       setGeneralForm({ ...generalForm, email: e.target.value })
                     }
                     placeholder="studio@kord-objects.com"
-                    className="pl-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
+                    className="ps-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                     required
                   />
                 </div>
@@ -185,10 +186,10 @@ export const AdminStorePage: React.FC = () => {
               {/* Store Phone Number */}
               <div className="space-y-2">
                 <Label htmlFor="storePhone" className="text-[13px] font-medium text-[var(--ink)]">
-                  Store Phone Number
+                  {t("admin.storePhone")}
                 </Label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+                  <Phone className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
                   <Input
                     id="storePhone"
                     type="tel"
@@ -197,7 +198,7 @@ export const AdminStorePage: React.FC = () => {
                       setGeneralForm({ ...generalForm, phone: e.target.value })
                     }
                     placeholder="+213 550 12 34 56"
-                    className="pl-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
+                    className="ps-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                     required
                   />
                 </div>
@@ -209,7 +210,7 @@ export const AdminStorePage: React.FC = () => {
                 type="submit"
                 className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
               >
-                Save Changes
+                {t("common.saveChanges")}
               </Button>
             </div>
           </form>
@@ -225,10 +226,10 @@ export const AdminStorePage: React.FC = () => {
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                Contact & Location
+                {t("admin.contactLocationTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                Physical showroom address, territorial jurisdiction, and direct messaging channel
+                {t("admin.contactLocationDesc")}
               </CardDescription>
             </div>
           </div>
@@ -240,7 +241,7 @@ export const AdminStorePage: React.FC = () => {
               {/* Country */}
               <div className="space-y-2">
                 <Label htmlFor="locCountry" className="text-[13px] font-medium text-[var(--ink)]">
-                  Country
+                  {t("admin.country")}
                 </Label>
                 <Input
                   id="locCountry"
@@ -248,7 +249,7 @@ export const AdminStorePage: React.FC = () => {
                   onChange={(e) =>
                     setLocationForm({ ...locationForm, country: e.target.value })
                   }
-                  placeholder="e.g. Algeria"
+                  placeholder="Algeria"
                   className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                 />
               </div>
@@ -256,7 +257,7 @@ export const AdminStorePage: React.FC = () => {
               {/* Wilaya / State */}
               <div className="space-y-2">
                 <Label htmlFor="locWilaya" className="text-[13px] font-medium text-[var(--ink)]">
-                  Wilaya / State
+                  {t("admin.wilaya")}
                 </Label>
                 <Select
                   value={locationForm.wilaya}
@@ -268,12 +269,14 @@ export const AdminStorePage: React.FC = () => {
                     id="locWilaya"
                     className="w-full bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs"
                   >
-                    <SelectValue placeholder="Select Wilaya / State" />
+                    <SelectValue placeholder={t("admin.wilaya")}>
+                      {locationForm.wilaya ? formatWilaya(locationForm.wilaya, i18n.language) : t("admin.wilaya")}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent className="max-h-64">
                     {ALGERIAN_WILAYAS.map((w) => (
                       <SelectItem key={w} value={w} className="text-[13px]">
-                        {w}
+                        {formatWilaya(w, i18n.language)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -283,7 +286,7 @@ export const AdminStorePage: React.FC = () => {
               {/* City */}
               <div className="space-y-2 sm:col-span-2 md:col-span-1">
                 <Label htmlFor="locCity" className="text-[13px] font-medium text-[var(--ink)]">
-                  City
+                  {t("admin.cityCommune")}
                 </Label>
                 <Input
                   id="locCity"
@@ -299,7 +302,7 @@ export const AdminStorePage: React.FC = () => {
               {/* Address */}
               <div className="space-y-2 md:col-span-3">
                 <Label htmlFor="locAddress" className="text-[13px] font-medium text-[var(--ink)]">
-                  Address
+                  {t("admin.streetAddress")}
                 </Label>
                 <Input
                   id="locAddress"
@@ -316,7 +319,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-2 sm:col-span-2 md:col-span-2">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="locMapsUrl" className="text-[13px] font-medium text-[var(--ink)]">
-                    Google Maps URL
+                    {t("admin.googleMapsUrl")}
                   </Label>
                   {locationForm.googleMapsUrl && (
                     <a
@@ -325,13 +328,13 @@ export const AdminStorePage: React.FC = () => {
                       rel="noopener noreferrer"
                       className="text-[11px] text-[var(--mid-gray)] hover:text-[var(--ink)] flex items-center gap-1 transition-colors"
                     >
-                      <span>Preview Link</span>
+                      <span>Preview</span>
                       <ExternalLink className="h-3 w-3" />
                     </a>
                   )}
                 </div>
                 <div className="relative">
-                  <Globe className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+                  <Globe className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
                   <Input
                     id="locMapsUrl"
                     type="url"
@@ -340,7 +343,7 @@ export const AdminStorePage: React.FC = () => {
                       setLocationForm({ ...locationForm, googleMapsUrl: e.target.value })
                     }
                     placeholder="https://maps.google.com/?q=..."
-                    className="pl-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
+                    className="ps-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                   />
                 </div>
               </div>
@@ -348,10 +351,10 @@ export const AdminStorePage: React.FC = () => {
               {/* WhatsApp Number */}
               <div className="space-y-2 sm:col-span-2 md:col-span-1">
                 <Label htmlFor="locWhatsApp" className="text-[13px] font-medium text-[var(--ink)]">
-                  WhatsApp Number
+                  {t("admin.whatsappBusiness")}
                 </Label>
                 <div className="relative">
-                  <MessageCircle className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+                  <MessageCircle className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
                   <Input
                     id="locWhatsApp"
                     type="tel"
@@ -360,7 +363,7 @@ export const AdminStorePage: React.FC = () => {
                       setLocationForm({ ...locationForm, whatsapp: e.target.value })
                     }
                     placeholder="+213 550 12 34 56"
-                    className="pl-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
+                    className="ps-10 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                   />
                 </div>
               </div>
@@ -371,7 +374,7 @@ export const AdminStorePage: React.FC = () => {
                 type="submit"
                 className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
               >
-                Save Location
+                {t("common.save")}
               </Button>
             </div>
           </form>
@@ -387,10 +390,10 @@ export const AdminStorePage: React.FC = () => {
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                Opening Hours
+                {t("admin.openingHoursTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                Showroom consultation schedule and atelier access window
+                {t("admin.openingHoursDesc")}
               </CardDescription>
             </div>
           </div>
@@ -404,7 +407,7 @@ export const AdminStorePage: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-medium text-[var(--ink)]">
-                      Saturday – Thursday
+                      {t("admin.satThu")}
                     </span>
                     <Badge
                       variant="outline"
@@ -414,16 +417,16 @@ export const AdminStorePage: React.FC = () => {
                           : "bg-neutral-500/10 text-[var(--mid-gray)] border-[var(--hairline)]"
                       }`}
                     >
-                      {hoursForm.saturdayToThursday.isOpen ? "Open" : "Closed"}
+                      {hoursForm.saturdayToThursday.isOpen ? t("admin.open") : t("admin.closed")}
                     </Badge>
                   </div>
                   <p className="text-[12px] text-[var(--mid-gray)]">
-                    Standard weekday atelier and showroom operations
+                    {t("admin.openingHoursDesc")}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* Hours inputs if open (timing in the left) */}
+                  {/* Hours inputs if open */}
                   {hoursForm.saturdayToThursday.isOpen && (
                     <div className="flex items-center gap-1.5">
                       <Input
@@ -458,7 +461,7 @@ export const AdminStorePage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Status Toggle buttons: Open / Closed (toggle in the right) */}
+                  {/* Status Toggle buttons: Open / Closed */}
                   <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs">
                     <button
                       type="button"
@@ -477,7 +480,7 @@ export const AdminStorePage: React.FC = () => {
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
                     >
-                      Open
+                      {t("admin.open")}
                     </button>
                     <button
                       type="button"
@@ -496,7 +499,7 @@ export const AdminStorePage: React.FC = () => {
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
                     >
-                      Closed
+                      {t("admin.closed")}
                     </button>
                   </div>
                 </div>
@@ -507,7 +510,7 @@ export const AdminStorePage: React.FC = () => {
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-medium text-[var(--ink)]">
-                      Friday
+                      {t("admin.friday")}
                     </span>
                     <Badge
                       variant="outline"
@@ -517,16 +520,16 @@ export const AdminStorePage: React.FC = () => {
                           : "bg-neutral-500/10 text-[var(--mid-gray)] border-[var(--hairline)]"
                       }`}
                     >
-                      {hoursForm.friday.isOpen ? "Open" : "Closed"}
+                      {hoursForm.friday.isOpen ? t("admin.open") : t("admin.closed")}
                     </Badge>
                   </div>
                   <p className="text-[12px] text-[var(--mid-gray)]">
-                    Weekend afternoon consultation schedule
+                    {t("admin.openingHoursDesc")}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-3">
-                  {/* Hours inputs if open (timing in the left) */}
+                  {/* Hours inputs if open */}
                   {hoursForm.friday.isOpen && (
                     <div className="flex items-center gap-1.5">
                       <Input
@@ -561,7 +564,7 @@ export const AdminStorePage: React.FC = () => {
                     </div>
                   )}
 
-                  {/* Status Toggle buttons: Open / Closed (toggle in the right) */}
+                  {/* Status Toggle buttons: Open / Closed */}
                   <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs">
                     <button
                       type="button"
@@ -580,7 +583,7 @@ export const AdminStorePage: React.FC = () => {
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
                     >
-                      Open
+                      {t("admin.open")}
                     </button>
                     <button
                       type="button"
@@ -599,7 +602,7 @@ export const AdminStorePage: React.FC = () => {
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
                     >
-                      Closed
+                      {t("admin.closed")}
                     </button>
                   </div>
                 </div>
@@ -611,7 +614,7 @@ export const AdminStorePage: React.FC = () => {
                 type="submit"
                 className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
               >
-                Save Hours
+                {t("common.save")}
               </Button>
             </div>
           </form>
@@ -627,10 +630,10 @@ export const AdminStorePage: React.FC = () => {
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                Social Media
+                {t("admin.socialLinksTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                Public brand profiles, visual catalogues, and messaging handles
+                {t("admin.socialLinksDesc")}
               </CardDescription>
             </div>
           </div>
@@ -643,7 +646,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="socialInstagram" className="text-[13px] font-medium text-[var(--ink)] flex items-center gap-2">
                   <Instagram className="h-4 w-4 text-[var(--mid-gray)]" />
-                  <span>Instagram</span>
+                  <span>{t("admin.instagramUrl")}</span>
                 </Label>
                 <Input
                   id="socialInstagram"
@@ -660,7 +663,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="socialFacebook" className="text-[13px] font-medium text-[var(--ink)] flex items-center gap-2">
                   <Facebook className="h-4 w-4 text-[var(--mid-gray)]" />
-                  <span>Facebook</span>
+                  <span>{t("admin.facebookUrl")}</span>
                 </Label>
                 <Input
                   id="socialFacebook"
@@ -677,7 +680,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="socialTikTok" className="text-[13px] font-medium text-[var(--ink)] flex items-center gap-2">
                   <span className="font-semibold text-xs leading-none">TT</span>
-                  <span>TikTok</span>
+                  <span>{t("admin.tiktokUrl")}</span>
                 </Label>
                 <Input
                   id="socialTikTok"
@@ -694,7 +697,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-2">
                 <Label htmlFor="socialWhatsApp" className="text-[13px] font-medium text-[var(--ink)] flex items-center gap-2">
                   <MessageCircle className="h-4 w-4 text-[var(--mid-gray)]" />
-                  <span>WhatsApp</span>
+                  <span>{t("admin.whatsappBusiness")}</span>
                 </Label>
                 <Input
                   id="socialWhatsApp"
@@ -702,7 +705,7 @@ export const AdminStorePage: React.FC = () => {
                   onChange={(e) =>
                     setSocialForm({ ...socialForm, whatsapp: e.target.value })
                   }
-                  placeholder="+213 550 12 34 56 or https://wa.me/..."
+                  placeholder="+213 550 12 34 56"
                   className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
                 />
               </div>
@@ -713,7 +716,7 @@ export const AdminStorePage: React.FC = () => {
                 type="submit"
                 className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
               >
-                Save Social Links
+                {t("common.save")}
               </Button>
             </div>
           </form>
@@ -729,10 +732,10 @@ export const AdminStorePage: React.FC = () => {
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                Delivery
+                {t("admin.deliveryOptionsTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                Shipping dispatch availability and standard flat-rate delivery charges
+                {t("admin.deliveryOptionsDesc")}
               </CardDescription>
             </div>
           </div>
@@ -745,7 +748,7 @@ export const AdminStorePage: React.FC = () => {
               <div className="space-y-1">
                 <div className="flex items-center gap-2.5">
                   <span className="text-[14px] font-medium text-[var(--ink)]">
-                    Delivery Enabled
+                    {t("admin.enableDelivery")}
                   </span>
                   <Badge
                     variant="outline"
@@ -755,11 +758,11 @@ export const AdminStorePage: React.FC = () => {
                         : "bg-neutral-500/10 text-[var(--mid-gray)] border-[var(--hairline)]"
                     }`}
                   >
-                    {deliveryForm.deliveryEnabled ? "Active" : "Disabled"}
+                    {deliveryForm.deliveryEnabled ? t("admin.inStock") : t("admin.outOfStock")}
                   </Badge>
                 </div>
                 <p className="text-[12px] text-[var(--mid-gray)]">
-                  Toggle whether orders can be dispatched via domestic courier
+                  {t("admin.enableDeliveryDesc")}
                 </p>
               </div>
 
@@ -776,10 +779,10 @@ export const AdminStorePage: React.FC = () => {
               {/* Default Fee: To Office */}
               <div className="space-y-2">
                 <Label htmlFor="feeOffice" className="text-[13px] font-medium text-[var(--ink)]">
-                  Default Fee (To Office)
+                  {t("admin.deskFee")}
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
+                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
                     $
                   </span>
                   <Input
@@ -795,21 +798,18 @@ export const AdminStorePage: React.FC = () => {
                       })
                     }
                     placeholder="15"
-                    className="pl-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
+                    className="ps-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
                   />
                 </div>
-                <p className="text-[11px] text-[var(--mid-gray)]">
-                  Flat-rate courier shipping to desk or corporate building
-                </p>
               </div>
 
               {/* Default Fee: To Home */}
               <div className="space-y-2">
                 <Label htmlFor="feeHome" className="text-[13px] font-medium text-[var(--ink)]">
-                  Default Fee (To Home)
+                  {t("admin.homeFee")}
                 </Label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
+                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
                     $
                   </span>
                   <Input
@@ -825,12 +825,9 @@ export const AdminStorePage: React.FC = () => {
                       })
                     }
                     placeholder="25"
-                    className="pl-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
+                    className="ps-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
                   />
                 </div>
-                <p className="text-[11px] text-[var(--mid-gray)]">
-                  Standard residential courier delivery to doorstep
-                </p>
               </div>
             </div>
 
@@ -839,7 +836,7 @@ export const AdminStorePage: React.FC = () => {
                 type="submit"
                 className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
               >
-                Save Delivery
+                {t("common.save")}
               </Button>
             </div>
           </form>
