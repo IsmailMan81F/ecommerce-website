@@ -14,6 +14,7 @@ import {
   Laptop,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { useStore } from "@/context/StoreContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 // Crisp WhatsApp SVG Icon for brand accuracy
@@ -31,6 +32,7 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "h-4 w-4" 
 export const Footer: React.FC = () => {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const { categories } = useStore();
 
   return (
     <footer className="w-full bg-[var(--surface-alt)] border-t border-[var(--hairline)] mt-24 text-[var(--ink)]">
@@ -73,46 +75,16 @@ export const Footer: React.FC = () => {
                   <span className="text-[11px] text-[var(--mid-gray)] font-mono">{t("footer.curated")}</span>
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/categories/studio-audio"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Studio Audio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/ceramics-objects"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Ceramics & Objects
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/minimalist-furniture"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Minimalist Furniture
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/leather-goods"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Leather Goods
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/tactile-homeware"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Tactile Homeware
-                </Link>
-              </li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link
+                    to={`/categories/${cat.slug}`}
+                    className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 

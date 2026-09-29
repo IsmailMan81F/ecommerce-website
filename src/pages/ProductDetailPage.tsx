@@ -197,7 +197,7 @@ export const ProductDetailPage: React.FC = () => {
             <div className="flex items-center gap-2 text-caption text-[var(--mid-gray)]">
               <span>{product.categoryName}</span>
               <span aria-hidden="true">·</span>
-              <span>Atelier Ref. {product.id.toUpperCase()}</span>
+              <span>SKU: {product.id.toUpperCase()}</span>
             </div>
 
             <h1 className="text-heading-lg text-[var(--ink)] tracking-tight">

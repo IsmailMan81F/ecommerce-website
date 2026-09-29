@@ -81,7 +81,7 @@ export const HomePage: React.FC = () => {
             <div className="relative aspect-[16/10] sm:aspect-[16/11] w-full overflow-hidden rounded-[24px] border border-[var(--hairline)] bg-[var(--canvas)] shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]">
               <img
                 src={HERO_IMAGE}
-                alt="Minimalist architectural living interior with sculptural furniture"
+                alt="KØRD contemporary clothing collection lookbook"
                 referrerPolicy="no-referrer"
                 className="h-full w-full object-cover object-center"
               />
@@ -94,7 +94,7 @@ export const HomePage: React.FC = () => {
                     {t("home.heroCardSubtitle")}
                   </p>
                 </div>
-                <Link to="/categories/minimalist-furniture">
+                <Link to="/categories/t-shirts">
                   <span className="text-caption text-[var(--ink)] hover:underline inline-flex items-center gap-1 font-medium">
                     <span>{t("common.view")}</span>
                     <ArrowRight className="h-3 w-3 rtl:rotate-180" />
