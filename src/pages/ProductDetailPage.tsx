@@ -5,6 +5,8 @@ import {
   Minus,
   Plus,
   Maximize2,
+  ArrowLeft,
+  ArrowRight,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
@@ -107,10 +109,15 @@ export const ProductDetailPage: React.FC = () => {
         <div className="lg:col-span-7 space-y-4">
           <div className="relative group">
             <Carousel
+              dir="ltr"
               setApi={setCarouselApi}
+              opts={{
+                loop: true,
+                direction: "ltr",
+              }}
               className="w-full overflow-hidden rounded-[24px] border border-[var(--hairline)] bg-[var(--canvas)] shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]"
             >
-              <CarouselContent>
+              <CarouselContent dir="ltr">
                 {product.images.map((img, index) => (
                   <CarouselItem key={index}>
                     <div
@@ -123,7 +130,7 @@ export const ProductDetailPage: React.FC = () => {
                         referrerPolicy="no-referrer"
                         className="h-full w-full object-cover object-center"
                       />
-                      <div className="absolute top-4 end-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
+                      <div className="absolute top-4 right-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
                         <Maximize2 className="h-4 w-4" />
                       </div>
                     </div>
@@ -133,8 +140,26 @@ export const ProductDetailPage: React.FC = () => {
 
               {product.images.length > 1 && (
                 <>
-                  <CarouselPrevious className="start-4 opacity-80 group-hover:opacity-100 transition-opacity rtl:rotate-180" />
-                  <CarouselNext className="end-4 opacity-80 group-hover:opacity-100 transition-opacity rtl:rotate-180" />
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="iconSm"
+                    onClick={() => carouselApi?.scrollPrev()}
+                    aria-label="Previous image"
+                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
+                  >
+                    <ArrowLeft className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="iconSm"
+                    onClick={() => carouselApi?.scrollNext()}
+                    aria-label="Next image"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
+                  >
+                    <ArrowRight className="h-4 w-4" />
+                  </Button>
                 </>
               )}
             </Carousel>
@@ -142,7 +167,7 @@ export const ProductDetailPage: React.FC = () => {
 
           {/* Thumbnail Strip */}
           {product.images.length > 1 && (
-            <div className="flex items-center gap-3 overflow-x-auto pb-2">
+            <div dir="ltr" className="flex items-center gap-3 overflow-x-auto pb-2">
               {product.images.map((img, index) => (
                 <button
                   key={index}

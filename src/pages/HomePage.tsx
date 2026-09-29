@@ -16,7 +16,8 @@ import { HERO_IMAGE } from "@/lib/data";
 import { useStore } from "@/context/StoreContext";
 
 export const HomePage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isRtl = i18n.language === "ar";
   const { products, categories } = useStore();
   const bestSellers = products.filter((p) => p.isBestSeller).slice(0, 4);
 
@@ -123,9 +124,11 @@ export const HomePage: React.FC = () => {
 
         {/* Carousel */}
         <Carousel
+          key={isRtl ? "rtl" : "ltr"}
           opts={{
             align: "start",
             loop: false,
+            direction: isRtl ? "rtl" : "ltr",
           }}
           className="w-full relative"
         >
