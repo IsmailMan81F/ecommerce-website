@@ -18,6 +18,7 @@ import { useCart } from "@/context/CartContext";
 import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -32,17 +33,10 @@ export const Navbar: React.FC = () => {
 
   const isRtl = i18n.language === "ar";
 
-  // Prevent main page scrolling when mobile menu or search dialog is opened
+  // Prevent main page scrolling and fix body height/width on viewport when mobile menu or search dialog is opened
   React.useEffect(() => {
     if (mobileMenuOpen || searchDialogOpen) {
-      const originalOverflow = document.body.style.overflow;
-      const originalTouchAction = document.body.style.touchAction;
-      document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-        document.body.style.touchAction = originalTouchAction;
-      };
+      return lockViewportScroll();
     }
   }, [mobileMenuOpen, searchDialogOpen]);
 

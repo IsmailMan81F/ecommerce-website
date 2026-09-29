@@ -8,6 +8,7 @@ import { FilterBar } from "@/components/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { useStore } from "@/context/StoreContext";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 export const CategoriesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -95,17 +96,10 @@ export const CategoriesPage: React.FC = () => {
     Boolean(filters.availability && filters.availability !== "all") ||
     Boolean(filters.sortBy && filters.sortBy !== "featured");
 
-  // Disable scrolling on the main page when the filter sheet is open
+  // Disable scrolling on the main page when the filter sheet is open, fixing body to viewport
   React.useEffect(() => {
     if (mobileFilterOpen) {
-      const originalOverflow = document.body.style.overflow;
-      const originalTouchAction = document.body.style.touchAction;
-      document.body.style.overflow = "hidden";
-      document.body.style.touchAction = "none";
-      return () => {
-        document.body.style.overflow = originalOverflow;
-        document.body.style.touchAction = originalTouchAction;
-      };
+      return lockViewportScroll();
     }
   }, [mobileFilterOpen]);
 
@@ -150,10 +144,10 @@ export const CategoriesPage: React.FC = () => {
                   <span>{t("categories.filterHeading")}</span>
                 </Button>
               </SheetTrigger>
-              {/* Sidebar opens on right for Arabic, left for LTR. Full 100vh/100vw on mobile, sliding animation on tablet */}
+              {/* Sidebar opens on right for Arabic, left for LTR. Full 100vh/100vw on mobile without slide, smooth slide on tablet */}
               <SheetContent
                 side={isRtl ? "right" : "left"}
-                className="w-full max-sm:fixed max-sm:inset-0 max-sm:w-screen max-sm:h-screen max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none max-sm:animate-none max-sm:data-[state=open]:animate-none max-sm:data-[state=open]:transition-none sm:max-w-md sm:w-[420px] sm:h-full p-6 overflow-y-auto flex flex-col justify-between bg-[var(--paper)] sm:duration-300 sm:ease-out"
+                className="w-full max-sm:fixed max-sm:inset-0 max-sm:w-screen max-sm:h-screen max-sm:h-[100dvh] max-sm:max-w-none max-sm:rounded-none max-sm:!transform-none max-sm:![animation:none] sm:max-w-md sm:w-[420px] sm:h-full p-6 overflow-y-auto flex flex-col justify-between bg-[var(--paper)]"
               >
                 <div>
                   <SheetHeader className="mb-6 text-start">

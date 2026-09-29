@@ -20,7 +20,7 @@ const SheetOverlay = React.forwardRef<
 >(({ className, ...props }, ref) => (
   <SheetPrimitive.Overlay
     className={cn(
-      "fixed inset-0 z-50 bg-black/40 backdrop-blur-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 duration-300",
+      "fixed inset-0 z-50 bg-black/40 backdrop-blur-md sheet-overlay",
       className
     )}
     {...props}
@@ -30,16 +30,16 @@ const SheetOverlay = React.forwardRef<
 SheetOverlay.displayName = SheetPrimitive.Overlay.displayName;
 
 const sheetVariants = cva(
-  "fixed z-50 gap-4 bg-[var(--paper)] p-6 shadow-xl transition-transform ease-out data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:duration-300 data-[state=open]:duration-300",
+  "fixed z-50 gap-4 bg-[var(--paper)] p-6 shadow-xl transition-all",
   {
     variants: {
       side: {
-        top: "inset-x-0 top-0 border-b border-[var(--hairline)] data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top",
+        top: "inset-x-0 top-0 border-b border-[var(--hairline)]",
         bottom:
-          "inset-x-0 bottom-0 border-t border-[var(--hairline)] data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom",
-        left: "inset-y-0 left-0 h-full w-full sm:w-3/4 sm:max-w-md border-r border-[var(--hairline)] data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left",
+          "inset-x-0 bottom-0 border-t border-[var(--hairline)]",
+        left: "inset-y-0 left-0 h-full w-[300px] sm:w-[340px] border-r border-[var(--hairline)]",
         right:
-          "inset-y-0 right-0 h-full w-full sm:w-3/4 sm:max-w-md border-l border-[var(--hairline)] data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right",
+          "inset-y-0 right-0 h-full w-[300px] sm:w-[340px] border-l border-[var(--hairline)]",
       },
     },
     defaultVariants: {
@@ -60,7 +60,8 @@ const SheetContent = React.forwardRef<
     <SheetOverlay />
     <SheetPrimitive.Content
       ref={ref}
-      className={cn(sheetVariants({ side }), className)}
+      data-side={side}
+      className={cn(sheetVariants({ side }), `sheet-content-${side}`, className)}
       {...props}
     >
       {children}
