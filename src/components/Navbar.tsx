@@ -32,6 +32,20 @@ export const Navbar: React.FC = () => {
 
   const isRtl = i18n.language === "ar";
 
+  // Prevent main page scrolling when mobile menu or search dialog is opened
+  React.useEffect(() => {
+    if (mobileMenuOpen || searchDialogOpen) {
+      const originalOverflow = document.body.style.overflow;
+      const originalTouchAction = document.body.style.touchAction;
+      document.body.style.overflow = "hidden";
+      document.body.style.touchAction = "none";
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [mobileMenuOpen, searchDialogOpen]);
+
   const navLinks = [
     { name: t("nav.home"), path: "/" },
     { name: t("nav.categories"), path: "/categories" },
@@ -94,36 +108,38 @@ export const Navbar: React.FC = () => {
 
           {/* Right: Language Switcher + Search + Theme Toggle + Cart Icon + Mobile Trigger */}
           <div className="flex items-center gap-1.5 sm:gap-2">
-            {/* Language Switcher in Navigation: Desktop selection card / dropdown on small screens */}
+            {/* Language Switcher in Navigation: Desktop selection card / dropdown on tablet screens, hidden on mobile */}
             <div className="hidden lg:flex items-center">
               <LanguageSwitcher variant="card" />
             </div>
-            <div className="flex lg:hidden items-center">
+            <div className="hidden sm:flex lg:hidden items-center">
               <LanguageSwitcher variant="dropdown" />
             </div>
 
             <Button
               variant="ghost"
               size="icon"
-              className="text-[var(--ink)] hover:text-[var(--ink)]"
+              className="text-[var(--ink)] hover:text-[var(--ink)] cursor-pointer"
               onClick={() => setSearchDialogOpen(true)}
               aria-label={t("common.searchCatalog")}
             >
               <Search className="h-[18px] w-[18px]" />
             </Button>
 
-            {/* Quick Theme Cycle Button */}
+            {/* Quick Theme Toggle Button: only dark and light, hidden on mobile screens */}
             <Button
               variant="ghost"
               size="icon"
               onClick={cycleTheme}
-              className="text-[var(--ink)] hover:text-[var(--ink)]"
-              title={`Current theme: ${theme} (${resolvedTheme}). Click to cycle.`}
+              className="hidden sm:inline-flex text-[var(--ink)] hover:text-[var(--ink)] cursor-pointer"
+              title={`Theme: ${resolvedTheme}. Click to toggle.`}
               aria-label={t("common.theme")}
             >
-              {theme === "light" && <Sun className="h-[18px] w-[18px]" />}
-              {theme === "dark" && <Moon className="h-[18px] w-[18px]" />}
-              {theme === "system" && <Laptop className="h-[18px] w-[18px]" />}
+              {resolvedTheme === "dark" ? (
+                <Moon className="h-[18px] w-[18px]" />
+              ) : (
+                <Sun className="h-[18px] w-[18px]" />
+              )}
             </Button>
 
             <Link to="/cart">
@@ -140,14 +156,14 @@ export const Navbar: React.FC = () => {
               </Button>
             </Link>
 
-            {/* Mobile Nav Sheet: Side opens on left for Arabic, right for LTR as requested */}
+            {/* Mobile Nav Sheet: Side opens on left for Arabic, right for LTR with smooth slide */}
             <div className="md:hidden">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <Sheet modal={true} open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-[var(--ink)]"
+                    className="text-[var(--ink)] cursor-pointer"
                     aria-label={t("nav.menu")}
                   >
                     <Menu className="h-5 w-5" />
@@ -155,14 +171,23 @@ export const Navbar: React.FC = () => {
                 </SheetTrigger>
                 <SheetContent
                   side={isRtl ? "left" : "right"}
-                  className="w-[300px] flex flex-col justify-between p-6"
+                  className="w-[300px] sm:w-[340px] flex flex-col justify-between p-6 duration-300 ease-out"
                 >
                   <div>
-                    <SheetHeader className="text-start mb-6">
-                      <SheetTitle className="text-lg font-semibold tracking-tight">
-                        KØRD
-                      </SheetTitle>
-                    </SheetHeader>
+                    {/* Brand header in drawer: keep on the left for all screen sizes including Arabic mobile */}
+                    <div dir="ltr" className="text-left">
+                      <SheetHeader className="text-left mb-6">
+                        <SheetTitle className="text-lg font-semibold tracking-tight text-left">
+                          <Link
+                            to="/"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-left font-semibold text-[var(--ink)] select-none"
+                          >
+                            KØRD
+                          </Link>
+                        </SheetTitle>
+                      </SheetHeader>
+                    </div>
                     <nav className="flex flex-col gap-4 mt-6">
                       {navLinks.map((link) => {
                         const isActive =
@@ -196,17 +221,17 @@ export const Navbar: React.FC = () => {
                       <LanguageSwitcher variant="card" className="w-full justify-between" />
                     </div>
 
-                    {/* Theme selector in mobile drawer */}
+                    {/* Theme selector in mobile drawer: only light and dark, no system option */}
                     <div className="space-y-1.5">
                       <p className="text-[12px] font-medium text-[var(--mid-gray)]">
                         {t("common.theme")}
                       </p>
-                      <div className="grid grid-cols-3 gap-1 bg-[var(--surface-alt)] p-1 rounded-[14px] border border-[var(--hairline)]">
+                      <div className="grid grid-cols-2 gap-1 bg-[var(--surface-alt)] p-1 rounded-[14px] border border-[var(--hairline)]">
                         <button
                           type="button"
                           onClick={() => setTheme("light")}
                           className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                            theme === "light"
+                            resolvedTheme === "light"
                               ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
@@ -218,25 +243,13 @@ export const Navbar: React.FC = () => {
                           type="button"
                           onClick={() => setTheme("dark")}
                           className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                            theme === "dark"
+                            resolvedTheme === "dark"
                               ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
                         >
                           <Moon className="h-3.5 w-3.5" />
                           <span>{t("common.dark")}</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTheme("system")}
-                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
-                            theme === "system"
-                              ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
-                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                          }`}
-                        >
-                          <Laptop className="h-3.5 w-3.5" />
-                          <span>{t("common.system")}</span>
                         </button>
                       </div>
                     </div>
@@ -256,7 +269,7 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Global Quick Search Dialog */}
-      <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+      <Dialog modal={true} open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
         <DialogContent className="sm:max-w-[540px] p-6">
           <DialogHeader>
             <DialogTitle className="text-heading-sm">

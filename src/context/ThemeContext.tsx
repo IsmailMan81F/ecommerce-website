@@ -39,10 +39,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const cycleTheme = () => {
-    if (theme === "light") {
+    if (resolvedTheme === "light") {
       setTheme("dark");
-    } else if (theme === "dark") {
-      setTheme("system");
     } else {
       setTheme("light");
     }
