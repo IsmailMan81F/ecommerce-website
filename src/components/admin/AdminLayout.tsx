@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { AdminSettingsDialog } from "./AdminSettingsDialog";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 export const AdminLayout: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -34,6 +35,13 @@ export const AdminLayout: React.FC = () => {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
   const isRtl = i18n.language === "ar";
+
+  // Prevent background scroll on main screen when mobile sidebar or settings dialog is open
+  React.useEffect(() => {
+    if (mobileSidebarOpen || settingsOpen) {
+      return lockViewportScroll();
+    }
+  }, [mobileSidebarOpen, settingsOpen]);
 
   const navItems = [
     {
@@ -65,9 +73,8 @@ export const AdminLayout: React.FC = () => {
   ];
 
   const cycleTheme = () => {
-    if (theme === "light") setTheme("dark");
-    else if (theme === "dark") setTheme("system");
-    else setTheme("light");
+    if (resolvedTheme === "dark" || theme === "dark") setTheme("light");
+    else setTheme("dark");
   };
 
   return (
@@ -86,18 +93,16 @@ export const AdminLayout: React.FC = () => {
         <div className="flex items-center gap-1">
           <LanguageSwitcher variant="dropdown" />
 
-          {/* Quick Theme Cycle Button for Mobile */}
+          {/* Theme Toggle Button for Mobile and Tablet - Light/Dark only */}
           <Button
             variant="ghost"
             size="iconSm"
             onClick={cycleTheme}
-            title={`Current theme: ${theme} (${resolvedTheme}). Click to change.`}
-            aria-label="Cycle theme"
-            className="text-[var(--mid-gray)] hover:text-[var(--ink)]"
+            title={`Toggle theme (${resolvedTheme === "dark" ? "Dark" : "Light"})`}
+            aria-label="Toggle theme"
+            className="text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer"
           >
-            {theme === "light" && <Sun className="h-4 w-4" />}
-            {theme === "dark" && <Moon className="h-4 w-4" />}
-            {theme === "system" && <Laptop className="h-4 w-4" />}
+            {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
 
           <Button
@@ -220,7 +225,7 @@ export const AdminLayout: React.FC = () => {
                 type="button"
                 onClick={() => setTheme("dark")}
                 className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${
-                  theme === "dark"
+                  theme === "dark" || resolvedTheme === "dark"
                     ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
                     : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                 }`}
@@ -228,19 +233,6 @@ export const AdminLayout: React.FC = () => {
                 aria-label="Dark mode"
               >
                 <Moon className="h-3.5 w-3.5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme("system")}
-                className={`p-1.5 rounded-[8px] transition-colors cursor-pointer ${
-                  theme === "system"
-                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
-                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                }`}
-                title="System preference"
-                aria-label="System preference"
-              >
-                <Laptop className="h-3.5 w-3.5" />
               </button>
             </div>
           </div>

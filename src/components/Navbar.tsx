@@ -19,6 +19,7 @@ import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { lockViewportScroll } from "@/lib/scrollLock";
+import { formatPrice } from "@/lib/utils";
 
 export const Navbar: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -330,7 +331,7 @@ export const Navbar: React.FC = () => {
                         </div>
                       </div>
                       <span className="text-[13px] font-medium tabular-nums text-[var(--ink)]">
-                        ${product.price}
+                        {formatPrice(product.price)}
                       </span>
                     </button>
                   ))}

@@ -15,8 +15,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
-import { LogOut, Sun, Moon, Laptop, Check } from "lucide-react";
+import { LogOut, Sun, Moon, Check } from "lucide-react";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 interface AdminSettingsDialogProps {
   open: boolean;
@@ -35,6 +36,13 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  // Lock background viewport when settings dialog is open on mobile/tablet
+  useEffect(() => {
+    if (open) {
+      return lockViewportScroll();
+    }
+  }, [open]);
 
   // Sync username if changed
   useEffect(() => {
@@ -120,10 +128,10 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
 
           <Separator />
 
-          {/* Theme Selector */}
+          {/* Theme Selector - Light & Dark Only */}
           <div className="space-y-2">
             <Label>{t("admin.theme")}</Label>
-            <div className="grid grid-cols-3 gap-2">
+            <div className="grid grid-cols-2 gap-2">
               <button
                 type="button"
                 onClick={() => setTheme("light")}
@@ -147,18 +155,6 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
               >
                 <Moon className="h-4 w-4" />
                 <span>{t("common.dark")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => setTheme("system")}
-                className={`flex items-center justify-center gap-2 h-10 px-3 rounded-[14px] text-[13px] font-medium border transition-colors cursor-pointer ${
-                  theme === "system"
-                    ? "bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)]"
-                    : "bg-[var(--surface-alt)] text-[var(--ink)] border-[var(--hairline)] hover:border-[var(--mid-gray)]"
-                }`}
-              >
-                <Laptop className="h-4 w-4" />
-                <span>{t("common.system")}</span>
               </button>
             </div>
           </div>

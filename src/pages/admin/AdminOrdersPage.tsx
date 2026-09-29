@@ -33,6 +33,7 @@ import { Badge } from "@/components/ui/badge";
 import { Search, Eye, Calendar, User, Phone, MapPin, MessageSquare, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatWilaya } from "@/i18n/wilayas";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 export const AdminOrdersPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -42,6 +43,13 @@ export const AdminOrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+
+  // Lock background screen scroll when view order details modal is open on mobile
+  React.useEffect(() => {
+    if (selectedOrder) {
+      return lockViewportScroll();
+    }
+  }, [selectedOrder]);
 
   const statusOptions: { label: string; value: OrderStatus }[] = useMemo(
     () => [
@@ -90,16 +98,17 @@ export const AdminOrdersPage: React.FC = () => {
     switch (status) {
       case "confirmed":
       case "delivered":
-        return "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/60 dark:text-emerald-300 dark:border-emerald-800 font-medium";
+        return "bg-emerald-50/70 text-emerald-600 border-emerald-200/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50 font-normal";
       case "cancelled":
-        return "bg-rose-50 text-rose-800 border-rose-300 dark:bg-rose-950/60 dark:text-rose-300 dark:border-rose-800 font-medium";
+        return "bg-rose-50/70 text-rose-600 border-rose-200/70 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50 font-normal";
       case "processing":
+        return "bg-blue-50/70 text-blue-600 border-blue-200/70 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50 font-normal";
       case "pending":
-        return "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/60 dark:text-amber-300 dark:border-amber-800 font-medium";
+        return "bg-amber-50/70 text-amber-600 border-amber-200/70 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50 font-normal";
       case "shipped":
-        return "bg-sky-50 text-sky-800 border-sky-300 dark:bg-sky-950/60 dark:text-sky-300 dark:border-sky-800 font-medium";
+        return "bg-indigo-50/70 text-indigo-600 border-indigo-200/70 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/50 font-normal";
       default:
-        return "bg-zinc-50 text-zinc-800 border-zinc-300 font-medium";
+        return "bg-slate-50/70 text-slate-600 border-slate-200/70 font-normal";
     }
   };
 
