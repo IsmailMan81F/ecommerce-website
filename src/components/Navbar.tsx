@@ -30,6 +30,7 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
 
   const isRtl = i18n.language === "ar";
 
@@ -39,6 +40,19 @@ export const Navbar: React.FC = () => {
       return lockViewportScroll();
     }
   }, [mobileMenuOpen, searchDialogOpen]);
+
+  // Ensure keyboard opens and pushes the search bar above the keyboard every time it opens
+  React.useEffect(() => {
+    if (searchDialogOpen) {
+      const timer = setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [searchDialogOpen]);
 
   const navLinks = [
     { name: t("nav.home"), path: "/" },
@@ -274,6 +288,7 @@ export const Navbar: React.FC = () => {
             <div className="relative">
               <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
               <Input
+                ref={searchInputRef}
                 type="search"
                 placeholder={t("common.searchPlaceholder")}
                 value={searchQuery}
