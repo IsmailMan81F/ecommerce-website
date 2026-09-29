@@ -112,6 +112,9 @@
 /* Base typography and body style */
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 body {
@@ -120,6 +123,18 @@ body {
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
   min-height: 100vh;
 }
 
@@ -135,22 +150,6 @@ body.rtl {
 /* RTL icon mirroring for directional navigation arrows */
 [dir="rtl"] .rtl-flip {
   transform: scaleX(-1);
-}
-
-/* Ensure no scroll-locking on body or html anywhere */
-body[data-scroll-locked],
-html[data-scroll-locked],
-[data-scroll-locked] {
-  overflow: visible !important;
-  margin-right: 0px !important;
-  padding-right: 0px !important;
-  pointer-events: auto !important;
-  touch-action: auto !important;
-  overscroll-behavior: auto !important;
-}
-
-[class*="block-interactivity"] {
-  pointer-events: auto !important;
 }
 
 /* Button flow: push buttons down to the next line when space is constrained */
@@ -315,37 +314,49 @@ html[data-scroll-locked],
   animation: sheet-slide-out-right 250ms ease-in forwards !important;
 }
 
+/* Viewport lock styles without position:fixed, ensuring modals stay dead-centered */
+html.viewport-locked,
+body.viewport-locked {
+  overflow: hidden !important;
+  height: 100% !important;
+  height: 100dvh !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  overscroll-behavior: none !important;
+  touch-action: none !important;
+}
+
 /* -------------------------------------------------------------
- * Dialog Modal Animations (Smooth Zoom & Slide In from Center)
+ * Dialog Modal Animations (Smooth Zoom & Scale from Center)
  * ------------------------------------------------------------- */
 @keyframes dialog-modal-zoom-in {
   0% {
     opacity: 0;
-    transform: translate(-50%, -46%) scale(0.96);
+    transform: scale(0.96);
   }
   100% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
 }
 
 @keyframes dialog-modal-zoom-out {
   0% {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: scale(1);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -46%) scale(0.96);
+    transform: scale(0.96);
   }
 }
 
 .dialog-modal-content[data-state="open"] {
-  animation: dialog-modal-zoom-in 320ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+  animation: dialog-modal-zoom-in 260ms cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
   will-change: transform, opacity;
 }
 .dialog-modal-content[data-state="closed"] {
-  animation: dialog-modal-zoom-out 220ms ease-in forwards !important;
+  animation: dialog-modal-zoom-out 200ms ease-in forwards !important;
 }
 
 .dialog-modal-overlay[data-state="open"] {

@@ -34,20 +34,22 @@ const DialogContent = React.forwardRef<
 >(({ className, children, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
-    <DialogPrimitive.Content
-      ref={ref}
-      className={cn(
-        "fixed left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border border-[var(--hairline)] bg-[var(--paper)] p-6 shadow-2xl rounded-[24px] sm:max-w-[550px] dialog-modal-content",
-        className
-      )}
-      {...props}
-    >
-      {children}
-      <DialogPrimitive.Close className="absolute right-4 top-4 rounded-[10px] p-1.5 text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--surface-alt)] focus:outline-none transition-colors">
-        <X className="h-4 w-4" />
-        <span className="sr-only">Close</span>
-      </DialogPrimitive.Close>
-    </DialogPrimitive.Content>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 pointer-events-none">
+      <DialogPrimitive.Content
+        ref={ref}
+        className={cn(
+          "pointer-events-auto relative w-full max-w-[calc(100vw-2rem)] sm:max-w-[540px] max-h-[85vh] max-h-[85dvh] overflow-y-auto border border-[var(--hairline)] bg-[var(--paper)] p-6 shadow-2xl rounded-[24px] dialog-modal-content focus:outline-none",
+          className
+        )}
+        {...props}
+      >
+        {children}
+        <DialogPrimitive.Close className="absolute end-4 top-4 rounded-[10px] p-1.5 text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--surface-alt)] focus:outline-none transition-colors cursor-pointer">
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      </DialogPrimitive.Content>
+    </div>
   </DialogPortal>
 ));
 DialogContent.displayName = DialogPrimitive.Content.displayName;
