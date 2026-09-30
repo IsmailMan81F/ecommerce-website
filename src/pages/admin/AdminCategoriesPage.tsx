@@ -39,27 +39,28 @@ import {
   CheckCircle2,
   Package,
 } from "lucide-react";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 const SUGGESTED_PRESETS = [
   {
-    name: "Architectural Audio",
-    image: "https://images.unsplash.com/photo-1545454675-3531b543be5d?auto=format&fit=crop&w=1000&q=80",
-    desc: "Acoustic hardware and analog precision playback instruments.",
+    name: "T-Shirts & Tops",
+    image: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?auto=format&fit=crop&w=1000&q=80",
+    desc: "Heavyweight boxy crewneck t-shirts and architectural basics.",
   },
   {
-    name: "Ceramic Stoneware",
-    image: "https://images.unsplash.com/photo-1612196808214-b8e1d6145a8c?auto=format&fit=crop&w=1000&q=80",
-    desc: "Handcrafted mineral pottery and tactile sculptural vessels.",
+    name: "Pants & Trousers",
+    image: "https://images.unsplash.com/photo-1624378439575-d8705ad7ae80?auto=format&fit=crop&w=1000&q=80",
+    desc: "Pleated wide-leg trousers, tailored chinos, and streetwear pants.",
   },
   {
-    name: "Vegetable-Tanned Leather",
-    image: "https://images.unsplash.com/photo-1548036328-c9fa89d128fa?auto=format&fit=crop&w=1000&q=80",
-    desc: "Architectural leather accessories and bespoke daily folios.",
+    name: "Shoes & Footwear",
+    image: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=1000&q=80",
+    desc: "Minimalist leather low-top sneakers and lug-sole derby shoes.",
   },
   {
-    name: "Hardwood Furniture",
-    image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&w=1000&q=80",
-    desc: "Sculptural seating, monolithic tables, and balanced woodwork.",
+    name: "Outerwear & Jackets",
+    image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?auto=format&fit=crop&w=1000&q=80",
+    desc: "Minimalist zip jackets, tailored blazers, and clean overcoats.",
   },
 ];
 
@@ -93,6 +94,13 @@ export const AdminCategoriesPage: React.FC = () => {
     step: 1,
     affectedProducts: [],
   });
+
+  // Fix height of main screen and lock background scroll when category modal is open
+  React.useEffect(() => {
+    if (formOpen || deleteModal.isOpen) {
+      return lockViewportScroll();
+    }
+  }, [formOpen, deleteModal.isOpen]);
 
   // Filtered categories
   const filteredCategories = useMemo(() => {

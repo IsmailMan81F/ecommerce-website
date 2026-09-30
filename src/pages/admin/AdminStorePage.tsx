@@ -96,7 +96,7 @@ export const AdminStorePage: React.FC = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8 pb-16">
+    <div className="w-full max-w-4xl mx-auto space-y-6 sm:space-y-8 pb-16 overflow-hidden min-w-0">
       {/* Page Title & Intro */}
       <div>
         <h1 className="text-heading-md font-semibold tracking-tight text-[var(--ink)]">
@@ -108,7 +108,7 @@ export const AdminStorePage: React.FC = () => {
       </div>
 
       {/* 1. General Information Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs">
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
@@ -125,7 +125,7 @@ export const AdminStorePage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSaveGeneral} className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Store Name */}
@@ -218,7 +218,7 @@ export const AdminStorePage: React.FC = () => {
       </Card>
 
       {/* 2. Contact & Location Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs">
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
@@ -235,7 +235,7 @@ export const AdminStorePage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSaveLocation} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {/* Country */}
@@ -267,15 +267,15 @@ export const AdminStorePage: React.FC = () => {
                 >
                   <SelectTrigger
                     id="locWilaya"
-                    className="w-full bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs"
+                    className="w-full max-w-full bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs overflow-hidden"
                   >
                     <SelectValue placeholder={t("admin.wilaya")}>
                       {locationForm.wilaya ? formatWilaya(locationForm.wilaya, i18n.language) : t("admin.wilaya")}
                     </SelectValue>
                   </SelectTrigger>
-                  <SelectContent className="max-h-64">
+                  <SelectContent className="max-h-64 max-w-[calc(100vw-2.5rem)] w-[var(--radix-select-trigger-width)] overflow-y-auto">
                     {ALGERIAN_WILAYAS.map((w) => (
-                      <SelectItem key={w} value={w} className="text-[13px]">
+                      <SelectItem key={w} value={w} className="text-[13px] truncate">
                         {formatWilaya(w, i18n.language)}
                       </SelectItem>
                     ))}
@@ -382,7 +382,7 @@ export const AdminStorePage: React.FC = () => {
       </Card>
 
       {/* 3. Opening Hours Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs">
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
@@ -399,11 +399,11 @@ export const AdminStorePage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSaveHours} className="space-y-6">
             <div className="divide-y divide-[var(--hairline)] border border-[var(--hairline)] rounded-[18px] bg-[var(--surface-alt)]/40 overflow-hidden">
               {/* Row 1: Saturday - Thursday */}
-              <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-medium text-[var(--ink)]">
@@ -506,7 +506,7 @@ export const AdminStorePage: React.FC = () => {
               </div>
 
               {/* Row 2: Friday */}
-              <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 overflow-hidden">
                 <div className="space-y-1">
                   <div className="flex items-center gap-2">
                     <span className="text-[14px] font-medium text-[var(--ink)]">
@@ -621,8 +621,8 @@ export const AdminStorePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 4. Social Media Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs">
+      {/* 4. Social Links Card */}
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
@@ -639,7 +639,7 @@ export const AdminStorePage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSaveSocial} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Instagram */}
@@ -724,7 +724,7 @@ export const AdminStorePage: React.FC = () => {
       </Card>
 
       {/* 5. Delivery Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs">
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
@@ -741,7 +741,7 @@ export const AdminStorePage: React.FC = () => {
           </div>
         </CardHeader>
 
-        <CardContent className="p-6 md:p-8">
+        <CardContent className="p-4 sm:p-6 md:p-8">
           <form onSubmit={handleSaveDelivery} className="space-y-6">
             {/* Delivery Enabled Switch Row */}
             <div className="flex items-center justify-between p-4 rounded-[18px] bg-[var(--surface-alt)]/60 border border-[var(--hairline)]">
@@ -782,8 +782,8 @@ export const AdminStorePage: React.FC = () => {
                   {t("admin.deskFee")}
                 </Label>
                 <div className="relative">
-                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
-                    $
+                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[12px] text-[var(--mid-gray)] font-medium">
+                    {t("common.currency")}
                   </span>
                   <Input
                     id="feeOffice"
@@ -798,7 +798,7 @@ export const AdminStorePage: React.FC = () => {
                       })
                     }
                     placeholder="15"
-                    className="ps-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
+                    className="ps-12 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
                   />
                 </div>
               </div>
@@ -809,8 +809,8 @@ export const AdminStorePage: React.FC = () => {
                   {t("admin.homeFee")}
                 </Label>
                 <div className="relative">
-                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[13px] text-[var(--mid-gray)] font-mono">
-                    $
+                  <span className="absolute start-3.5 top-1/2 -translate-y-1/2 text-[12px] text-[var(--mid-gray)] font-medium">
+                    {t("common.currency")}
                   </span>
                   <Input
                     id="feeHome"
@@ -825,7 +825,7 @@ export const AdminStorePage: React.FC = () => {
                       })
                     }
                     placeholder="25"
-                    className="ps-8 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
+                    className="ps-12 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 font-mono"
                   />
                 </div>
               </div>

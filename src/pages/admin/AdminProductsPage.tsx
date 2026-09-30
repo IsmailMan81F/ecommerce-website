@@ -4,6 +4,7 @@ import { useStore } from "@/context/StoreContext";
 import { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
+import { lockViewportScroll } from "@/lib/scrollLock";
 import {
   Card,
   CardContent,
@@ -88,6 +89,13 @@ export const AdminProductsPage: React.FC = () => {
 
   // Delete Confirmation Dialog
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+
+  // Fix height of main screen and lock background scrolling when edit/add modal is open
+  React.useEffect(() => {
+    if (formOpen || productToDelete) {
+      return lockViewportScroll();
+    }
+  }, [formOpen, productToDelete]);
 
   // Filtered products
   const filteredProducts = useMemo(() => {

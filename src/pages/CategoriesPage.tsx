@@ -63,10 +63,10 @@ export const CategoriesPage: React.FC = () => {
 
       // Price range
       if (filters.priceRange && filters.priceRange !== "all") {
-        if (filters.priceRange === "under-200" && product.price >= 200) return false;
-        if (filters.priceRange === "200-500" && (product.price < 200 || product.price > 500)) return false;
-        if (filters.priceRange === "500-1000" && (product.price < 500 || product.price > 1000)) return false;
-        if (filters.priceRange === "over-1000" && product.price <= 1000) return false;
+        if (filters.priceRange === "under-200" && product.price >= 4000) return false;
+        if (filters.priceRange === "200-500" && (product.price < 4000 || product.price > 6000)) return false;
+        if (filters.priceRange === "500-1000" && (product.price < 6000 || product.price > 8000)) return false;
+        if (filters.priceRange === "over-1000" && product.price <= 8000) return false;
       }
 
       // Availability

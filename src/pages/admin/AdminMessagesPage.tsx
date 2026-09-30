@@ -43,6 +43,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 export const AdminMessagesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -64,6 +65,13 @@ export const AdminMessagesPage: React.FC = () => {
   const [internalNotes, setInternalNotes] = useState("");
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState<ContactMessage | null>(null);
+
+  // Fix height of main screen and lock background scroll when message detail or delete modal is open
+  React.useEffect(() => {
+    if (selectedMessage || deleteConfirmOpen) {
+      return lockViewportScroll();
+    }
+  }, [selectedMessage, deleteConfirmOpen]);
 
   // Filter messages based on search query (name, email, phone, subject, content) and status
   const filteredMessages = useMemo(() => {
@@ -231,10 +239,10 @@ export const AdminMessagesPage: React.FC = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-[var(--surface-alt)] p-4 rounded-[20px] border border-[var(--hairline)] space-y-4">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+      <div className="bg-[var(--surface-alt)] p-3 sm:p-4 rounded-[20px] border border-[var(--hairline)] space-y-3 w-full max-w-full overflow-hidden">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full min-w-0">
           {/* Client Name Search Input */}
-          <div className="relative flex-1">
+          <div className="relative flex-1 min-w-0">
             <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
             <Input
               id="client-search"
@@ -242,7 +250,7 @@ export const AdminMessagesPage: React.FC = () => {
               placeholder={t("admin.searchMessages")}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-10 pe-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs placeholder:text-[var(--mid-gray)]"
+              className="ps-10 pe-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10 shadow-2xs placeholder:text-[var(--mid-gray)] w-full"
             />
             {searchQuery && (
               <button
@@ -257,7 +265,7 @@ export const AdminMessagesPage: React.FC = () => {
           </div>
 
           {/* Filter Status Tabs */}
-          <div className="flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)] self-start sm:self-auto overflow-x-auto">
+          <div className="w-full sm:w-auto overflow-x-auto flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)] shrink-0">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
@@ -308,9 +316,9 @@ export const AdminMessagesPage: React.FC = () => {
       </div>
 
       {/* Messages List */}
-      <div className="bg-[var(--paper)] rounded-[20px] border border-[var(--hairline)] overflow-hidden shadow-2xs">
+      <div className="bg-[var(--paper)] rounded-[20px] border border-[var(--hairline)] overflow-hidden shadow-2xs w-full max-w-full">
         {filteredMessages.length > 0 ? (
-          <div className="divide-y divide-[var(--hairline)]">
+          <div className="divide-y divide-[var(--hairline)] w-full max-w-full">
             {filteredMessages.map((msg) => {
               const isUnread = msg.status === "unread" || msg.isRead === false;
 
@@ -318,7 +326,7 @@ export const AdminMessagesPage: React.FC = () => {
                 <div
                   key={msg.id}
                   onClick={() => handleOpenMessage(msg)}
-                  className={`group p-4 sm:p-5 transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                  className={`group p-3.5 sm:p-5 transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 w-full max-w-full overflow-hidden ${
                     isUnread
                       ? "bg-[var(--surface-alt)]/50 hover:bg-[var(--surface-alt)]"
                       : "hover:bg-[var(--surface-alt)]/40"

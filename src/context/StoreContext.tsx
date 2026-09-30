@@ -60,11 +60,11 @@ interface StoreContextType {
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
 
-const PRODUCTS_STORAGE_KEY = "kord_clothing_store_products_v2";
-const CATEGORIES_STORAGE_KEY = "kord_clothing_store_categories_v2";
-const ORDERS_STORAGE_KEY = "kord_clothing_store_orders_v2";
-const MESSAGES_STORAGE_KEY = "kord_clothing_store_messages_v2";
-const STORE_SETTINGS_STORAGE_KEY = "kord_clothing_store_settings_v2";
+const PRODUCTS_STORAGE_KEY = "kord_clothing_store_products_v3";
+const CATEGORIES_STORAGE_KEY = "kord_clothing_store_categories_v3";
+const ORDERS_STORAGE_KEY = "kord_clothing_store_orders_v3";
+const MESSAGES_STORAGE_KEY = "kord_clothing_store_messages_v3";
+const STORE_SETTINGS_STORAGE_KEY = "kord_clothing_store_settings_v3";
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
