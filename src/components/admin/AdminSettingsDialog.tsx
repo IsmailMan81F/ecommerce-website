@@ -55,15 +55,15 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
     // Check if password change is attempted
     if (newPassword || currentPassword || confirmPassword) {
       if (!currentPassword) {
-        toast.error("Current password is required to save credential changes");
+        toast.error(t("admin.currentPasswordRequired"));
         return;
       }
       if (newPassword !== confirmPassword) {
-        toast.error("New password and confirm password do not match");
+        toast.error(t("admin.passwordsDoNotMatch"));
         return;
       }
       if (newPassword.length < 3) {
-        toast.error("New password must be at least 3 characters");
+        toast.error(t("admin.passwordMinLength"));
         return;
       }
 
@@ -84,7 +84,7 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
     // Only username changed
     if (newUsername !== username) {
       if (!currentPassword) {
-        toast.error("Please enter your current password to confirm username update");
+        toast.error(t("admin.currentPasswordForUsernameRequired"));
         return;
       }
       const res = updateCredentials(currentPassword, newUsername);
@@ -92,13 +92,13 @@ export const AdminSettingsDialog: React.FC<AdminSettingsDialogProps> = ({
         toast.error(res.message);
         return;
       }
-      toast.success("Username updated");
+      toast.success(t("admin.usernameUpdated"));
       setCurrentPassword("");
       onOpenChange(false);
       return;
     }
 
-    toast.success("Settings saved");
+    toast.success(t("admin.settingsSaved"));
     onOpenChange(false);
   };
 

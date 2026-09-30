@@ -214,7 +214,7 @@ export const AdminProductsPage: React.FC = () => {
         newUrls.push(url);
       });
       setImages((prev) => [...prev, ...newUrls]);
-      toast.success(`${newUrls.length} image(s) attached`);
+      toast.success(t("admin.imagesAttached", { count: newUrls.length }));
     }
   };
 
@@ -260,13 +260,13 @@ export const AdminProductsPage: React.FC = () => {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Product name is required");
+      toast.error(t("admin.productNameRequired"));
       return;
     }
 
     const parsedPrice = parseFloat(price);
     if (isNaN(parsedPrice) || parsedPrice <= 0) {
-      toast.error("Please enter a valid price");
+      toast.error(t("admin.validPriceRequired"));
       return;
     }
 
@@ -275,7 +275,7 @@ export const AdminProductsPage: React.FC = () => {
 
     if (isCreatingNewCategory) {
       if (!newCategoryName.trim()) {
-        toast.error("Please enter a name for the new category");
+        toast.error(t("admin.newCategoryNameRequired"));
         return;
       }
       const newCat = addCategory(newCategoryName.trim());

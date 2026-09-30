@@ -126,7 +126,7 @@ export const AdminMessagesPage: React.FC = () => {
         status: nextIsRead ? "read" : "unread",
       });
     }
-    toast.success("Message status updated");
+    toast.success(t("admin.messageStatusUpdated"));
   };
 
   const handleSaveNotes = () => {
@@ -139,7 +139,7 @@ export const AdminMessagesPage: React.FC = () => {
   const handleCopy = (text: string, field: string) => {
     navigator.clipboard.writeText(text);
     setCopiedField(field);
-    toast.success(`Copied ${field} to clipboard`);
+    toast.success(t("admin.copiedToClipboard", { field }));
     setTimeout(() => setCopiedField(null), 2000);
   };
 

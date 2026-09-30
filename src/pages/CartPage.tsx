@@ -89,7 +89,7 @@ export const CartPage: React.FC = () => {
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      toast.error("Please fill in all required shipping fields");
+      toast.error(t("cart.fillRequiredShipping"));
       return;
     }
 
@@ -129,7 +129,7 @@ export const CartPage: React.FC = () => {
     clearCart();
 
     toast.success(t("cart.orderConfirmedTitle"), {
-      description: `Order #${created.id} has been registered.`,
+      description: t("cart.orderRegisteredDesc", { id: created.id }),
       duration: 4500,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });

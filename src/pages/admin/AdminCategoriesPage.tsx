@@ -140,7 +140,7 @@ export const AdminCategoriesPage: React.FC = () => {
     if (!file) return;
 
     if (!file.type.startsWith("image/")) {
-      toast.error("Please upload an image file (JPEG, PNG, WebP).");
+      toast.error(t("admin.imageUploadInvalidType"));
       return;
     }
 
@@ -150,12 +150,12 @@ export const AdminCategoriesPage: React.FC = () => {
       const result = event.target?.result as string;
       if (result) {
         setImageUrl(result);
-        toast.success("Category image uploaded successfully");
+        toast.success(t("admin.imageUploadSuccess"));
       }
       setIsUploading(false);
     };
     reader.onerror = () => {
-      toast.error("Failed to read image file.");
+      toast.error(t("admin.imageUploadFailed"));
       setIsUploading(false);
     };
     reader.readAsDataURL(file);
@@ -166,7 +166,7 @@ export const AdminCategoriesPage: React.FC = () => {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Category name is required");
+      toast.error(t("admin.categoryNameRequired"));
       return;
     }
 

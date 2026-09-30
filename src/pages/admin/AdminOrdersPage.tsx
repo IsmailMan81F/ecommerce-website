@@ -89,8 +89,9 @@ export const AdminOrdersPage: React.FC = () => {
 
   const handleStatusChange = (orderId: string, newStatus: OrderStatus) => {
     updateOrderStatus(orderId, newStatus);
+    const statusLabel = getStatusConfig(newStatus).label;
     toast.success(t("admin.changeStatusSuccess"), {
-      description: `Order #${orderId} -> ${newStatus}.`,
+      description: `#${orderId}: ${statusLabel}`,
     });
   };
 

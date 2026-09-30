@@ -32,7 +32,7 @@ export const ContactPage: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !email.trim() || !message.trim()) {
-      toast.error("Please fill in your name, email and message");
+      toast.error(t("contact.fillRequiredFields"));
       return;
     }
 
