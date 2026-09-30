@@ -264,12 +264,12 @@ export const AdminMessagesPage: React.FC = () => {
             )}
           </div>
 
-          {/* Filter Status Tabs: 3 on one line and 1 on next line on smaller viewports, flex-wrap without horizontal scrolling */}
-          <div className="w-full lg:w-auto grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 bg-[var(--paper)] p-1.5 rounded-[16px] border border-[var(--hairline)] shrink-0 max-w-full">
+          {/* Filter Status Tabs: 2 on first line, 2 on second line on mobile/tablet/narrower space, and all 4 on a single line when enough space is available (xl:grid-cols-4 / flex on wide viewports) */}
+          <div className="w-full xl:w-auto grid grid-cols-2 xl:flex xl:flex-row items-center gap-1.5 bg-[var(--paper)] p-1.5 rounded-[16px] border border-[var(--hairline)] shrink-0 max-w-full">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
+              className={`px-3 py-2 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center whitespace-nowrap ${
                 statusFilter === "all"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -280,7 +280,7 @@ export const AdminMessagesPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setStatusFilter("unread")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center gap-1.5 ${
+              className={`px-3 py-2 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center gap-1.5 whitespace-nowrap ${
                 statusFilter === "unread"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -292,7 +292,7 @@ export const AdminMessagesPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setStatusFilter("read")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
+              className={`px-3 py-2 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center whitespace-nowrap ${
                 statusFilter === "read"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -303,7 +303,7 @@ export const AdminMessagesPage: React.FC = () => {
             <button
               type="button"
               onClick={() => setStatusFilter("replied")}
-              className={`col-span-3 sm:col-auto px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
+              className={`px-3 py-2 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center whitespace-nowrap ${
                 statusFilter === "replied"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
