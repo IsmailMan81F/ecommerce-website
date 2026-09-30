@@ -78,44 +78,7 @@ export const AdminLayout: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-[var(--canvas)] text-[var(--ink)] transition-colors duration-200">
-      {/* Mobile Top Header */}
-      <header className="lg:hidden fixed top-0 start-0 end-0 z-40 h-16 bg-[var(--surface-alt)] border-b border-[var(--hairline)] flex items-center justify-between px-4">
-        <div className="flex items-center gap-2">
-          <span className="text-[18px] font-semibold tracking-tight text-[var(--ink)]">
-            KØRD
-          </span>
-          <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--mid-gray)] bg-[var(--canvas)] px-2 py-0.5 rounded-[12px] border border-[var(--hairline)]">
-            {t("admin.console")}
-          </span>
-        </div>
-
-        <div className="flex items-center gap-1">
-          <LanguageSwitcher variant="dropdown" />
-
-          {/* Theme Toggle Button for Mobile and Tablet - Light/Dark only */}
-          <Button
-            variant="ghost"
-            size="iconSm"
-            onClick={cycleTheme}
-            title={`Toggle theme (${resolvedTheme === "dark" ? "Dark" : "Light"})`}
-            aria-label="Toggle theme"
-            className="text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer"
-          >
-            {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-          </Button>
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-            aria-label="Toggle admin sidebar"
-          >
-            {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
-        </div>
-      </header>
-
+    <div className="min-h-screen w-full max-w-full flex bg-[var(--canvas)] text-[var(--ink)] transition-colors duration-200 overflow-x-clip">
       {/* Mobile backdrop */}
       {mobileSidebarOpen && (
         <div
@@ -262,11 +225,48 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Content Area: offset appropriately for LTR (pl) or RTL (pr) */}
       <div
-        className={`flex-1 pt-16 lg:pt-0 flex flex-col min-h-screen ${
+        className={`flex-1 flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-clip ${
           isRtl ? "lg:pr-[260px] lg:pl-0" : "lg:pl-[260px] lg:pr-0"
         }`}
       >
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        {/* Mobile & Tablet Top Sticky Navigation Bar */}
+        <header className="lg:hidden sticky top-0 z-40 h-16 w-full bg-[var(--surface-alt)]/95 backdrop-blur-md border-b border-[var(--hairline)] flex items-center justify-between px-4 shrink-0 shadow-2xs">
+          <div className="flex items-center gap-2">
+            <span className="text-[18px] font-semibold tracking-tight text-[var(--ink)]">
+              KØRD
+            </span>
+            <span className="text-[11px] font-medium uppercase tracking-wider text-[var(--mid-gray)] bg-[var(--canvas)] px-2 py-0.5 rounded-[12px] border border-[var(--hairline)]">
+              {t("admin.console")}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-1">
+            <LanguageSwitcher variant="dropdown" />
+
+            {/* Theme Toggle Button for Mobile and Tablet - Light/Dark only */}
+            <Button
+              variant="ghost"
+              size="iconSm"
+              onClick={cycleTheme}
+              title={`Toggle theme (${resolvedTheme === "dark" ? "Dark" : "Light"})`}
+              aria-label="Toggle theme"
+              className="text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer"
+            >
+              {resolvedTheme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+            </Button>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              aria-label="Toggle admin sidebar"
+            >
+              {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </Button>
+          </div>
+        </header>
+
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto min-w-0 overflow-x-clip">
           <Outlet />
         </main>
       </div>

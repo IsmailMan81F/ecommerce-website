@@ -425,44 +425,48 @@ export const AdminStorePage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  {/* Hours inputs if open */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  {/* Hours inputs if open: spacious inputs for start and finish times */}
                   {hoursForm.saturdayToThursday.isOpen && (
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        type="time"
-                        value={hoursForm.saturdayToThursday.openTime}
-                        onChange={(e) =>
-                          setHoursForm({
-                            ...hoursForm,
-                            saturdayToThursday: {
-                              ...hoursForm.saturdayToThursday,
-                              openTime: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-24 h-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[10px] text-[12px] px-2 text-center"
-                      />
-                      <span className="text-[var(--mid-gray)] text-[12px]">—</span>
-                      <Input
-                        type="time"
-                        value={hoursForm.saturdayToThursday.closeTime}
-                        onChange={(e) =>
-                          setHoursForm({
-                            ...hoursForm,
-                            saturdayToThursday: {
-                              ...hoursForm.saturdayToThursday,
-                              closeTime: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-24 h-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[10px] text-[12px] px-2 text-center"
-                      />
+                    <div className="flex items-center gap-2 bg-[var(--paper)] px-3 py-1.5 rounded-[14px] border border-[var(--hairline)] shadow-2xs">
+                      <div className="flex flex-col">
+                        <Input
+                          type="time"
+                          value={hoursForm.saturdayToThursday.openTime}
+                          onChange={(e) =>
+                            setHoursForm({
+                              ...hoursForm,
+                              saturdayToThursday: {
+                                ...hoursForm.saturdayToThursday,
+                                openTime: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-[110px] sm:w-[124px] h-9 bg-transparent border-0 rounded-[8px] text-[13px] px-1 text-center font-medium focus-visible:ring-1 focus-visible:ring-[var(--ink)]"
+                        />
+                      </div>
+                      <span className="text-[var(--mid-gray)] text-[13px] font-medium shrink-0">—</span>
+                      <div className="flex flex-col">
+                        <Input
+                          type="time"
+                          value={hoursForm.saturdayToThursday.closeTime}
+                          onChange={(e) =>
+                            setHoursForm({
+                              ...hoursForm,
+                              saturdayToThursday: {
+                                ...hoursForm.saturdayToThursday,
+                                closeTime: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-[110px] sm:w-[124px] h-9 bg-transparent border-0 rounded-[8px] text-[13px] px-1 text-center font-medium focus-visible:ring-1 focus-visible:ring-[var(--ink)]"
+                        />
+                      </div>
                     </div>
                   )}
 
                   {/* Status Toggle buttons: Open / Closed */}
-                  <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs">
+                  <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs shrink-0">
                     <button
                       type="button"
                       onClick={() =>
@@ -474,7 +478,7 @@ export const AdminStorePage: React.FC = () => {
                           },
                         })
                       }
-                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors ${
+                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
                         hoursForm.saturdayToThursday.isOpen
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -493,7 +497,7 @@ export const AdminStorePage: React.FC = () => {
                           },
                         })
                       }
-                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors ${
+                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
                         !hoursForm.saturdayToThursday.isOpen
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -528,44 +532,48 @@ export const AdminStorePage: React.FC = () => {
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  {/* Hours inputs if open */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                  {/* Hours inputs if open: spacious inputs for start and finish times */}
                   {hoursForm.friday.isOpen && (
-                    <div className="flex items-center gap-1.5">
-                      <Input
-                        type="time"
-                        value={hoursForm.friday.openTime}
-                        onChange={(e) =>
-                          setHoursForm({
-                            ...hoursForm,
-                            friday: {
-                              ...hoursForm.friday,
-                              openTime: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-24 h-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[10px] text-[12px] px-2 text-center"
-                      />
-                      <span className="text-[var(--mid-gray)] text-[12px]">—</span>
-                      <Input
-                        type="time"
-                        value={hoursForm.friday.closeTime}
-                        onChange={(e) =>
-                          setHoursForm({
-                            ...hoursForm,
-                            friday: {
-                              ...hoursForm.friday,
-                              closeTime: e.target.value,
-                            },
-                          })
-                        }
-                        className="w-24 h-9 bg-[var(--paper)] border-[var(--hairline)] rounded-[10px] text-[12px] px-2 text-center"
-                      />
+                    <div className="flex items-center gap-2 bg-[var(--paper)] px-3 py-1.5 rounded-[14px] border border-[var(--hairline)] shadow-2xs">
+                      <div className="flex flex-col">
+                        <Input
+                          type="time"
+                          value={hoursForm.friday.openTime}
+                          onChange={(e) =>
+                            setHoursForm({
+                              ...hoursForm,
+                              friday: {
+                                ...hoursForm.friday,
+                                openTime: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-[110px] sm:w-[124px] h-9 bg-transparent border-0 rounded-[8px] text-[13px] px-1 text-center font-medium focus-visible:ring-1 focus-visible:ring-[var(--ink)]"
+                        />
+                      </div>
+                      <span className="text-[var(--mid-gray)] text-[13px] font-medium shrink-0">—</span>
+                      <div className="flex flex-col">
+                        <Input
+                          type="time"
+                          value={hoursForm.friday.closeTime}
+                          onChange={(e) =>
+                            setHoursForm({
+                              ...hoursForm,
+                              friday: {
+                                ...hoursForm.friday,
+                                closeTime: e.target.value,
+                              },
+                            })
+                          }
+                          className="w-[110px] sm:w-[124px] h-9 bg-transparent border-0 rounded-[8px] text-[13px] px-1 text-center font-medium focus-visible:ring-1 focus-visible:ring-[var(--ink)]"
+                        />
+                      </div>
                     </div>
                   )}
 
                   {/* Status Toggle buttons: Open / Closed */}
-                  <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs">
+                  <div className="inline-flex rounded-[12px] p-1 bg-[var(--paper)] border border-[var(--hairline)] shadow-2xs shrink-0">
                     <button
                       type="button"
                       onClick={() =>
@@ -577,7 +585,7 @@ export const AdminStorePage: React.FC = () => {
                           },
                         })
                       }
-                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors ${
+                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
                         hoursForm.friday.isOpen
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
@@ -596,7 +604,7 @@ export const AdminStorePage: React.FC = () => {
                           },
                         })
                       }
-                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors ${
+                      className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
                         !hoursForm.friday.isOpen
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"

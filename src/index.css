@@ -114,7 +114,7 @@ html {
   scroll-behavior: smooth;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 body {
@@ -126,7 +126,7 @@ body {
   min-height: 100vh;
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   margin: 0;
   padding: 0;
 }
@@ -134,7 +134,7 @@ body {
 #root {
   width: 100%;
   max-width: 100%;
-  overflow-x: hidden;
+  overflow-x: clip;
   min-height: 100vh;
 }
 
@@ -314,16 +314,11 @@ body.rtl {
   animation: sheet-slide-out-right 250ms ease-in forwards !important;
 }
 
-/* Viewport lock styles without position:fixed, ensuring modals stay dead-centered */
+/* Viewport lock styles without collapsing document height, preserving scroll position */
 html.viewport-locked,
 body.viewport-locked {
   overflow: hidden !important;
-  height: 100% !important;
-  height: 100dvh !important;
-  width: 100% !important;
-  max-width: 100% !important;
   overscroll-behavior: none !important;
-  touch-action: none !important;
 }
 
 /* -------------------------------------------------------------

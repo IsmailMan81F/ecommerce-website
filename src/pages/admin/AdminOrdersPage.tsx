@@ -94,21 +94,43 @@ export const AdminOrdersPage: React.FC = () => {
     });
   };
 
-  const getStatusBadgeClass = (status: OrderStatus) => {
+  const getStatusConfig = (status: OrderStatus) => {
     switch (status) {
       case "confirmed":
+        return {
+          label: t("admin.statusConfirmed"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/60 font-medium",
+        };
       case "delivered":
-        return "bg-emerald-50/70 text-emerald-600 border-emerald-200/70 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800/50 font-normal";
-      case "cancelled":
-        return "bg-rose-50/70 text-rose-600 border-rose-200/70 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/50 font-normal";
+        return {
+          label: t("admin.statusDelivered"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-teal-950/40 dark:text-teal-300 dark:border-teal-800/60 font-medium",
+        };
       case "processing":
-        return "bg-blue-50/70 text-blue-600 border-blue-200/70 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/50 font-normal";
-      case "pending":
-        return "bg-amber-50/70 text-amber-600 border-amber-200/70 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/50 font-normal";
+        return {
+          label: t("admin.statusProcessing"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-blue-950/40 dark:text-blue-300 dark:border-blue-800/60 font-medium",
+        };
       case "shipped":
-        return "bg-indigo-50/70 text-indigo-600 border-indigo-200/70 dark:bg-indigo-950/40 dark:text-indigo-300 dark:border-indigo-800/50 font-normal";
+        return {
+          label: t("admin.statusShipped"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-violet-950/40 dark:text-violet-300 dark:border-violet-800/60 font-medium",
+        };
+      case "pending":
+        return {
+          label: t("admin.statusPending"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800/60 font-medium",
+        };
+      case "cancelled":
+        return {
+          label: t("admin.statusCancelled"),
+          badgeClass: "bg-white text-zinc-900 border-zinc-200/90 dark:bg-rose-950/40 dark:text-rose-300 dark:border-rose-800/60 font-medium",
+        };
       default:
-        return "bg-slate-50/70 text-slate-600 border-slate-200/70 font-normal";
+        return {
+          label: status,
+          badgeClass: "bg-white text-zinc-900 border-zinc-200 font-medium dark:bg-zinc-900 dark:text-zinc-200 dark:border-zinc-800",
+        };
     }
   };
 
@@ -262,13 +284,13 @@ export const AdminOrdersPage: React.FC = () => {
                                 handleStatusChange(order.id, val as OrderStatus)
                               }
                             >
-                              <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-8 text-[12px] rounded-[12px] border truncate transition-colors cursor-pointer ${getStatusBadgeClass(order.status)}`}>
-                                <SelectValue />
+                              <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-8 text-[12px] rounded-[12px] border truncate transition-colors cursor-pointer px-3 ${getStatusConfig(order.status).badgeClass}`}>
+                                <span className="truncate font-medium">{getStatusConfig(order.status).label}</span>
                               </SelectTrigger>
                               <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
                                 {statusOptions.map((opt) => (
                                   <SelectItem key={opt.value} value={opt.value} className="text-[12px] cursor-pointer">
-                                    {opt.label}
+                                    <span>{opt.label}</span>
                                   </SelectItem>
                                 ))}
                               </SelectContent>
@@ -349,13 +371,13 @@ export const AdminOrdersPage: React.FC = () => {
                             handleStatusChange(order.id, val as OrderStatus)
                           }
                         >
-                          <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-9 text-[12px] rounded-[14px] border truncate transition-colors ${getStatusBadgeClass(order.status)}`}>
-                            <SelectValue />
+                          <SelectTrigger className={`w-[140px] min-w-[140px] max-w-[140px] h-9 text-[12px] rounded-[14px] border truncate transition-colors px-3 ${getStatusConfig(order.status).badgeClass}`}>
+                            <span className="truncate font-medium">{getStatusConfig(order.status).label}</span>
                           </SelectTrigger>
                           <SelectContent className="w-[140px] min-w-[140px] max-w-[140px]">
                             {statusOptions.map((opt) => (
                               <SelectItem key={opt.value} value={opt.value} className="text-[12px]">
-                                {opt.label}
+                                <span>{opt.label}</span>
                               </SelectItem>
                             ))}
                           </SelectContent>
@@ -382,9 +404,9 @@ export const AdminOrdersPage: React.FC = () => {
               <SheetHeader className="text-start space-y-1">
                 <div className="flex items-center justify-between">
                   <span className="text-caption text-[var(--mid-gray)]">{t("admin.orderDetails")}</span>
-                  <Badge variant="outline" className={`capitalize text-[11px] border ${getStatusBadgeClass(selectedOrder.status)}`}>
-                    {selectedOrder.status}
-                  </Badge>
+                  <div className={`inline-flex items-center px-3 py-1 rounded-[10px] text-[12px] font-medium border ${getStatusConfig(selectedOrder.status).badgeClass}`}>
+                    <span>{getStatusConfig(selectedOrder.status).label}</span>
+                  </div>
                 </div>
                 <SheetTitle className="text-heading-sm font-semibold tracking-tight">
                   {selectedOrder.id}

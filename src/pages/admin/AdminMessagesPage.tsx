@@ -202,25 +202,25 @@ export const AdminMessagesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-full min-w-0 overflow-hidden">
       {/* Top Header Section */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full max-w-full min-w-0">
+        <div className="min-w-0">
+          <div className="flex items-center gap-3 flex-wrap">
             <h1 className="text-heading-md font-semibold tracking-tight text-[var(--ink)]">
               {t("admin.inquiriesTitle")}
             </h1>
             {unreadMessagesCount > 0 ? (
-              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[12px] px-2 py-0.5 font-medium">
+              <Badge className="bg-amber-500/15 text-amber-700 dark:text-amber-300 border-amber-500/30 text-[12px] px-2 py-0.5 font-medium shrink-0">
                 {t("admin.unreadBadge", { count: unreadMessagesCount })}
               </Badge>
             ) : (
-              <Badge variant="outline" className="text-[12px] text-[var(--mid-gray)]">
+              <Badge variant="outline" className="text-[12px] text-[var(--mid-gray)] shrink-0">
                 {t("admin.allReadBadge")}
               </Badge>
             )}
           </div>
-          <p className="text-body text-[var(--mid-gray)] mt-1 text-[13px]">
+          <p className="text-body text-[var(--mid-gray)] mt-1 text-[13px] truncate">
             {t("admin.inquiriesSubtitle")}
           </p>
         </div>
@@ -230,7 +230,7 @@ export const AdminMessagesPage: React.FC = () => {
             variant="outline"
             size="sm"
             onClick={handleMarkAllAsRead}
-            className="text-[13px] rounded-[14px] border-[var(--hairline)] hover:bg-[var(--canvas)] self-start sm:self-auto cursor-pointer"
+            className="text-[13px] rounded-[14px] border-[var(--hairline)] hover:bg-[var(--canvas)] self-start sm:self-auto shrink-0 cursor-pointer"
           >
             <CheckCircle2 className="h-4 w-4 mr-2 rtl:ml-2 rtl:mr-0 text-[var(--mid-gray)]" />
             <span>{t("admin.markAllRead")}</span>
@@ -239,10 +239,10 @@ export const AdminMessagesPage: React.FC = () => {
       </div>
 
       {/* Search & Filter Bar */}
-      <div className="bg-[var(--surface-alt)] p-3 sm:p-4 rounded-[20px] border border-[var(--hairline)] space-y-3 w-full max-w-full overflow-hidden">
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full min-w-0">
+      <div className="bg-[var(--surface-alt)] p-3 sm:p-4 rounded-[20px] border border-[var(--hairline)] space-y-3 w-full max-w-full min-w-0 overflow-hidden">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center gap-2.5 w-full min-w-0 max-w-full">
           {/* Client Name Search Input */}
-          <div className="relative flex-1 min-w-0">
+          <div className="relative flex-1 min-w-0 w-full">
             <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
             <Input
               id="client-search"
@@ -264,52 +264,52 @@ export const AdminMessagesPage: React.FC = () => {
             )}
           </div>
 
-          {/* Filter Status Tabs */}
-          <div className="w-full sm:w-auto overflow-x-auto flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)] shrink-0">
+          {/* Filter Status Tabs: 3 on one line and 1 on next line on smaller viewports, flex-wrap without horizontal scrolling */}
+          <div className="w-full lg:w-auto grid grid-cols-3 sm:flex sm:flex-wrap items-center gap-1.5 bg-[var(--paper)] p-1.5 rounded-[16px] border border-[var(--hairline)] shrink-0 max-w-full">
             <button
               type="button"
               onClick={() => setStatusFilter("all")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
                 statusFilter === "all"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              {t("admin.tabAll", { count: messages.length })}
+              <span>{t("admin.tabAll", { count: messages.length })}</span>
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter("unread")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center gap-1.5 ${
                 statusFilter === "unread"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-              {t("admin.tabUnread", { count: unreadMessagesCount })}
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 shrink-0" />
+              <span>{t("admin.tabUnread", { count: unreadMessagesCount })}</span>
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter("read")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
                 statusFilter === "read"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              {t("admin.tabRead", { count: messages.length - unreadMessagesCount })}
+              <span>{t("admin.tabRead", { count: messages.length - unreadMessagesCount })}</span>
             </button>
             <button
               type="button"
               onClick={() => setStatusFilter("replied")}
-              className={`px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer whitespace-nowrap ${
+              className={`col-span-3 sm:col-auto px-3 py-1.5 rounded-[10px] text-[12px] font-medium transition-colors cursor-pointer text-center justify-center flex items-center ${
                 statusFilter === "replied"
                   ? "bg-[var(--surface-alt)] text-[var(--ink)] shadow-2xs font-semibold"
                   : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
               }`}
             >
-              {t("admin.tabReplied", { count: messages.filter((m) => m.status === "replied").length })}
+              <span>{t("admin.tabReplied", { count: messages.filter((m) => m.status === "replied").length })}</span>
             </button>
           </div>
         </div>
@@ -326,14 +326,14 @@ export const AdminMessagesPage: React.FC = () => {
                 <div
                   key={msg.id}
                   onClick={() => handleOpenMessage(msg)}
-                  className={`group p-3.5 sm:p-5 transition-colors cursor-pointer flex flex-col md:flex-row md:items-center justify-between gap-3 w-full max-w-full overflow-hidden ${
+                  className={`group p-3.5 sm:p-5 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full max-w-full overflow-hidden ${
                     isUnread
                       ? "bg-[var(--surface-alt)]/50 hover:bg-[var(--surface-alt)]"
                       : "hover:bg-[var(--surface-alt)]/40"
                   }`}
                 >
                   {/* Left Column: Avatar/Status Dot + Client Details + Message snippet */}
-                  <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                  <div className="flex items-start gap-3.5 flex-1 min-w-0 overflow-hidden">
                     {/* Read / Unread Indicator Dot */}
                     <div className="pt-1.5 shrink-0">
                       {isUnread ? (
@@ -349,11 +349,11 @@ export const AdminMessagesPage: React.FC = () => {
                       )}
                     </div>
 
-                    <div className="space-y-1.5 min-w-0 flex-1">
+                    <div className="space-y-1.5 min-w-0 flex-1 overflow-hidden">
                       {/* Line 1: Client Name + Department Tag + Relative Time */}
-                      <div className="flex flex-wrap items-center gap-2">
+                      <div className="flex flex-wrap items-center gap-2 max-w-full">
                         <span
-                          className={`text-[15px] tracking-tight ${
+                          className={`text-[15px] tracking-tight truncate max-w-[180px] sm:max-w-[220px] ${
                             isUnread
                               ? "font-semibold text-[var(--ink)]"
                               : "font-medium text-[var(--ink)]/80"
@@ -365,26 +365,26 @@ export const AdminMessagesPage: React.FC = () => {
                         {msg.inquiryType && (
                           <Badge
                             variant="secondary"
-                            className="text-[11px] font-normal py-0 px-2 rounded-[8px] bg-[var(--canvas)] border border-[var(--hairline)] text-[var(--mid-gray)]"
+                            className="text-[11px] font-normal py-0 px-2 rounded-[8px] bg-[var(--canvas)] border border-[var(--hairline)] text-[var(--mid-gray)] shrink-0"
                           >
                             {msg.inquiryType}
                           </Badge>
                         )}
 
                         {msg.orderNumber && (
-                          <span className="text-[11px] font-mono text-[var(--mid-gray)] bg-[var(--surface-alt)] px-1.5 py-0.5 rounded border border-[var(--hairline)]">
+                          <span className="text-[11px] font-mono text-[var(--mid-gray)] bg-[var(--surface-alt)] px-1.5 py-0.5 rounded border border-[var(--hairline)] shrink-0">
                             Ref: {msg.orderNumber}
                           </span>
                         )}
 
-                        <span className="text-[12px] text-[var(--mid-gray)] ml-auto shrink-0 tabular-nums">
+                        <span className="text-[12px] text-[var(--mid-gray)] ms-auto shrink-0 tabular-nums">
                           {formatRelativeTime(msg.createdAt)}
                         </span>
                       </div>
 
                       {/* Line 2: Subject */}
                       <p
-                        className={`text-[13px] truncate ${
+                        className={`text-[13px] truncate max-w-full ${
                           isUnread
                             ? "font-medium text-[var(--ink)]"
                             : "text-[var(--mid-gray)]"
@@ -394,24 +394,24 @@ export const AdminMessagesPage: React.FC = () => {
                       </p>
 
                       {/* Line 3: Message Snippet */}
-                      <p className="text-[13px] text-[var(--mid-gray)] line-clamp-1 text-ellipsis">
+                      <p className="text-[13px] text-[var(--mid-gray)] line-clamp-1 break-all sm:break-words max-w-full">
                         {msg.message}
                       </p>
 
                       {/* Line 4: Client Contact metadata (email & phone) */}
-                      <div className="flex flex-wrap items-center gap-4 pt-1 text-[12px] text-[var(--mid-gray)]">
-                        <span className="flex items-center gap-1.5">
+                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-[12px] text-[var(--mid-gray)] max-w-full">
+                        <span className="flex items-center gap-1.5 min-w-0 max-w-full">
                           <Mail className="h-3 w-3 shrink-0" />
-                          <span className="truncate max-w-[200px]">{msg.email}</span>
+                          <span className="truncate max-w-[180px] sm:max-w-[220px]">{msg.email}</span>
                         </span>
                         {msg.phone && (
-                          <span className="flex items-center gap-1.5 tabular-nums">
+                          <span className="flex items-center gap-1.5 shrink-0 tabular-nums">
                             <Phone className="h-3 w-3 shrink-0" />
                             <span>{msg.phone}</span>
                           </span>
                         )}
                         {msg.notes && (
-                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium">
+                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
                             <MessageSquare className="h-3 w-3 shrink-0" />
                             <span>{t("admin.internalNotes")}</span>
                           </span>
@@ -422,7 +422,7 @@ export const AdminMessagesPage: React.FC = () => {
 
                   {/* Right Column: Actions (Mark Read / Unread toggle + Delete) */}
                   <div
-                    className="flex items-center gap-1.5 self-end md:self-center shrink-0 pt-2 md:pt-0"
+                    className="flex items-center gap-1.5 self-end sm:self-center shrink-0 pt-1 sm:pt-0"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
