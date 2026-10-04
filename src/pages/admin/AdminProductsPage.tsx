@@ -5,6 +5,7 @@ import { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
 import { lockViewportScroll } from "@/lib/scrollLock";
+import { AdminDeleteConfirmationDialog } from "@/components/admin/AdminDeleteConfirmationDialog";
 import {
   Card,
   CardContent,
@@ -843,42 +844,16 @@ export const AdminProductsPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog
+      <AdminDeleteConfirmationDialog
         open={!!productToDelete}
         onOpenChange={(open) => !open && setProductToDelete(null)}
-      >
-        <DialogContent className="sm:max-w-[420px] p-6 text-center">
-          <div className="h-16 w-16 rounded-full bg-rose-50 border-2 border-rose-200 text-rose-600 flex items-center justify-center mx-auto mb-3 shadow-xs">
-            <Trash2 className="h-7 w-7 text-rose-600" />
-          </div>
-          <DialogHeader className="text-center sm:text-center">
-            <DialogTitle className="text-heading-sm text-[var(--ink)]">{t("admin.removeProductTitle")}</DialogTitle>
-            <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px] pt-1">
-              {t("admin.removeProductConfirm", { name: productToDelete?.name })}
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter className="flex flex-wrap items-center justify-end gap-2.5 pt-4">
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => setProductToDelete(null)}
-              className="rounded-[18px]"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              type="button"
-              variant="destructive"
-              onClick={handleConfirmDelete}
-              className="rounded-[18px] px-5 bg-rose-600 hover:bg-rose-700 text-white"
-            >
-              {t("admin.deleteProduct")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        title={t("admin.removeProductTitle")}
+        description={t("admin.removeProductConfirm", { name: productToDelete?.name })}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("admin.deleteProduct")}
+        onCancel={() => setProductToDelete(null)}
+        onConfirm={handleConfirmDelete}
+      />
     </div>
   );
 };

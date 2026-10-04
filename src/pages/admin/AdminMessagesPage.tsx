@@ -22,7 +22,6 @@ import {
   ArrowUpRight,
   Reply,
   X,
-  AlertTriangle,
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,15 +34,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import { lockViewportScroll } from "@/lib/scrollLock";
+import { AdminDeleteConfirmationDialog } from "@/components/admin/AdminDeleteConfirmationDialog";
 
 export const AdminMessagesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -751,39 +743,16 @@ export const AdminMessagesPage: React.FC = () => {
         </SheetContent>
       </Sheet>
 
-      {/* Delete Confirmation Modal */}
-      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="sm:max-w-md rounded-[24px]">
-          <DialogHeader className="space-y-2">
-            <div className="h-10 w-10 rounded-full bg-rose-500/10 text-rose-600 flex items-center justify-center">
-              <AlertTriangle className="h-5 w-5" />
-            </div>
-            <DialogTitle className="text-subheading font-medium">
-              {t("admin.deleteInquiryTitle")}
-            </DialogTitle>
-            <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px]">
-              {t("admin.deleteInquiryConfirm", { name: messageToDelete?.name })}
-            </DialogDescription>
-          </DialogHeader>
-
-          <DialogFooter className="gap-2 sm:gap-0 mt-4">
-            <Button
-              variant="outline"
-              onClick={() => setDeleteConfirmOpen(false)}
-              className="rounded-[14px]"
-            >
-              {t("common.cancel")}
-            </Button>
-            <Button
-              variant="destructive"
-              onClick={executeDelete}
-              className="rounded-[14px]"
-            >
-              {t("admin.deleteInquiryBtn")}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <AdminDeleteConfirmationDialog
+        open={deleteConfirmOpen}
+        onOpenChange={setDeleteConfirmOpen}
+        title={t("admin.deleteInquiryTitle")}
+        description={t("admin.deleteInquiryConfirm", { name: messageToDelete?.name })}
+        cancelLabel={t("common.cancel")}
+        confirmLabel={t("admin.deleteInquiryBtn")}
+        onCancel={() => setDeleteConfirmOpen(false)}
+        onConfirm={executeDelete}
+      />
     </div>
   );
 };

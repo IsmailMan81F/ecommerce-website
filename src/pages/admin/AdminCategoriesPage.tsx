@@ -34,12 +34,12 @@ import {
   FolderTree,
   ExternalLink,
   Layers,
-  AlertTriangle,
   Image as ImageIcon,
   CheckCircle2,
   Package,
 } from "lucide-react";
 import { lockViewportScroll } from "@/lib/scrollLock";
+import { AdminDeleteConfirmationDialog } from "@/components/admin/AdminDeleteConfirmationDialog";
 
 const SUGGESTED_PRESETS = [
   {
@@ -668,10 +668,7 @@ export const AdminCategoriesPage: React.FC = () => {
         </DialogContent>
       </Dialog>
 
-      {/* ========================================================================= */}
-      {/* DELETE CONFIRMATION DIALOG (DOUBLE CONFIRMATION FLOW) */}
-      {/* ========================================================================= */}
-      <Dialog
+      <AdminDeleteConfirmationDialog
         open={deleteModal.isOpen}
         onOpenChange={(open) => {
           if (!open) {
@@ -683,155 +680,69 @@ export const AdminCategoriesPage: React.FC = () => {
             });
           }
         }}
+        title={
+          deleteModal.step === 2
+            ? t("admin.deleteStep2Title")
+            : t("admin.deleteCategoryTitle")
+        }
+        description={
+          deleteModal.category
+            ? deleteModal.step === 2
+              ? t("admin.deleteStep2Warning")
+              : deleteModal.affectedProducts.length === 0
+                ? t("admin.deleteCategoryWarningSafe", { name: deleteModal.category.name })
+                : t("admin.deleteCategoryWarningWithProducts", {
+                    name: deleteModal.category.name,
+                    count: deleteModal.affectedProducts.length,
+                  })
+            : ""
+        }
+        cancelLabel={
+          deleteModal.step === 2 && deleteModal.affectedProducts.length > 0
+            ? t("common.back")
+            : t("common.cancel")
+        }
+        confirmLabel={
+          deleteModal.affectedProducts.length > 0 && deleteModal.step === 1
+            ? t("admin.continueStep")
+            : deleteModal.step === 2
+              ? t("admin.confirmDeleteCategory")
+              : t("admin.delete")
+        }
+        onCancel={() => {
+          if (deleteModal.step === 2 && deleteModal.affectedProducts.length > 0) {
+            setDeleteModal((prev) => ({ ...prev, step: 1 }));
+          } else {
+            setDeleteModal({
+              isOpen: false,
+              category: null,
+              step: 1,
+              affectedProducts: [],
+            });
+          }
+        }}
+        onConfirm={
+          deleteModal.affectedProducts.length > 0 && deleteModal.step === 1
+            ? handleFirstStepConfirm
+            : executeDeletion
+        }
       >
-        <DialogContent className="max-w-md rounded-[20px] bg-[var(--paper)] border-[var(--hairline)] p-6">
-          {deleteModal.category && (
-            <>
-              {/* If Category Has No Items -> Single Confirmation */}
-              {deleteModal.affectedProducts.length === 0 ? (
-                <div className="space-y-4">
-                  <div className="w-12 h-12 rounded-full bg-red-50 dark:bg-red-950/40 text-red-600 flex items-center justify-center">
-                    <Trash2 className="h-6 w-6" />
-                  </div>
-
-                  <div className="space-y-2">
-                    <DialogTitle className="text-[18px] font-semibold text-[var(--ink)]">
-                      {t("admin.deleteCategoryTitle")}
-                    </DialogTitle>
-                    <DialogDescription className="text-[14px] text-[var(--mid-gray)] leading-relaxed">
-                      {t("admin.deleteCategoryWarningSafe", { name: deleteModal.category.name })}
-                    </DialogDescription>
-                  </div>
-
-                  <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2 sm:justify-end">
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() =>
-                        setDeleteModal({
-                          isOpen: false,
-                          category: null,
-                          step: 1,
-                          affectedProducts: [],
-                        })
-                      }
-                      className="rounded-[14px] border-[var(--hairline)]"
-                    >
-                      {t("common.cancel")}
-                    </Button>
-                    <Button
-                      type="button"
-                      onClick={executeDeletion}
-                      className="rounded-[14px] bg-red-600 hover:bg-red-700 text-white gap-1.5"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                      {t("admin.delete")}
-                    </Button>
-                  </DialogFooter>
-                </div>
-              ) : (
-                /* Category Has Items -> 2-Step Confirmation Flow */
-                <>
-                  {deleteModal.step === 1 ? (
-                    /* STEP 1: First Confirmation */
-                    <div className="space-y-4">
-                      <div className="w-12 h-12 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-600 flex items-center justify-center">
-                        <AlertTriangle className="h-6 w-6" />
-                      </div>
-
-                      <div className="space-y-2">
-                        <DialogTitle className="text-[18px] font-semibold text-[var(--ink)]">
-                          {t("admin.deleteCategoryTitle")}
-                        </DialogTitle>
-                        <DialogDescription className="text-[14px] text-[var(--mid-gray)] leading-relaxed">
-                          {t("admin.deleteCategoryWarningWithProducts", {
-                            name: deleteModal.category.name,
-                            count: deleteModal.affectedProducts.length,
-                          })}
-                        </DialogDescription>
-                      </div>
-
-                      <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2 sm:justify-end">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() =>
-                            setDeleteModal({
-                              isOpen: false,
-                              category: null,
-                              step: 1,
-                              affectedProducts: [],
-                            })
-                          }
-                          className="rounded-[14px] border-[var(--hairline)]"
-                        >
-                          {t("common.cancel")}
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={handleFirstStepConfirm}
-                          className="rounded-[14px] bg-amber-600 hover:bg-amber-700 text-white"
-                        >
-                          {t("admin.continueStep")}
-                        </Button>
-                      </DialogFooter>
-                    </div>
-                  ) : (
-                    /* STEP 2: Critical Second Confirmation & Cascaded Deletion Alert */
-                    <div className="space-y-4">
-                      <div className="w-12 h-12 rounded-full bg-red-100 dark:bg-red-950/60 text-red-600 flex items-center justify-center animate-pulse">
-                        <AlertTriangle className="h-6 w-6 stroke-[2.5]" />
-                      </div>
-
-                      <div className="space-y-2">
-                        <DialogTitle className="text-[18px] font-semibold text-red-600">
-                          {t("admin.deleteStep2Title")}
-                        </DialogTitle>
-                        <p className="text-[13px] text-[var(--mid-gray)] leading-relaxed">
-                          {t("admin.deleteStep2Warning")}
-                        </p>
-                      </div>
-
-                      {/* Affected Products List Preview */}
-                      <div className="max-h-36 overflow-y-auto space-y-1.5 p-3 rounded-[12px] bg-red-50/50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/40 text-[12px]">
-                        {deleteModal.affectedProducts.map((p) => (
-                          <div
-                            key={p.id}
-                            className="flex items-center justify-between text-[var(--ink)] py-0.5"
-                          >
-                            <span className="font-medium truncate mr-2">• {p.name}</span>
-                            <span className="font-mono text-[var(--mid-gray)] shrink-0">
-                              {p.price} USD
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-
-                      <DialogFooter className="pt-2 flex flex-col sm:flex-row gap-2 sm:justify-end">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => setDeleteModal((prev) => ({ ...prev, step: 1 }))}
-                          className="rounded-[14px] border-[var(--hairline)]"
-                        >
-                          {t("common.back")}
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={executeDeletion}
-                          className="rounded-[14px] bg-red-600 hover:bg-red-700 text-white font-medium shadow-xs"
-                        >
-                          {t("admin.confirmDeleteCategory")}
-                        </Button>
-                      </DialogFooter>
-                    </div>
-                  )}
-                </>
-              )}
-            </>
-          )}
-        </DialogContent>
-      </Dialog>
+        {deleteModal.step === 2 && deleteModal.affectedProducts.length > 0 && (
+          <div className="mt-4 max-h-36 overflow-y-auto space-y-1.5 p-3 rounded-[12px] bg-rose-50/50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-900/40 text-[12px] text-start">
+            {deleteModal.affectedProducts.map((product) => (
+              <div
+                key={product.id}
+                className="flex items-center justify-between gap-3 text-[var(--ink)] py-0.5"
+              >
+                <span className="min-w-0 break-words font-medium">{product.name}</span>
+                <span className="font-mono text-[var(--mid-gray)] shrink-0">
+                  {product.price} USD
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+      </AdminDeleteConfirmationDialog>
     </div>
   );
 };
