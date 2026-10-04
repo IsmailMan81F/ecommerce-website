@@ -202,7 +202,7 @@ export const AdminMessagesPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-6 w-full max-w-full min-w-0 overflow-hidden">
+    <div className="space-y-6 w-full max-w-full min-w-0 overflow-x-clip">
       {/* Top Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full max-w-full min-w-0">
         <div className="min-w-0">
@@ -316,9 +316,9 @@ export const AdminMessagesPage: React.FC = () => {
       </div>
 
       {/* Messages List */}
-      <div className="bg-[var(--paper)] rounded-[20px] border border-[var(--hairline)] overflow-hidden shadow-2xs w-full max-w-full">
+      <div className="bg-[var(--paper)] rounded-[20px] border border-[var(--hairline)] shadow-2xs w-full max-w-full">
         {filteredMessages.length > 0 ? (
-          <div className="divide-y divide-[var(--hairline)] w-full max-w-full">
+          <div className="w-full max-w-full space-y-3 p-3 sm:p-4">
             {filteredMessages.map((msg) => {
               const isUnread = msg.status === "unread" || msg.isRead === false;
 
@@ -326,34 +326,31 @@ export const AdminMessagesPage: React.FC = () => {
                 <div
                   key={msg.id}
                   onClick={() => handleOpenMessage(msg)}
-                  className={`group p-3.5 sm:p-5 transition-colors cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-3 w-full max-w-full overflow-hidden ${
+                  className={`group grid w-full min-w-0 grid-cols-1 gap-4 rounded-[16px] border border-[var(--hairline)] p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5 transition-colors cursor-pointer ${
                     isUnread
-                      ? "bg-[var(--surface-alt)]/50 hover:bg-[var(--surface-alt)]"
-                      : "hover:bg-[var(--surface-alt)]/40"
+                      ? "bg-[var(--surface-alt)]/60 hover:bg-[var(--surface-alt)]"
+                      : "bg-[var(--paper)] hover:bg-[var(--surface-alt)]/60"
                   }`}
                 >
-                  {/* Left Column: Avatar/Status Dot + Client Details + Message snippet */}
-                  <div className="flex items-start gap-3.5 flex-1 min-w-0 overflow-hidden">
-                    {/* Read / Unread Indicator Dot */}
+                  <div className="flex min-w-0 items-start gap-3">
                     <div className="pt-1.5 shrink-0">
                       {isUnread ? (
                         <span
                           className="block h-2.5 w-2.5 rounded-full bg-amber-500 ring-4 ring-amber-500/20"
-                          title="Unread message"
+                          aria-label={t("admin.statusUnread")}
                         />
                       ) : (
                         <span
                           className="block h-2.5 w-2.5 rounded-full bg-transparent border border-[var(--mid-gray)]/40"
-                          title="Read"
+                          aria-label={t("admin.statusRead")}
                         />
                       )}
                     </div>
 
-                    <div className="space-y-1.5 min-w-0 flex-1 overflow-hidden">
-                      {/* Line 1: Client Name + Department Tag + Relative Time */}
-                      <div className="flex flex-wrap items-center gap-2 max-w-full">
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
                         <span
-                          className={`text-[15px] tracking-tight truncate max-w-[180px] sm:max-w-[220px] ${
+                          className={`min-w-0 break-words text-[15px] tracking-tight ${
                             isUnread
                               ? "font-semibold text-[var(--ink)]"
                               : "font-medium text-[var(--ink)]/80"
@@ -361,30 +358,13 @@ export const AdminMessagesPage: React.FC = () => {
                         >
                           {msg.name}
                         </span>
-
-                        {msg.inquiryType && (
-                          <Badge
-                            variant="secondary"
-                            className="text-[11px] font-normal py-0 px-2 rounded-[8px] bg-[var(--canvas)] border border-[var(--hairline)] text-[var(--mid-gray)] shrink-0"
-                          >
-                            {msg.inquiryType}
-                          </Badge>
-                        )}
-
-                        {msg.orderNumber && (
-                          <span className="text-[11px] font-mono text-[var(--mid-gray)] bg-[var(--surface-alt)] px-1.5 py-0.5 rounded border border-[var(--hairline)] shrink-0">
-                            Ref: {msg.orderNumber}
-                          </span>
-                        )}
-
-                        <span className="text-[12px] text-[var(--mid-gray)] ms-auto shrink-0 tabular-nums">
+                        <span className="max-w-full text-[12px] text-[var(--mid-gray)] tabular-nums sm:ms-auto">
                           {formatRelativeTime(msg.createdAt)}
                         </span>
                       </div>
 
-                      {/* Line 2: Subject */}
                       <p
-                        className={`text-[13px] truncate max-w-full ${
+                        className={`break-words text-[13px] ${
                           isUnread
                             ? "font-medium text-[var(--ink)]"
                             : "text-[var(--mid-gray)]"
@@ -393,36 +373,21 @@ export const AdminMessagesPage: React.FC = () => {
                         {msg.subject || t("contact.subject")}
                       </p>
 
-                      {/* Line 3: Message Snippet */}
-                      <p className="text-[13px] text-[var(--mid-gray)] line-clamp-1 break-all sm:break-words max-w-full">
-                        {msg.message}
-                      </p>
-
-                      {/* Line 4: Client Contact metadata (email & phone) */}
-                      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 pt-1 text-[12px] text-[var(--mid-gray)] max-w-full">
-                        <span className="flex items-center gap-1.5 min-w-0 max-w-full">
+                      <div className="grid min-w-0 grid-cols-1 gap-x-6 gap-y-1 pt-1 text-[12px] text-[var(--mid-gray)] sm:grid-cols-2">
+                        <span className="flex min-w-0 items-start gap-1.5">
                           <Mail className="h-3 w-3 shrink-0" />
-                          <span className="truncate max-w-[180px] sm:max-w-[220px]">{msg.email}</span>
+                          <span className="min-w-0 break-all">{msg.email}</span>
                         </span>
-                        {msg.phone && (
-                          <span className="flex items-center gap-1.5 shrink-0 tabular-nums">
-                            <Phone className="h-3 w-3 shrink-0" />
-                            <span>{msg.phone}</span>
-                          </span>
-                        )}
-                        {msg.notes && (
-                          <span className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 font-medium shrink-0">
-                            <MessageSquare className="h-3 w-3 shrink-0" />
-                            <span>{t("admin.internalNotes")}</span>
-                          </span>
-                        )}
+                        <span className="flex min-w-0 items-start gap-1.5 tabular-nums">
+                          <Phone className="h-3 w-3 shrink-0" />
+                          <span className="min-w-0 break-words">{msg.phone || "-"}</span>
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Right Column: Actions (Mark Read / Unread toggle + Delete) */}
                   <div
-                    className="flex items-center gap-1.5 self-end sm:self-center shrink-0 pt-1 sm:pt-0"
+                    className="flex min-w-0 flex-wrap items-center justify-end gap-2"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <Button
@@ -430,7 +395,7 @@ export const AdminMessagesPage: React.FC = () => {
                       size="sm"
                       onClick={(e) => handleToggleReadStatus(msg.id, e)}
                       title={isUnread ? t("admin.markAsRead") : t("admin.markAsUnread")}
-                      className="h-8 px-2.5 text-[12px] rounded-[10px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                      className="h-auto min-h-9 max-w-full whitespace-normal rounded-[10px] px-2.5 py-1 text-start text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
                     >
                       {isUnread ? (
                         <>
@@ -450,6 +415,7 @@ export const AdminMessagesPage: React.FC = () => {
                       size="iconSm"
                       onClick={(e) => confirmDelete(msg, e)}
                       title={t("admin.deleteTransmission")}
+                      aria-label={t("admin.deleteTransmission")}
                       className="h-8 w-8 text-[var(--mid-gray)] hover:text-rose-600 hover:bg-rose-500/10 rounded-[10px]"
                     >
                       <Trash2 className="h-3.5 w-3.5" />
