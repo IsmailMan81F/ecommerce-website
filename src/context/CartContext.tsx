@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import { CartItem, Product } from "@/types";
 
 interface CartContextType {
@@ -26,6 +27,7 @@ const CART_STORAGE_KEY = "kord_cart_state_v1";
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
+  const { t } = useTranslation();
   const [items, setItems] = useState<CartItem[]>(() => {
     try {
       const stored = localStorage.getItem(CART_STORAGE_KEY);
@@ -82,7 +84,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     });
 
-    toast.success("Added to Bag", {
+    toast.success(t("cart.addedToBag"), {
       description: `${product.name} (${size}${color ? `, ${color}` : ""})`,
       duration: 2600,
     });
@@ -113,8 +115,8 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const removeItem = (id: string) => {
     setItems((prevItems) => prevItems.filter((item) => item.id !== id));
-    toast.error("Item Removed", {
-      description: "Item removed from your cart bag.",
+    toast.error(t("cart.itemRemoved"), {
+      description: t("cart.itemRemovedDesc"),
       duration: 2000,
     });
   };

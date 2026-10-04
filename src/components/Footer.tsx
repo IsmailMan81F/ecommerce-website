@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   MapPin,
   Mail,
@@ -13,6 +14,8 @@ import {
   Laptop,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { useStore } from "@/context/StoreContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 // Crisp WhatsApp SVG Icon for brand accuracy
 const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "h-4 w-4" }) => (
@@ -27,14 +30,16 @@ const WhatsAppIcon: React.FC<{ className?: string }> = ({ className = "h-4 w-4" 
 );
 
 export const Footer: React.FC = () => {
+  const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
+  const { categories } = useStore();
 
   return (
     <footer className="w-full bg-[var(--surface-alt)] border-t border-[var(--hairline)] mt-24 text-[var(--ink)]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
         {/* Main 5-Column Responsive Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-10 lg:gap-8">
-          {/* Column 1 (Left on large screens): Logo & Description */}
+          {/* Column 1: Logo & Description (Never translate KØRD) */}
           <div className="col-span-1 md:col-span-2 lg:col-span-3 space-y-4">
             <Link
               to="/"
@@ -43,10 +48,10 @@ export const Footer: React.FC = () => {
               KØRD
             </Link>
             <p className="text-body text-[var(--mid-gray)] text-[13px] leading-relaxed max-w-sm">
-              Quiet material presence. Objects engineered for spatial harmony, analog purity, and enduring tactile longevity.
+              {t("footer.description")}
             </p>
             <p className="text-caption text-[var(--mid-gray)]">
-              Atelier batch release 2026 · Curated Design
+              {t("footer.edition")}
             </p>
           </div>
 
@@ -54,10 +59,10 @@ export const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1 lg:col-span-2 space-y-4">
             <div>
               <p className="text-caption text-[var(--mid-gray)] font-semibold tracking-wider">
-                Categories
+                {t("footer.categoriesTitle")}
               </p>
               <h3 className="text-body font-semibold text-[var(--ink)] mt-1">
-                Atelier Catalog
+                {t("footer.categoriesSubtitle")}
               </h3>
             </div>
             <ul className="space-y-2.5 text-body text-[14px]">
@@ -66,50 +71,20 @@ export const Footer: React.FC = () => {
                   to="/categories"
                   className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors inline-flex items-center gap-1.5"
                 >
-                  <span>All Objects</span>
-                  <span className="text-[11px] text-[var(--mid-gray)] font-mono">/ Curated</span>
+                  <span>{t("footer.allObjects")}</span>
+                  <span className="text-[11px] text-[var(--mid-gray)] font-mono">{t("footer.curated")}</span>
                 </Link>
               </li>
-              <li>
-                <Link
-                  to="/categories/studio-audio"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Studio Audio
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/ceramics-objects"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Ceramics & Objects
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/minimalist-furniture"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Minimalist Furniture
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/architectural-apparel"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Architectural Apparel
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/categories/lighting-lumens"
-                  className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
-                >
-                  Lighting & Lumens
-                </Link>
-              </li>
+              {categories.map((cat) => (
+                <li key={cat.id}>
+                  <Link
+                    to={`/categories/${cat.slug}`}
+                    className="text-[var(--mid-gray)] hover:text-[var(--ink)] transition-colors"
+                  >
+                    {cat.name}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -117,21 +92,21 @@ export const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1 lg:col-span-2 space-y-4">
             <div>
               <p className="text-caption text-[var(--mid-gray)] font-semibold tracking-wider">
-                Social Media
+                {t("footer.socialTitle")}
               </p>
               <h3 className="text-body font-semibold text-[var(--ink)] mt-1">
-                Direct Channels
+                {t("footer.socialSubtitle")}
               </h3>
             </div>
             <p className="text-caption text-[var(--mid-gray)] normal-case text-[13px] leading-relaxed">
-              Spatial documentation, fabrication, and audio archives.
+              {t("footer.socialDesc")}
             </p>
             <div className="flex flex-col gap-2.5 pt-1">
               <a
                 href="https://facebook.com"
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all"
+                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-full bg-[var(--surface-alt)] flex items-center justify-center text-[var(--ink)] group-hover:scale-105 transition-transform">
@@ -149,7 +124,7 @@ export const Footer: React.FC = () => {
                 href="https://instagram.com"
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all"
+                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-full bg-[var(--surface-alt)] flex items-center justify-center text-[var(--ink)] group-hover:scale-105 transition-transform">
@@ -167,7 +142,7 @@ export const Footer: React.FC = () => {
                 href="https://wa.me/18004829021"
                 target="_blank"
                 rel="noreferrer"
-                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all"
+                className="group flex items-center justify-between p-2.5 rounded-[14px] bg-[var(--paper)] border border-[var(--hairline)] hover:border-[var(--ink)] transition-all cursor-pointer"
               >
                 <div className="flex items-center gap-2.5">
                   <div className="h-7 w-7 rounded-full bg-[var(--surface-alt)] flex items-center justify-center text-[var(--ink)] group-hover:scale-105 transition-transform">
@@ -187,25 +162,24 @@ export const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1 lg:col-span-2 space-y-4">
             <div>
               <p className="text-caption text-[var(--mid-gray)] font-semibold tracking-wider">
-                Opening Hours
+                {t("footer.hoursTitle")}
               </p>
               <h3 className="text-body font-semibold text-[var(--ink)] mt-1">
-                Atelier Schedule
+                {t("footer.hoursSubtitle")}
               </h3>
             </div>
 
-            {/* List of days with starting and ending times (simple typography without cards) */}
             <div className="space-y-2.5 text-[13px]">
               <div>
-                <p className="font-medium text-[var(--ink)]">Saturday – Thursday</p>
+                <p className="font-medium text-[var(--ink)]">{t("footer.satThu")}</p>
                 <p className="text-[var(--mid-gray)] text-[12px] mt-0.5">
-                  Starting: 10:00 AM · Ending: 08:00 PM
+                  {t("footer.timeRangeSatThu")}
                 </p>
               </div>
               <div className="pt-2 border-t border-[var(--hairline)]">
-                <p className="font-medium text-[var(--ink)]">Friday Alone</p>
+                <p className="font-medium text-[var(--ink)]">{t("footer.friOnly")}</p>
                 <p className="text-[var(--mid-gray)] text-[12px] mt-0.5">
-                  Starting: 02:00 PM · Ending: 09:00 PM
+                  {t("footer.timeRangeFri")}
                 </p>
               </div>
             </div>
@@ -218,9 +192,9 @@ export const Footer: React.FC = () => {
               >
                 <div className="flex items-center gap-2">
                   <Mail className="h-4 w-4 text-[var(--paper)]" />
-                  <span className="text-[13px] font-medium">Contact Concierge</span>
+                  <span className="text-[13px] font-medium">{t("footer.contactConcierge")}</span>
                 </div>
-                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" />
+                <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-0.5 rtl:rotate-180 transition-transform" />
               </Link>
             </div>
           </div>
@@ -229,10 +203,10 @@ export const Footer: React.FC = () => {
           <div className="col-span-1 md:col-span-1 lg:col-span-3 space-y-4">
             <div>
               <p className="text-caption text-[var(--mid-gray)] font-semibold tracking-wider">
-                Location
+                {t("footer.locationTitle")}
               </p>
               <h3 className="text-body font-semibold text-[var(--ink)] mt-1">
-                Atelier Showroom
+                {t("footer.locationSubtitle")}
               </h3>
             </div>
 
@@ -240,8 +214,8 @@ export const Footer: React.FC = () => {
             <div className="flex items-start gap-2 text-[13px] text-[var(--mid-gray)]">
               <MapPin className="h-4 w-4 text-[var(--ink)] shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-[var(--ink)]">74 Bleecker Street, Studio 4B</p>
-                <p>SoHo, New York, NY 10012, USA</p>
+                <p className="font-medium text-[var(--ink)]">{t("footer.addressStreet")}</p>
+                <p>{t("footer.addressCity")}</p>
               </div>
             </div>
 
@@ -260,7 +234,7 @@ export const Footer: React.FC = () => {
               <div className="flex items-center justify-between px-1 pt-0.5">
                 <div className="flex items-center gap-1.5 text-[11px] text-[var(--mid-gray)]">
                   <Compass className="h-3.5 w-3.5 text-[var(--ink)]" />
-                  <span>SoHo Design District</span>
+                  <span>{t("footer.district")}</span>
                 </div>
                 <a
                   href="https://maps.google.com/?q=74+Bleecker+Street,+New+York,+NY+10012"
@@ -268,7 +242,7 @@ export const Footer: React.FC = () => {
                   rel="noreferrer"
                   className="text-[12px] font-medium text-[var(--ink)] hover:underline inline-flex items-center gap-1"
                 >
-                  <span>Open in Maps</span>
+                  <span>{t("footer.openInMaps")}</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </div>
@@ -276,54 +250,59 @@ export const Footer: React.FC = () => {
           </div>
         </div>
 
-        {/* Bottom Bar: Copyright, Theme Switcher, Privacy, Terms, Support */}
-        <div className="mt-14 pt-8 border-t border-[var(--hairline)] flex flex-col md:flex-row items-center justify-between gap-4 text-[12px] text-[var(--mid-gray)]">
-          <p>© 2026 KØRD Design Atelier Inc. All rights reserved.</p>
+        {/* Bottom Bar: Copyright, Language Switcher, Theme Switcher, Privacy, Terms, Support */}
+        <div className="mt-14 pt-8 border-t border-[var(--hairline)] flex flex-col lg:flex-row items-center justify-between gap-4 text-[12px] text-[var(--mid-gray)]">
+          <p>{t("footer.copyright")}</p>
 
-          {/* Centered Theme Switcher */}
-          <div className="flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)]">
-            <button
-              type="button"
-              onClick={() => setTheme("light")}
-              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-                theme === "light"
-                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
-                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-              }`}
-              title="Light mode"
-              aria-label="Light mode"
-            >
-              <Sun className="h-3 w-3" />
-              <span>Light</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme("dark")}
-              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-                theme === "dark"
-                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
-                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-              }`}
-              title="Dark mode"
-              aria-label="Dark mode"
-            >
-              <Moon className="h-3 w-3" />
-              <span>Dark</span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setTheme("system")}
-              className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
-                theme === "system"
-                  ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs"
-                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-              }`}
-              title="System auto preference"
-              aria-label="System preference"
-            >
-              <Laptop className="h-3 w-3" />
-              <span>Auto</span>
-            </button>
+          {/* Language Switcher besides Theme Switcher as explicitly requested */}
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            <LanguageSwitcher variant="card" />
+
+            {/* Theme Switcher Card */}
+            <div className="flex items-center gap-1 bg-[var(--paper)] p-1 rounded-[14px] border border-[var(--hairline)]">
+              <button
+                type="button"
+                onClick={() => setTheme("light")}
+                className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  theme === "light"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs border border-[var(--hairline)]"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="Light mode"
+                aria-label="Light mode"
+              >
+                <Sun className="h-3 w-3" />
+                <span>{t("common.light")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("dark")}
+                className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  theme === "dark"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs border border-[var(--hairline)]"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="Dark mode"
+                aria-label="Dark mode"
+              >
+                <Moon className="h-3 w-3" />
+                <span>{t("common.dark")}</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setTheme("system")}
+                className={`p-1.5 px-2.5 rounded-[10px] text-[11px] font-medium flex items-center gap-1.5 transition-colors cursor-pointer ${
+                  theme === "system"
+                    ? "bg-[var(--surface-alt)] text-[var(--ink)] font-semibold shadow-2xs border border-[var(--hairline)]"
+                    : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                }`}
+                title="System preference"
+                aria-label="System preference"
+              >
+                <Laptop className="h-3 w-3" />
+                <span>{t("common.system")}</span>
+              </button>
+            </div>
           </div>
 
           <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
@@ -331,21 +310,21 @@ export const Footer: React.FC = () => {
               to="/privacy"
               className="hover:text-[var(--ink)] transition-colors underline-offset-4 hover:underline"
             >
-              Privacy Policy
+              {t("footer.privacyPolicy")}
             </Link>
             <span aria-hidden="true" className="text-[var(--hairline)]">·</span>
             <Link
               to="/terms"
               className="hover:text-[var(--ink)] transition-colors underline-offset-4 hover:underline"
             >
-              Terms of Service
+              {t("footer.termsOfService")}
             </Link>
             <span aria-hidden="true" className="text-[var(--hairline)]">·</span>
             <Link
               to="/contact"
               className="hover:text-[var(--ink)] transition-colors underline-offset-4 hover:underline"
             >
-              Client Support
+              {t("footer.clientSupport")}
             </Link>
           </div>
         </div>

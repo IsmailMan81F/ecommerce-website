@@ -1,4 +1,5 @@
 import React from "react";
+import { useTranslation } from "react-i18next";
 import { FilterState } from "@/types";
 import {
   Select,
@@ -25,6 +26,8 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   availableSizes = ["Standard", "Small (22cm)", "Medium (30cm)", "Large (38cm)", "Compact (13-inch)"],
   totalResultsCount,
 }) => {
+  const { t } = useTranslation();
+
   const isFiltered =
     (filters.size && filters.size !== "all") ||
     (filters.priceRange && filters.priceRange !== "all") ||
@@ -42,10 +45,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onValueChange={(val) => onFilterChange("size", val)}
           >
             <SelectTrigger className="h-9 text-[13px] rounded-[18px]">
-              <SelectValue placeholder="Size / Dimension" />
+              <SelectValue placeholder={t("categories.size")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Sizes</SelectItem>
+              <SelectItem value="all">{t("categories.allSizes")}</SelectItem>
               {availableSizes.map((size) => (
                 <SelectItem key={size} value={size}>
                   {size}
@@ -62,14 +65,14 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onValueChange={(val) => onFilterChange("priceRange", val)}
           >
             <SelectTrigger className="h-9 text-[13px] rounded-[18px]">
-              <SelectValue placeholder="Price Range" />
+              <SelectValue placeholder={t("categories.priceRange")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Prices</SelectItem>
-              <SelectItem value="under-200">Under $200</SelectItem>
-              <SelectItem value="200-500">$200 – $500</SelectItem>
-              <SelectItem value="500-1000">$500 – $1,000</SelectItem>
-              <SelectItem value="over-1000">Over $1,000</SelectItem>
+              <SelectItem value="all">{t("categories.allPrices")}</SelectItem>
+              <SelectItem value="under-200">{t("categories.under200")}</SelectItem>
+              <SelectItem value="200-500">{t("categories.p200to500")}</SelectItem>
+              <SelectItem value="500-1000">{t("categories.p500to1000")}</SelectItem>
+              <SelectItem value="over-1000">{t("categories.over1000")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -81,11 +84,11 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onValueChange={(val) => onFilterChange("availability", val)}
           >
             <SelectTrigger className="h-9 text-[13px] rounded-[18px]">
-              <SelectValue placeholder="Stock" />
+              <SelectValue placeholder={t("categories.availability")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Stock</SelectItem>
-              <SelectItem value="in-stock">In Stock Only</SelectItem>
+              <SelectItem value="all">{t("categories.allStock")}</SelectItem>
+              <SelectItem value="in-stock">{t("categories.inStockOnly")}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -97,10 +100,10 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             variant="ghost"
             size="sm"
             onClick={onResetFilters}
-            className="h-9 px-3 text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 rounded-[18px]"
+            className="h-9 px-3 text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)] gap-1 rounded-[18px] cursor-pointer"
           >
-            <RotateCcw className="h-3 w-3" />
-            <span>Reset</span>
+            <RotateCcw className="h-3 w-3 rtl:rotate-180" />
+            <span>{t("common.reset")}</span>
           </Button>
         )}
       </div>
@@ -108,7 +111,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
       {/* Sort By & Results Count */}
       <div className="flex flex-wrap items-center justify-between sm:justify-end gap-3">
         <span className="text-caption text-[var(--mid-gray)] tabular-nums">
-          {totalResultsCount} {totalResultsCount === 1 ? "Object" : "Objects"}
+          {t("categories.objectsCount", { count: totalResultsCount })}
         </span>
 
         <div className="w-[160px]">
@@ -117,13 +120,13 @@ export const FilterBar: React.FC<FilterBarProps> = ({
             onValueChange={(val) => onFilterChange("sortBy", val)}
           >
             <SelectTrigger className="h-9 text-[13px] rounded-[18px]">
-              <SelectValue placeholder="Sort" />
+              <SelectValue placeholder={t("common.sortBy")} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="featured">Featured Order</SelectItem>
-              <SelectItem value="price-asc">Price: Low to High</SelectItem>
-              <SelectItem value="price-desc">Price: High to Low</SelectItem>
-              <SelectItem value="name-asc">Name: A to Z</SelectItem>
+              <SelectItem value="featured">{t("categories.featuredOrder")}</SelectItem>
+              <SelectItem value="price-asc">{t("categories.priceLowToHigh")}</SelectItem>
+              <SelectItem value="price-desc">{t("categories.priceHighToLow")}</SelectItem>
+              <SelectItem value="name-asc">{t("categories.nameAtoZ")}</SelectItem>
             </SelectContent>
           </Select>
         </div>

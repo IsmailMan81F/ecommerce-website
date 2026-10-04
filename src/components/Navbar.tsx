@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import {
   Search,
   ShoppingBag,
   Menu,
-  X,
   ArrowRight,
   Sun,
   Moon,
@@ -17,8 +17,12 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/context/CartContext";
 import { useStore } from "@/context/StoreContext";
 import { useTheme } from "@/context/ThemeContext";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { lockViewportScroll } from "@/lib/scrollLock";
+import { formatPrice } from "@/lib/utils";
 
 export const Navbar: React.FC = () => {
+  const { t, i18n } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const { itemCount } = useCart();
@@ -27,12 +31,35 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const searchInputRef = React.useRef<HTMLInputElement>(null);
+
+  const isRtl = i18n.language === "ar";
+
+  // Prevent main page scrolling and fix body height/width on viewport when mobile menu or search dialog is opened
+  React.useEffect(() => {
+    if (mobileMenuOpen || searchDialogOpen) {
+      return lockViewportScroll();
+    }
+  }, [mobileMenuOpen, searchDialogOpen]);
+
+  // Ensure keyboard opens and pushes the search bar above the keyboard every time it opens
+  React.useEffect(() => {
+    if (searchDialogOpen) {
+      const timer = setTimeout(() => {
+        if (searchInputRef.current) {
+          searchInputRef.current.focus();
+          searchInputRef.current.scrollIntoView({ block: "nearest", behavior: "smooth" });
+        }
+      }, 80);
+      return () => clearTimeout(timer);
+    }
+  }, [searchDialogOpen]);
 
   const navLinks = [
-    { name: "Home", path: "/" },
-    { name: "Categories", path: "/categories" },
-    { name: "About", path: "/about" },
-    { name: "Contact", path: "/contact" },
+    { name: t("nav.home"), path: "/" },
+    { name: t("nav.categories"), path: "/categories" },
+    { name: t("nav.about"), path: "/about" },
+    { name: t("nav.contact"), path: "/contact" },
   ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -53,9 +80,9 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-40 w-full bg-[var(--paper)]/95 backdrop-blur-md border-b border-[var(--hairline)] transition-all shadow-[0_1px_3px_0_rgba(0,0,0,0.03)]">
+      <header className="sticky top-0 z-50 w-full bg-[var(--paper)]/95 backdrop-blur-md border-b border-[var(--hairline)] transition-all shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          {/* Left: Brand Logo */}
+          {/* Brand Logo - never translate KØRD as specified */}
           <div className="flex items-center gap-3">
             <Link
               to="/"
@@ -74,7 +101,7 @@ export const Navbar: React.FC = () => {
                   : location.pathname.startsWith(link.path);
               return (
                 <Link
-                  key={link.name}
+                  key={link.path}
                   to={link.path}
                   className={`text-[14px] transition-colors ${
                     isActive
@@ -88,30 +115,40 @@ export const Navbar: React.FC = () => {
             })}
           </nav>
 
-          {/* Right: Search + Cart Icon + Theme Toggle + Mobile Menu Trigger */}
+          {/* Right: Language Switcher + Search + Theme Toggle + Cart Icon + Mobile Trigger */}
           <div className="flex items-center gap-1.5 sm:gap-2">
+            {/* Language Switcher in Navigation: Desktop selection card / dropdown on tablet screens, hidden on mobile */}
+            <div className="hidden lg:flex items-center">
+              <LanguageSwitcher variant="card" />
+            </div>
+            <div className="hidden sm:flex lg:hidden items-center">
+              <LanguageSwitcher variant="dropdown" />
+            </div>
+
             <Button
               variant="ghost"
               size="icon"
-              className="text-[var(--ink)] hover:text-[var(--ink)]"
+              className="text-[var(--ink)] hover:text-[var(--ink)] cursor-pointer"
               onClick={() => setSearchDialogOpen(true)}
-              aria-label="Search catalog"
+              aria-label={t("common.searchCatalog")}
             >
               <Search className="h-[18px] w-[18px]" />
             </Button>
 
-            {/* Quick Theme Cycle Button */}
+            {/* Quick Theme Toggle Button: only dark and light, hidden on mobile screens */}
             <Button
               variant="ghost"
               size="icon"
               onClick={cycleTheme}
-              className="text-[var(--ink)] hover:text-[var(--ink)]"
-              title={`Current theme: ${theme} (${resolvedTheme}). Click to cycle.`}
-              aria-label="Toggle light or dark theme"
+              className="hidden sm:inline-flex text-[var(--ink)] hover:text-[var(--ink)] cursor-pointer"
+              title={`Theme: ${resolvedTheme}. Click to toggle.`}
+              aria-label={t("common.theme")}
             >
-              {theme === "light" && <Sun className="h-[18px] w-[18px]" />}
-              {theme === "dark" && <Moon className="h-[18px] w-[18px]" />}
-              {theme === "system" && <Laptop className="h-[18px] w-[18px]" />}
+              {resolvedTheme === "dark" ? (
+                <Moon className="h-[18px] w-[18px]" />
+              ) : (
+                <Sun className="h-[18px] w-[18px]" />
+              )}
             </Button>
 
             <Link to="/cart">
@@ -128,26 +165,38 @@ export const Navbar: React.FC = () => {
               </Button>
             </Link>
 
-            {/* Mobile Nav Sheet */}
+            {/* Mobile Nav Sheet: Side opens on left for Arabic, right for LTR with smooth slide */}
             <div className="md:hidden">
-              <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+              <Sheet modal={true} open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
                 <SheetTrigger asChild>
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="text-[var(--ink)]"
-                    aria-label="Open navigation menu"
+                    className="text-[var(--ink)] cursor-pointer"
+                    aria-label={t("nav.menu")}
                   >
                     <Menu className="h-5 w-5" />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right" className="w-[300px] flex flex-col justify-between p-6">
+                <SheetContent
+                  side={isRtl ? "left" : "right"}
+                  className="w-[300px] sm:w-[340px] flex flex-col justify-between p-6 duration-300 ease-out"
+                >
                   <div>
-                    <SheetHeader className="text-left mb-6">
-                      <SheetTitle className="text-lg font-semibold tracking-tight">
-                        KØRD
-                      </SheetTitle>
-                    </SheetHeader>
+                    {/* Brand header in drawer: keep on the left for all screen sizes including Arabic mobile */}
+                    <div dir="ltr" className="text-left">
+                      <SheetHeader className="text-left mb-6">
+                        <SheetTitle className="text-lg font-semibold tracking-tight text-left">
+                          <Link
+                            to="/"
+                            onClick={() => setMobileMenuOpen(false)}
+                            className="text-left font-semibold text-[var(--ink)] select-none"
+                          >
+                            KØRD
+                          </Link>
+                        </SheetTitle>
+                      </SheetHeader>
+                    </div>
                     <nav className="flex flex-col gap-4 mt-6">
                       {navLinks.map((link) => {
                         const isActive =
@@ -156,7 +205,7 @@ export const Navbar: React.FC = () => {
                             : location.pathname.startsWith(link.path);
                         return (
                           <Link
-                            key={link.name}
+                            key={link.path}
                             to={link.path}
                             onClick={() => setMobileMenuOpen(false)}
                             className={`text-body-lg py-2 transition-colors ${
@@ -173,51 +222,51 @@ export const Navbar: React.FC = () => {
                   </div>
 
                   <div className="pt-6 border-t border-[var(--hairline)] space-y-4">
-                    {/* Theme selector in mobile drawer */}
+                    {/* Language selector in mobile drawer */}
                     <div className="space-y-1.5">
-                      <p className="text-[12px] font-medium text-[var(--mid-gray)]">Appearance Theme</p>
-                      <div className="grid grid-cols-3 gap-1 bg-[var(--surface-alt)] p-1 rounded-[14px] border border-[var(--hairline)]">
+                      <p className="text-[12px] font-medium text-[var(--mid-gray)]">
+                        {t("common.language")}
+                      </p>
+                      <LanguageSwitcher variant="card" className="w-full justify-between" />
+                    </div>
+
+                    {/* Theme selector in mobile drawer: only light and dark, no system option */}
+                    <div className="space-y-1.5">
+                      <p className="text-[12px] font-medium text-[var(--mid-gray)]">
+                        {t("common.theme")}
+                      </p>
+                      <div className="grid grid-cols-2 gap-1 bg-[var(--surface-alt)] p-1 rounded-[14px] border border-[var(--hairline)]">
                         <button
                           type="button"
                           onClick={() => setTheme("light")}
-                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
-                            theme === "light"
+                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                            resolvedTheme === "light"
                               ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
                         >
                           <Sun className="h-3.5 w-3.5" />
-                          <span>Light</span>
+                          <span>{t("common.light")}</span>
                         </button>
                         <button
                           type="button"
                           onClick={() => setTheme("dark")}
-                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
-                            theme === "dark"
+                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer ${
+                            resolvedTheme === "dark"
                               ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
                               : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                           }`}
                         >
                           <Moon className="h-3.5 w-3.5" />
-                          <span>Dark</span>
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setTheme("system")}
-                          className={`py-1.5 px-2 rounded-[10px] text-[12px] font-medium flex items-center justify-center gap-1.5 transition-colors ${
-                            theme === "system"
-                              ? "bg-[var(--paper)] text-[var(--ink)] shadow-2xs font-semibold"
-                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                          }`}
-                        >
-                          <Laptop className="h-3.5 w-3.5" />
-                          <span>Auto</span>
+                          <span>{t("common.dark")}</span>
                         </button>
                       </div>
                     </div>
 
                     <div>
-                      <p className="text-caption text-[var(--mid-gray)] mb-1">Direct Contact</p>
+                      <p className="text-caption text-[var(--mid-gray)] mb-1">
+                        {t("footer.clientSupport")}
+                      </p>
                       <p className="text-body text-[var(--ink)]">studio@kord-objects.com</p>
                     </div>
                   </div>
@@ -229,27 +278,32 @@ export const Navbar: React.FC = () => {
       </header>
 
       {/* Global Quick Search Dialog */}
-      <Dialog open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
+      <Dialog modal={true} open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
         <DialogContent className="sm:max-w-[540px] p-6">
           <DialogHeader>
-            <DialogTitle className="text-heading-sm">Search Catalog</DialogTitle>
+            <DialogTitle className="text-heading-sm">
+              {t("common.searchCatalog")}
+            </DialogTitle>
           </DialogHeader>
           <form onSubmit={handleSearchSubmit} className="mt-2 space-y-4">
             <div className="relative">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+              <Search className="absolute start-4 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
               <Input
+                ref={searchInputRef}
                 type="search"
-                placeholder="Search audio, ceramics, furniture..."
+                placeholder={t("common.searchPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-11 pr-4 h-12 text-[15px]"
+                className="ps-11 pe-4 h-12 text-[15px]"
                 autoFocus
               />
             </div>
 
             {filteredPreview.length > 0 && (
               <div className="space-y-2 pt-2">
-                <p className="text-caption text-[var(--mid-gray)]">Quick Matches</p>
+                <p className="text-caption text-[var(--mid-gray)]">
+                  {t("common.quickMatches")}
+                </p>
                 <div className="divide-y divide-[var(--hairline)] border border-[var(--hairline)] rounded-[18px] overflow-hidden bg-[var(--surface-alt)]">
                   {filteredPreview.map((product) => (
                     <button
@@ -259,7 +313,7 @@ export const Navbar: React.FC = () => {
                         setSearchDialogOpen(false);
                         navigate(`/product/${product.slug}`);
                       }}
-                      className="w-full flex items-center justify-between p-3 hover:bg-[var(--paper)] transition-colors text-left"
+                      className="w-full flex items-center justify-between p-3 hover:bg-[var(--paper)] transition-colors text-start cursor-pointer"
                     >
                       <div className="flex items-center gap-3">
                         <img
@@ -277,7 +331,7 @@ export const Navbar: React.FC = () => {
                         </div>
                       </div>
                       <span className="text-[13px] font-medium tabular-nums text-[var(--ink)]">
-                        ${product.price}
+                        {formatPrice(product.price)}
                       </span>
                     </button>
                   ))}
@@ -287,11 +341,11 @@ export const Navbar: React.FC = () => {
 
             <div className="flex items-center justify-between pt-2">
               <span className="text-caption text-[var(--mid-gray)]">
-                Press enter to view all results
+                {t("common.pressEnterToView")}
               </span>
-              <Button type="submit" size="sm" className="gap-1.5">
-                <span>View Results</span>
-                <ArrowRight className="h-3.5 w-3.5" />
+              <Button type="submit" size="sm" className="gap-1.5 cursor-pointer">
+                <span>{t("common.viewResults")}</span>
+                <ArrowRight className="h-3.5 w-3.5 rtl:rotate-180" />
               </Button>
             </div>
           </form>

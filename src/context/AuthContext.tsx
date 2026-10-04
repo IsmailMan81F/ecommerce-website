@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { toast } from "sonner";
+import i18n from "@/i18n/translations";
 
 interface AdminCredentials {
   username: string;
@@ -52,13 +53,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
       } catch {
         // ignore
       }
-      toast.success("Login successful", {
-        description: `Welcome back to KØRD Studio Console.`,
+      toast.success(i18n.t("admin.loginSuccess"), {
+        description: i18n.t("admin.loginSuccessDesc"),
       });
       return true;
     } else {
-      toast.error("Invalid username or password", {
-        description: "Please check your admin credentials and try again.",
+      toast.error(i18n.t("admin.loginInvalid"), {
+        description: i18n.t("admin.loginInvalidDesc"),
       });
       return false;
     }
@@ -71,8 +72,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     } catch {
       // ignore
     }
-    toast.info("Logged out", {
-      description: "Admin session terminated.",
+    toast.info(i18n.t("admin.loggedOut"), {
+      description: i18n.t("admin.loggedOutDesc"),
     });
   };
 
@@ -82,7 +83,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     newPass?: string
   ): { success: boolean; message: string } => {
     if (currentPass !== credentials.passwordHash) {
-      return { success: false, message: "Current password does not match" };
+      return { success: false, message: i18n.t("admin.currentPasswordIncorrect") };
     }
 
     const nextCreds: AdminCredentials = {

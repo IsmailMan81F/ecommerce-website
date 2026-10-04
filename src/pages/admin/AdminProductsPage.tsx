@@ -1,8 +1,10 @@
 import React, { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useStore } from "@/context/StoreContext";
 import { Product, ProductVariant } from "@/types";
 import { formatPrice } from "@/lib/utils";
 import { toast } from "sonner";
+import { lockViewportScroll } from "@/lib/scrollLock";
 import {
   Card,
   CardContent,
@@ -48,11 +50,34 @@ interface VariantRow {
   id: string;
   size: string;
   color: string;
-  stock: number;
+  stock: number | "";
   isAvailable: boolean;
 }
 
+const SIZE_OPTIONS = [
+  "XS",
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "XXXL",
+  "36",
+  "38",
+  "40",
+  "42",
+  "44",
+  "46",
+  "48",
+  "50",
+  "52",
+  "54",
+];
+
+const COLOR_OPTIONS = ["Black", "White", "Gray", "Red", "Blue"];
+
 export const AdminProductsPage: React.FC = () => {
+  const { t } = useTranslation();
   const {
     products,
     categories,
@@ -87,6 +112,13 @@ export const AdminProductsPage: React.FC = () => {
   // Delete Confirmation Dialog
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
 
+  // Fix height of main screen and lock background scrolling when edit/add modal is open
+  React.useEffect(() => {
+    if (formOpen || productToDelete) {
+      return lockViewportScroll();
+    }
+  }, [formOpen, productToDelete]);
+
   // Filtered products
   const filteredProducts = useMemo(() => {
     return products.filter((p) => {
@@ -120,8 +152,8 @@ export const AdminProductsPage: React.FC = () => {
     setVariants([
       {
         id: `var-${Date.now()}-1`,
-        size: "Standard",
-        color: "Matte Black",
+        size: "",
+        color: "",
         stock: 10,
         isAvailable: true,
       },
@@ -182,8 +214,8 @@ export const AdminProductsPage: React.FC = () => {
           : [
               {
                 id: `var-${Date.now()}`,
-                size: "Standard",
-                color: "Default",
+                size: "",
+                color: "",
                 stock: p.stock || 5,
                 isAvailable: p.isAvailable,
               },
@@ -204,7 +236,7 @@ export const AdminProductsPage: React.FC = () => {
         newUrls.push(url);
       });
       setImages((prev) => [...prev, ...newUrls]);
-      toast.success(`${newUrls.length} image(s) attached`);
+      toast.success(t("admin.imagesAttached", { count: newUrls.length }));
     }
   };
 
@@ -215,14 +247,14 @@ export const AdminProductsPage: React.FC = () => {
   // Variants management
   const handleAddVariant = () => {
     setVariants((prev) => [
-      ...prev,
       {
         id: `var-${Date.now()}`,
-        size: "Standard",
-        color: "Matte Black",
+        size: "",
+        color: "",
         stock: 5,
         isAvailable: true,
       },
+      ...prev,
     ]);
   };
 
@@ -250,13 +282,23 @@ export const AdminProductsPage: React.FC = () => {
     e.preventDefault();
 
     if (!name.trim()) {
-      toast.error("Product name is required");
+      toast.error(t("admin.productNameRequired"));
       return;
     }
 
     const parsedPrice = parseFloat(price);
     if (isNaN(parsedPrice) || parsedPrice <= 0) {
-      toast.error("Please enter a valid price");
+      toast.error(t("admin.validPriceRequired"));
+      return;
+    }
+
+    if (
+      variants.some(
+        (variant) =>
+          !variant.size.trim() || !variant.color.trim() || variant.stock === ""
+      )
+    ) {
+      toast.error(t("admin.variantFieldsRequired"));
       return;
     }
 
@@ -265,7 +307,7 @@ export const AdminProductsPage: React.FC = () => {
 
     if (isCreatingNewCategory) {
       if (!newCategoryName.trim()) {
-        toast.error("Please enter a name for the new category");
+        toast.error(t("admin.newCategoryNameRequired"));
         return;
       }
       const newCat = addCategory(newCategoryName.trim());
@@ -279,7 +321,7 @@ export const AdminProductsPage: React.FC = () => {
     // Extract unique sizes and colors from variants
     const uniqueSizes = Array.from(new Set(variants.map((v) => v.size).filter(Boolean)));
     const uniqueColors = Array.from(new Set(variants.map((v) => v.color).filter(Boolean)));
-    const totalStock = variants.reduce((sum, v) => sum + (v.stock || 0), 0);
+    const totalStock = variants.reduce((sum, v) => sum + Number(v.stock), 0);
 
     const parsedDetails = detailsText
       .split("\n")
@@ -299,7 +341,7 @@ export const AdminProductsPage: React.FC = () => {
         id: v.id,
         size: v.size,
         color: v.color,
-        stock: v.stock,
+        stock: Number(v.stock),
         isAvailable: v.isAvailable,
       })),
       stock: totalStock,
@@ -317,13 +359,13 @@ export const AdminProductsPage: React.FC = () => {
 
     if (editingProduct) {
       updateProduct(editingProduct.id, productPayload);
-      toast.success("Product Updated", {
-        description: `${name} has been updated in the catalog.`,
+      toast.success(t("admin.productUpdated"), {
+        description: `${name}`,
       });
     } else {
       addProduct(productPayload);
-      toast.success("Product Created", {
-        description: `${name} added to ${finalCategoryName}.`,
+      toast.success(t("admin.productCreated"), {
+        description: `${name}`,
       });
     }
 
@@ -333,8 +375,8 @@ export const AdminProductsPage: React.FC = () => {
   const handleConfirmDelete = () => {
     if (productToDelete) {
       deleteProduct(productToDelete.id);
-      toast.success("Product Deleted", {
-        description: `${productToDelete.name} was removed from the catalog.`,
+      toast.success(t("admin.productDeleted"), {
+        description: `${productToDelete.name}`,
       });
       setProductToDelete(null);
     }
@@ -345,18 +387,18 @@ export const AdminProductsPage: React.FC = () => {
       {/* Top Bar with Add Product Action */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="text-heading text-[var(--ink)]">Catalog Objects</h1>
+          <h1 className="text-heading text-[var(--ink)]">{t("admin.products")}</h1>
           <p className="text-body text-[var(--mid-gray)] text-[14px]">
-            Manage products, toggle availability in real-time, configure variant stock, and add atelier pieces.
+            {t("admin.productsSubtitle")}
           </p>
         </div>
 
         <Button
           onClick={handleOpenAdd}
-          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2"
+          className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-2 cursor-pointer"
         >
           <Plus className="h-4 w-4" />
-          <span>Add Product</span>
+          <span>{t("admin.addProduct")}</span>
         </Button>
       </div>
 
@@ -366,13 +408,13 @@ export const AdminProductsPage: React.FC = () => {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             {/* Search */}
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
+              <Search className="absolute start-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[var(--mid-gray)]" />
               <Input
                 type="search"
-                placeholder="Search products by title or category..."
+                placeholder={t("admin.searchProductsPlaceholder")}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 h-10 text-[14px] rounded-[18px]"
+                className="ps-10 h-10 text-[14px] rounded-[18px]"
               />
             </div>
 
@@ -384,10 +426,10 @@ export const AdminProductsPage: React.FC = () => {
                   onValueChange={setSelectedCategoryFilter}
                 >
                   <SelectTrigger className="h-10 text-[13px] rounded-[18px]">
-                    <SelectValue placeholder="All Categories" />
+                    <SelectValue placeholder={t("admin.allCategories")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Categories</SelectItem>
+                    <SelectItem value="all">{t("admin.allCategories")}</SelectItem>
                     {categories.map((c) => (
                       <SelectItem key={c.id} value={c.slug}>
                         {c.name}
@@ -408,7 +450,7 @@ export const AdminProductsPage: React.FC = () => {
                   className="h-10 px-3 text-[12px] text-[var(--mid-gray)] rounded-[18px] gap-1"
                 >
                   <RotateCcw className="h-3 w-3" />
-                  <span>Reset</span>
+                  <span>{t("admin.reset")}</span>
                 </Button>
               )}
             </div>
@@ -442,7 +484,7 @@ export const AdminProductsPage: React.FC = () => {
                           {formatPrice(p.price)}
                         </span>
                         <span className="text-[12px] text-[var(--mid-gray)] tabular-nums">
-                          · {p.stock} in stock
+                          · {t("admin.stockCount", { count: p.stock })}
                         </span>
                       </div>
                     </div>
@@ -458,28 +500,27 @@ export const AdminProductsPage: React.FC = () => {
                       checked={p.isAvailable}
                       onCheckedChange={() => {
                         toggleProductAvailability(p.id);
-                        toast.success(
-                          `${p.name} is now ${!p.isAvailable ? "In Stock" : "Out of Stock"}`
-                        );
+                        const statusText = !p.isAvailable ? t("admin.inStock") : t("admin.outOfStock");
+                        toast.success(`${p.name} - ${statusText}`);
                       }}
                     />
                     <Label
                       htmlFor={`avail-${p.id}`}
                       className="text-[12px] font-medium text-[var(--ink)] cursor-pointer select-none"
                     >
-                      {p.isAvailable ? "In Stock" : "Out of Stock"}
+                      {p.isAvailable ? t("admin.inStock") : t("admin.outOfStock")}
                     </Label>
                   </div>
 
                   {/* Actions: Edit & Delete */}
-                  <div className="flex items-center gap-1 ml-auto">
+                  <div className="flex items-center gap-1 ml-auto rtl:ml-0 rtl:mr-auto">
                     <Button
                       type="button"
                       variant="ghost"
                       size="iconSm"
                       onClick={() => handleOpenEdit(p)}
                       className="text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--surface-alt)]"
-                      title="Edit product"
+                      title={t("common.edit")}
                       aria-label={`Edit ${p.name}`}
                     >
                       <Pencil className="h-3.5 w-3.5" />
@@ -491,7 +532,7 @@ export const AdminProductsPage: React.FC = () => {
                       size="iconSm"
                       onClick={() => setProductToDelete(p)}
                       className="text-[var(--ember)] hover:text-[var(--ember)] hover:bg-[var(--ember)]/10"
-                      title="Delete product"
+                      title={t("common.delete")}
                       aria-label={`Delete ${p.name}`}
                     >
                       <Trash2 className="h-3.5 w-3.5" />
@@ -504,7 +545,7 @@ export const AdminProductsPage: React.FC = () => {
 
           {filteredProducts.length === 0 && (
             <div className="text-center py-12 text-[var(--mid-gray)]">
-              No products found matching the criteria.
+              {t("admin.noProductsFound")}
             </div>
           )}
         </CardContent>
@@ -515,10 +556,10 @@ export const AdminProductsPage: React.FC = () => {
         <DialogContent className="sm:max-w-[620px] p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="text-heading-sm">
-              {editingProduct ? "Edit Product" : "Add New Design Object"}
+              {editingProduct ? t("admin.editProduct") : t("admin.addDesignObject")}
             </DialogTitle>
             <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px]">
-              Configure object metadata, images, and variant inventory.
+              {t("admin.editProductDesc")}
             </DialogDescription>
           </DialogHeader>
 
@@ -526,7 +567,7 @@ export const AdminProductsPage: React.FC = () => {
             {/* Title & Price */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2 space-y-1.5">
-                <Label htmlFor="prod-name">Object Title *</Label>
+                <Label htmlFor="prod-name">{t("admin.objectTitle")} *</Label>
                 <Input
                   id="prod-name"
                   value={name}
@@ -537,7 +578,7 @@ export const AdminProductsPage: React.FC = () => {
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="prod-price">Price (USD) *</Label>
+              <Label htmlFor="prod-price">{t("admin.priceDzd")} *</Label>
                 <Input
                   id="prod-price"
                   type="number"
@@ -552,13 +593,13 @@ export const AdminProductsPage: React.FC = () => {
 
             {/* Category Selection + Inline Category Creation */}
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{t("admin.category")}</Label>
               {!isCreatingNewCategory ? (
                 <div className="flex items-center gap-2">
                   <div className="flex-1">
                     <Select value={categorySlug} onValueChange={setCategorySlug}>
                       <SelectTrigger className="h-10 text-[14px]">
-                        <SelectValue placeholder="Select category" />
+                        <SelectValue placeholder={t("admin.selectCategory")} />
                       </SelectTrigger>
                       <SelectContent>
                         {categories.map((c) => (
@@ -576,23 +617,23 @@ export const AdminProductsPage: React.FC = () => {
                     onClick={() => setIsCreatingNewCategory(true)}
                     className="h-10 rounded-[18px] text-[13px] whitespace-nowrap"
                   >
-                    + Create new category
+                    {t("admin.createNewCategory")}
                   </Button>
                 </div>
               ) : (
                 <div className="p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)] space-y-2">
                   <div className="flex items-center justify-between">
-                    <span className="text-caption text-[var(--ink)]">New Category Details</span>
+                    <span className="text-caption text-[var(--ink)]">{t("admin.newCategoryDetails")}</span>
                     <button
                       type="button"
                       onClick={() => setIsCreatingNewCategory(false)}
-                      className="text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                      className="text-[12px] text-[var(--mid-gray)] hover:text-[var(--ink)] cursor-pointer"
                     >
-                      Cancel new category
+                      {t("admin.cancelNewCategory")}
                     </button>
                   </div>
                   <Input
-                    placeholder="Category title (e.g. Cast Iron Cookware)"
+                    placeholder={t("admin.categoryTitlePlaceholder")}
                     value={newCategoryName}
                     onChange={(e) => setNewCategoryName(e.target.value)}
                     autoFocus
@@ -603,12 +644,12 @@ export const AdminProductsPage: React.FC = () => {
 
             {/* Description */}
             <div className="space-y-1.5">
-              <Label htmlFor="prod-desc">Description</Label>
+              <Label htmlFor="prod-desc">{t("admin.description")}</Label>
               <Textarea
                 id="prod-desc"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                placeholder="Describe material composition, tactile finishes, and dimensions..."
+                placeholder={t("admin.descPlaceholder")}
                 rows={3}
               />
             </div>
@@ -616,16 +657,16 @@ export const AdminProductsPage: React.FC = () => {
             {/* Details (Lines) */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="prod-details">Details (one item per line)</Label>
+                <Label htmlFor="prod-details">{t("admin.detailsLines")}</Label>
                 <span className="text-[11px] text-[var(--mid-gray)]">
-                  Bullet lines shown on object detail page
+                  {t("admin.detailsHint")}
                 </span>
               </div>
               <Textarea
                 id="prod-details"
                 value={detailsText}
                 onChange={(e) => setDetailsText(e.target.value)}
-                placeholder="Enter each object detail on a new line..."
+                placeholder={t("admin.detailsPlaceholder")}
                 rows={4}
               />
             </div>
@@ -633,10 +674,10 @@ export const AdminProductsPage: React.FC = () => {
             {/* Images Upload / Previews */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between flex-wrap gap-2">
-                <Label>Object Imagery</Label>
+                <Label>{t("admin.objectImagery")}</Label>
                 <label className="text-[12px] text-[var(--ink)] font-medium cursor-pointer flex items-center gap-1 hover:underline">
                   <Upload className="h-3.5 w-3.5" />
-                  <span>Attach local image</span>
+                  <span>{t("admin.attachLocalImage")}</span>
                   <input
                     type="file"
                     multiple
@@ -672,7 +713,7 @@ export const AdminProductsPage: React.FC = () => {
                   ))
                 ) : (
                   <p className="text-[13px] text-[var(--mid-gray)] px-3">
-                    No images attached. Click &ldquo;Attach local image&rdquo; to add photos.
+                    {t("admin.noImagesAttached")}
                   </p>
                 )}
               </div>
@@ -682,9 +723,9 @@ export const AdminProductsPage: React.FC = () => {
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label>Variants & Stock Inventory</Label>
+                  <Label>{t("admin.variantsInventory")}</Label>
                   <p className="text-[12px] text-[var(--mid-gray)]">
-                    Define sizes, colors, and individual stock quantities.
+                    {t("admin.variantsDesc")}
                   </p>
                 </div>
                 <Button
@@ -695,7 +736,7 @@ export const AdminProductsPage: React.FC = () => {
                   className="rounded-[18px] text-[12px] h-8 px-2.5 gap-1"
                 >
                   <Plus className="h-3 w-3" />
-                  <span>Add Variant</span>
+                  <span>{t("admin.addVariant")}</span>
                 </Button>
               </div>
 
@@ -703,39 +744,67 @@ export const AdminProductsPage: React.FC = () => {
                 {variants.map((variant) => (
                   <div
                     key={variant.id}
-                    className="p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)] flex flex-col sm:flex-row sm:items-center gap-2.5"
+                    className="animate-in fade-in-0 slide-in-from-top-2 duration-200 p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)] flex flex-col sm:flex-row sm:items-center gap-2.5"
                   >
                     <div className="flex-1">
-                      <Input
-                        placeholder="Size / Format"
+                      <Select
                         value={variant.size}
-                        onChange={(e) =>
-                          handleUpdateVariant(variant.id, "size", e.target.value)
+                        onValueChange={(value) =>
+                          handleUpdateVariant(variant.id, "size", value)
                         }
-                        className="h-8 text-[12px] rounded-[12px]"
-                      />
+                      >
+                        <SelectTrigger className="h-8 text-[12px] rounded-[12px]">
+                          <SelectValue placeholder={t("admin.sizeFormat")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            ...SIZE_OPTIONS,
+                            ...(variant.size && !SIZE_OPTIONS.includes(variant.size)
+                              ? [variant.size]
+                              : []),
+                          ].map((size) => (
+                            <SelectItem key={size} value={size}>
+                              {size}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="flex-1">
-                      <Input
-                        placeholder="Color"
+                      <Select
                         value={variant.color}
-                        onChange={(e) =>
-                          handleUpdateVariant(variant.id, "color", e.target.value)
+                        onValueChange={(value) =>
+                          handleUpdateVariant(variant.id, "color", value)
                         }
-                        className="h-8 text-[12px] rounded-[12px]"
-                      />
+                      >
+                        <SelectTrigger className="h-8 text-[12px] rounded-[12px]">
+                          <SelectValue placeholder={t("admin.color")} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[
+                            ...COLOR_OPTIONS,
+                            ...(variant.color && !COLOR_OPTIONS.includes(variant.color)
+                              ? [variant.color]
+                              : []),
+                          ].map((color) => (
+                            <SelectItem key={color} value={color}>
+                              {color}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <div className="w-24">
                       <Input
                         type="number"
                         min="0"
-                        placeholder="Stock"
+                        placeholder={t("admin.stock")}
                         value={variant.stock}
                         onChange={(e) =>
                           handleUpdateVariant(
                             variant.id,
                             "stock",
-                            parseInt(e.target.value) || 0
+                            e.target.value === "" ? "" : parseInt(e.target.value, 10)
                           )
                         }
                         className="h-8 text-[12px] rounded-[12px] tabular-nums"
@@ -751,8 +820,8 @@ export const AdminProductsPage: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => handleRemoveVariant(variant.id)}
-                        className="h-7 w-7 rounded-full flex items-center justify-center text-[var(--ember)] hover:bg-[var(--ember)]/10 transition-colors"
-                        title="Remove variant row"
+                        className="h-7 w-7 rounded-full flex items-center justify-center text-[var(--ember)] hover:bg-[var(--ember)]/10 transition-colors cursor-pointer"
+                        title="Remove variant"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
@@ -765,9 +834,9 @@ export const AdminProductsPage: React.FC = () => {
             {/* Overall In-Stock toggle */}
             <div className="flex items-center justify-between p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
               <div>
-                <p className="text-[13px] font-medium text-[var(--ink)]">Catalog Availability</p>
+                <p className="text-[13px] font-medium text-[var(--ink)]">{t("admin.catalogAvailability")}</p>
                 <p className="text-[12px] text-[var(--mid-gray)]">
-                  When enabled, buyers can purchase this item immediately.
+                  {t("admin.catalogAvailabilityDesc")}
                 </p>
               </div>
               <Switch checked={isAvailable} onCheckedChange={setIsAvailable} />
@@ -780,14 +849,14 @@ export const AdminProductsPage: React.FC = () => {
                 onClick={() => setFormOpen(false)}
                 className="rounded-[18px]"
               >
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button
                 type="submit"
                 className="rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] px-5 gap-1.5"
               >
                 <Check className="h-4 w-4" />
-                <span>{editingProduct ? "Save Product" : "Publish Object"}</span>
+                <span>{editingProduct ? t("admin.saveProduct") : t("admin.publishObject")}</span>
               </Button>
             </DialogFooter>
           </form>
@@ -804,11 +873,9 @@ export const AdminProductsPage: React.FC = () => {
             <Trash2 className="h-7 w-7 text-rose-600" />
           </div>
           <DialogHeader className="text-center sm:text-center">
-            <DialogTitle className="text-heading-sm text-[var(--ink)]">Remove Product?</DialogTitle>
+            <DialogTitle className="text-heading-sm text-[var(--ink)]">{t("admin.removeProductTitle")}</DialogTitle>
             <DialogDescription className="text-body text-[var(--mid-gray)] text-[13px] pt-1">
-              Are you sure you want to delete{" "}
-              <strong className="text-rose-700 font-semibold">{productToDelete?.name}</strong>?
-              This action will remove it from the public catalog.
+              {t("admin.removeProductConfirm", { name: productToDelete?.name })}
             </DialogDescription>
           </DialogHeader>
 
@@ -819,7 +886,7 @@ export const AdminProductsPage: React.FC = () => {
               onClick={() => setProductToDelete(null)}
               className="rounded-[18px]"
             >
-              Cancel
+              {t("common.cancel")}
             </Button>
             <Button
               type="button"
@@ -827,7 +894,7 @@ export const AdminProductsPage: React.FC = () => {
               onClick={handleConfirmDelete}
               className="rounded-[18px] px-5 bg-rose-600 hover:bg-rose-700 text-white"
             >
-              Delete Product
+              {t("admin.deleteProduct")}
             </Button>
           </DialogFooter>
         </DialogContent>

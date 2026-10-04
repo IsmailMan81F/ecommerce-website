@@ -89,3 +89,67 @@ export interface FilterState {
   availability?: string; // "all" | "in-stock"
   sortBy?: string; // "featured" | "price-asc" | "price-desc" | "name-asc"
 }
+
+export interface ContactMessage {
+  id: string;
+  name: string;
+  email: string;
+  phone?: string;
+  subject?: string;
+  inquiryType?: string;
+  orderNumber?: string;
+  message: string;
+  createdAt: string;
+  status: "unread" | "read" | "replied";
+  isRead?: boolean;
+  notes?: string;
+}
+
+export interface StoreGeneralInfo {
+  storeName: string;
+  description: string;
+  email: string;
+  phone: string;
+}
+
+export interface StoreLocationInfo {
+  country: string;
+  wilaya: string;
+  city: string;
+  address: string;
+  googleMapsUrl: string;
+  whatsapp: string;
+}
+
+export interface DayHourSchedule {
+  isOpen: boolean;
+  openTime: string;
+  closeTime: string;
+}
+
+export interface StoreHours {
+  saturdayToThursday: DayHourSchedule;
+  friday: DayHourSchedule;
+}
+
+export interface StoreSocialMedia {
+  instagram: string;
+  facebook: string;
+  tiktok: string;
+  whatsapp: string;
+}
+
+export interface StoreDeliverySettings {
+  deliveryEnabled: boolean;
+  officeFee: number;
+  homeFee: number;
+}
+
+export interface StoreSettings {
+  general: StoreGeneralInfo;
+  location: StoreLocationInfo;
+  hours: StoreHours;
+  social: StoreSocialMedia;
+  delivery: StoreDeliverySettings;
+}
+

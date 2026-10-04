@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Plus } from "lucide-react";
 import { Product } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ interface ProductCardProps {
 }
 
 export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
+  const { t } = useTranslation();
   const { addToCart } = useCart();
 
   const handleQuickAdd = (e: React.MouseEvent) => {
@@ -34,9 +36,9 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
 
           {/* Quiet Status Text Tag if best seller or low stock */}
           {product.isBestSeller && (
-            <div className="absolute top-3 left-3 bg-[var(--paper)]/90 backdrop-blur-xs px-2.5 py-1 rounded-[14px] border border-[var(--hairline)]">
+            <div className="absolute top-3 start-3 bg-[var(--paper)]/90 backdrop-blur-xs px-2.5 py-1 rounded-[14px] border border-[var(--hairline)]">
               <span className="text-[11px] font-medium tracking-wider uppercase text-[var(--ink)]">
-                Selected
+                {t("categories.bestSeller")}
               </span>
             </div>
           )}
@@ -71,11 +73,11 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           onClick={handleQuickAdd}
           variant="secondary"
           size="sm"
-          className="h-8 px-3 rounded-[18px] text-[12px] font-medium gap-1 text-[var(--ink)] border border-[var(--hairline)] hover:bg-[var(--ink)] hover:text-[var(--paper)] hover:border-[var(--ink)] transition-all"
-          aria-label={`Add ${product.name} to cart`}
+          className="h-8 px-3 rounded-[18px] text-[12px] font-medium gap-1 text-[var(--ink)] border border-[var(--hairline)] hover:bg-[var(--ink)] hover:text-[var(--paper)] hover:border-[var(--ink)] transition-all cursor-pointer"
+          aria-label={`${t("categories.addToCart")}: ${product.name}`}
         >
           <Plus className="h-3.5 w-3.5" />
-          <span>Add</span>
+          <span>{t("common.add")}</span>
         </Button>
       </div>
     </div>
