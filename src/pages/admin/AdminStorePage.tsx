@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { ALGERIAN_WILAYAS } from "@/lib/data";
 import { formatWilaya } from "@/i18n/wilayas";
+import { FaTiktok } from "react-icons/fa6";
 
 export const AdminStorePage: React.FC = () => {
   const { t, i18n } = useTranslation();
@@ -823,7 +824,7 @@ export const AdminStorePage: React.FC = () => {
               {/* TikTok */}
               <div className="space-y-2">
                 <Label htmlFor="socialTikTok" className="text-[13px] font-medium text-[var(--ink)] flex items-center gap-2">
-                  <span className="font-semibold text-xs leading-none">TT</span>
+                  <FaTiktok className="h-4 w-4 text-[var(--mid-gray)]" aria-hidden="true" />
                   <span>{t("admin.tiktokUrl")}</span>
                 </Label>
                 <Input
