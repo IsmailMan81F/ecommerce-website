@@ -8,6 +8,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
+import { lockViewportScroll } from "@/lib/scrollLock";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -20,6 +21,12 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
   const [editingSize, setEditingSize] = useState(item.selectedSize || item.product.sizes[0] || "");
   const [editingColor, setEditingColor] = useState(item.selectedColor || item.product.colors[0] || "");
   const [editingQty, setEditingQty] = useState(item.quantity);
+
+  React.useEffect(() => {
+    if (editOpen) {
+      return lockViewportScroll();
+    }
+  }, [editOpen]);
 
   const handleSaveEdit = () => {
     item.selectedSize = editingSize;
@@ -138,7 +145,7 @@ export const CartItemRow: React.FC<CartItemRowProps> = ({ item }) => {
 
       {/* Edit Options Dialog */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
-        <DialogContent className="sm:max-w-[440px]">
+        <DialogContent className="sm:max-w-[440px] max-h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain">
           <DialogHeader className="text-start">
             <DialogTitle>{t("common.edit")}</DialogTitle>
           </DialogHeader>
