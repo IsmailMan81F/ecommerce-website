@@ -31,9 +31,18 @@ export const Navbar: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [searchDialogOpen, setSearchDialogOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [cartAnimationKey, setCartAnimationKey] = useState(0);
   const searchInputRef = React.useRef<HTMLInputElement>(null);
+  const previousCartItemCount = React.useRef(itemCount);
 
   const isRtl = i18n.language === "ar";
+
+  React.useEffect(() => {
+    if (itemCount > previousCartItemCount.current) {
+      setCartAnimationKey((key) => key + 1);
+    }
+    previousCartItemCount.current = itemCount;
+  }, [itemCount]);
 
   // Prevent main page scrolling and fix body height/width on viewport when mobile menu or search dialog is opened
   React.useEffect(() => {
@@ -158,7 +167,10 @@ export const Navbar: React.FC = () => {
                 className="relative text-[var(--ink)] px-3 rounded-[18px] gap-2 border border-transparent hover:border-[var(--hairline)]"
                 aria-label={`Cart with ${itemCount} items`}
               >
-                <ShoppingBag className="h-[18px] w-[18px]" />
+                <ShoppingBag
+                  key={cartAnimationKey}
+                  className="h-[18px] w-[18px] cart-vibrate"
+                />
                 <span className="text-[13px] font-medium tabular-nums">
                   {itemCount}
                 </span>

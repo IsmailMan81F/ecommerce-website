@@ -109,6 +109,35 @@
   --radius-subtle: 8px;
 }
 
+@keyframes cart-vibration {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  20% {
+    transform: rotate(-10deg);
+  }
+  40% {
+    transform: rotate(8deg);
+  }
+  60% {
+    transform: rotate(-6deg);
+  }
+  80% {
+    transform: rotate(4deg);
+  }
+}
+
+.cart-vibrate {
+  transform-origin: center top;
+  animation: cart-vibration 420ms ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cart-vibrate {
+    animation: none;
+  }
+}
+
 /* Base typography and body style */
 html {
   scroll-behavior: smooth;
