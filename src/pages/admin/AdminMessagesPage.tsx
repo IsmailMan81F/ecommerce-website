@@ -446,7 +446,7 @@ export const AdminMessagesPage: React.FC = () => {
 
       {/* Right Sidebar Detail Drawer (Reversed for RTL) */}
       <Sheet open={!!selectedMessage} onOpenChange={(open) => !open && setSelectedMessage(null)}>
-        <SheetContent side={isRtl ? "left" : "right"} className="w-full sm:max-w-md p-6 overflow-y-auto space-y-6">
+        <SheetContent side={isRtl ? "left" : "right"} className="w-full max-w-[100vw] sm:w-[clamp(360px,30vw,560px)] sm:max-w-[calc(100vw-3rem)] p-6 overflow-y-auto space-y-6">
           {selectedMessage && (
             <>
               {/* Sheet Header */}
@@ -484,13 +484,13 @@ export const AdminMessagesPage: React.FC = () => {
               </SheetHeader>
 
               {/* Status Switcher & Quick Actions */}
-              <div className="flex items-center justify-between gap-2 p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
-                <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2 p-3 rounded-[16px] bg-[var(--surface-alt)] border border-[var(--hairline)]">
+                <div className="flex min-w-0 flex-wrap items-center gap-2">
                   <Button
                     variant={selectedMessage.isRead || selectedMessage.status !== "unread" ? "secondary" : "default"}
                     size="sm"
                     onClick={() => handleToggleReadStatus(selectedMessage.id)}
-                    className="h-8 text-[12px] rounded-[10px]"
+                    className="h-8 text-[12px] rounded-[10px] whitespace-normal text-start"
                   >
                     {selectedMessage.isRead || selectedMessage.status !== "unread" ? (
                       <>
@@ -513,7 +513,7 @@ export const AdminMessagesPage: React.FC = () => {
                       setSelectedMessage({ ...selectedMessage, status: "replied", isRead: true });
                       toast.success(t("admin.markReplied"));
                     }}
-                    className="h-8 text-[12px] rounded-[10px] text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                    className="h-8 text-[12px] rounded-[10px] text-[var(--mid-gray)] hover:text-[var(--ink)] whitespace-normal text-start"
                   >
                     {t("admin.markReplied")}
                   </Button>

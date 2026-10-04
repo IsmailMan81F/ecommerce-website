@@ -407,7 +407,7 @@ export const AdminOrdersPage: React.FC = () => {
 
       {/* Side Sheet showing Full Order Details: Side reversed for RTL */}
       <Sheet open={!!selectedOrder} onOpenChange={(open) => !open && setSelectedOrder(null)}>
-        <SheetContent side={isRtl ? "left" : "right"} className="w-full sm:max-w-md p-6 overflow-y-auto space-y-6">
+        <SheetContent side={isRtl ? "left" : "right"} className="w-full max-w-[100vw] sm:w-[clamp(360px,30vw,560px)] sm:max-w-[calc(100vw-3rem)] p-6 overflow-y-auto space-y-6">
           {selectedOrder && (
             <>
               <SheetHeader className="text-start space-y-1">
