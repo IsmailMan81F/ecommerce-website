@@ -24,6 +24,8 @@ import { AdminProductsPage } from "@/pages/admin/AdminProductsPage";
 import { AdminCategoriesPage } from "@/pages/admin/AdminCategoriesPage";
 import { AdminMessagesPage } from "@/pages/admin/AdminMessagesPage";
 import { AdminStorePage } from "@/pages/admin/AdminStorePage";
+import { AdminDashboardPage } from "@/pages/admin/AdminDashboardPage";
+import { recordStoreVisit } from "@/lib/visitorStats";
 
 // Helper component to scroll window to top on route change
 function ScrollToTop() {
@@ -38,6 +40,12 @@ function ScrollToTop() {
 
 // Buyer-facing storefront layout with Navbar & Footer
 function StorefrontLayout() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    recordStoreVisit();
+  }, [pathname]);
+
   return (
     <div className="min-h-screen flex flex-col bg-[var(--canvas)] text-[var(--ink)]">
       <Navbar />
@@ -78,7 +86,7 @@ export default function App() {
 
                   {/* Admin Console Route: standalone login gate + separate layout */}
                   <Route path="/admin" element={<AdminGate />}>
-                    <Route index element={<AdminOrdersPage />} />
+                    <Route index element={<AdminDashboardPage />} />
                     <Route path="orders" element={<AdminOrdersPage />} />
                     <Route path="products" element={<AdminProductsPage />} />
                     <Route path="categories" element={<AdminCategoriesPage />} />

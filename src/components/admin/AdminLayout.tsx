@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Link, useLocation, Outlet } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
+  LayoutDashboard,
   ClipboardList,
   Package,
   FolderTree,
@@ -46,8 +47,13 @@ export const AdminLayout: React.FC = () => {
 
   const navItems = [
     {
-      name: t("admin.orders"),
+      name: t("admin.dashboard"),
       path: "/admin",
+      icon: LayoutDashboard,
+    },
+    {
+      name: t("admin.orders"),
+      path: "/admin/orders",
       icon: ClipboardList,
     },
     {
@@ -131,10 +137,9 @@ export const AdminLayout: React.FC = () => {
               {t("admin.management")}
             </p>
             {navItems.map((item) => {
-              const isActive =
-                item.path === "/admin"
-                  ? location.pathname === "/admin" || location.pathname === "/admin/orders"
-                  : location.pathname.startsWith(item.path);
+              const isActive = item.path === "/admin"
+                ? location.pathname === "/admin"
+                : location.pathname === item.path || location.pathname.startsWith(`${item.path}/`);
 
               const Icon = item.icon;
 
