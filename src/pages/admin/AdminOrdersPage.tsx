@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/sheet";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { Search, Eye, Calendar, User, Phone, MapPin, MessageSquare, RotateCcw } from "lucide-react";
+import { Search, Eye, Calendar, User, Phone, MapPin, MessageSquare, RotateCcw, Copy, Check, ArrowUpRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatWilaya } from "@/i18n/wilayas";
 import { lockViewportScroll } from "@/lib/scrollLock";
@@ -43,6 +43,14 @@ export const AdminOrdersPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
+  const [copiedContactField, setCopiedContactField] = useState<string | null>(null);
+
+  const handleCopyContact = (value: string, field: string, fieldLabel: string) => {
+    navigator.clipboard.writeText(value);
+    setCopiedContactField(field);
+    toast.success(t("admin.copiedToClipboard", { field: fieldLabel }));
+    setTimeout(() => setCopiedContactField(null), 2000);
+  };
 
   // Lock background screen scroll when view order details modal is open on mobile
   React.useEffect(() => {
@@ -453,11 +461,49 @@ export const AdminOrdersPage: React.FC = () => {
                     </div>
                   </div>
 
-                  <div className="flex items-start gap-2.5">
-                    <Phone className="h-4 w-4 text-[var(--mid-gray)] shrink-0 mt-0.5" />
-                    <p className="text-[var(--mid-gray)] tabular-nums">
-                      {selectedOrder.customer.phoneNumber}
-                    </p>
+                  <div className="flex items-start justify-between gap-2 pt-2 border-t border-[var(--hairline)]/60">
+                    <div className="flex min-w-0 items-center gap-2.5">
+                      <Phone className="h-4 w-4 text-[var(--mid-gray)] shrink-0" />
+                      <div>
+                        <span className="text-[11px] text-[var(--mid-gray)] block">{t("admin.phoneNumber")}</span>
+                        <a
+                          href={`tel:${selectedOrder.customer.phoneNumber}`}
+                          className="font-medium text-[var(--ink)] tabular-nums hover:underline"
+                        >
+                          {selectedOrder.customer.phoneNumber}
+                        </a>
+                      </div>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="iconSm"
+                        onClick={() =>
+                          handleCopyContact(
+                            selectedOrder.customer.phoneNumber,
+                            "phone",
+                            t("admin.phoneNumber")
+                          )
+                        }
+                        className="h-7 w-7 text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                        title={t("admin.phoneNumber")}
+                      >
+                        {copiedContactField === "phone" ? (
+                          <Check className="h-3.5 w-3.5 text-emerald-600" />
+                        ) : (
+                          <Copy className="h-3.5 w-3.5" />
+                        )}
+                      </Button>
+                      <a
+                        href={`tel:${selectedOrder.customer.phoneNumber}`}
+                        className="h-7 w-7 inline-flex items-center justify-center rounded-[8px] text-[var(--mid-gray)] hover:text-[var(--ink)] hover:bg-[var(--paper)] transition-colors"
+                        title={t("admin.phoneNumber")}
+                        aria-label={t("admin.phoneNumber")}
+                      >
+                        <ArrowUpRight className="h-3.5 w-3.5" />
+                      </a>
+                    </div>
                   </div>
 
                   {(selectedOrder.customer.wilaya || selectedOrder.customer.commune) && (
