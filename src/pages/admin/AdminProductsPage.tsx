@@ -534,8 +534,8 @@ export const AdminProductsPage: React.FC = () => {
 
       {/* Add / Edit Product Form Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-[620px] p-6 max-h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain">
-          <DialogHeader>
+        <DialogContent className="sm:max-w-[620px] max-h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-3rem)] p-0 overflow-hidden flex flex-col">
+          <DialogHeader className="shrink-0 p-6 pb-4 border-b border-[var(--hairline)]">
             <DialogTitle className="text-heading-sm">
               {editingProduct ? t("admin.editProduct") : t("admin.addDesignObject")}
             </DialogTitle>
@@ -544,7 +544,8 @@ export const AdminProductsPage: React.FC = () => {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleSaveProduct} className="space-y-6 pt-2">
+          <form onSubmit={handleSaveProduct} className="flex min-h-0 flex-1 flex-col">
+            <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-6 space-y-6">
             {/* Title & Price */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="sm:col-span-2 space-y-1.5">
@@ -823,7 +824,8 @@ export const AdminProductsPage: React.FC = () => {
               <Switch checked={isAvailable} onCheckedChange={setIsAvailable} />
             </div>
 
-            <DialogFooter className="gap-2 sm:gap-0 pt-2">
+            </div>
+            <DialogFooter className="shrink-0 p-4 sm:p-6 pt-2 border-t border-[var(--hairline)] bg-[var(--canvas)] gap-2 sm:gap-0">
               <Button
                 type="button"
                 variant="ghost"
