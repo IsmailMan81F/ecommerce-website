@@ -534,7 +534,7 @@ export const AdminProductsPage: React.FC = () => {
 
       {/* Add / Edit Product Form Dialog */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="sm:max-w-[620px] p-6 max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[620px] p-6 max-h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-3rem)] overflow-y-auto overscroll-contain">
           <DialogHeader>
             <DialogTitle className="text-heading-sm">
               {editingProduct ? t("admin.editProduct") : t("admin.addDesignObject")}
