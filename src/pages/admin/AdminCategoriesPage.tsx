@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { lockViewportScroll } from "@/lib/scrollLock";
 import { AdminDeleteConfirmationDialog } from "@/components/admin/AdminDeleteConfirmationDialog";
+import { formatPrice } from "@/lib/utils";
 
 const SUGGESTED_PRESETS = [
   {
@@ -736,7 +737,7 @@ export const AdminCategoriesPage: React.FC = () => {
               >
                 <span className="min-w-0 break-words font-medium">{product.name}</span>
                 <span className="font-mono text-[var(--mid-gray)] shrink-0">
-                  {product.price} USD
+                  {formatPrice(product.price)}
                 </span>
               </div>
             ))}

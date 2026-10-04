@@ -19,5 +19,5 @@ export function formatPrice(price: number, lang?: string): string {
   if (currentLang === "ar") {
     return `${formattedNumber} دج`;
   }
-  return `${formattedNumber} DA`;
+  return `${formattedNumber} DZD`;
 }
