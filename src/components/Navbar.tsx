@@ -89,7 +89,7 @@ export const Navbar: React.FC = () => {
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full bg-[var(--paper)]/95 backdrop-blur-md border-b border-[var(--hairline)] transition-all shadow-xs">
+      <header className="fixed inset-x-0 top-0 z-40 w-full bg-[var(--paper)]/95 backdrop-blur-md border-b border-[var(--hairline)] transition-all shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Brand Logo - never translate KØRD as specified */}
           <div className="flex items-center gap-3">
@@ -288,6 +288,7 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
       </header>
+      <div className="h-16 shrink-0" aria-hidden="true" />
 
       {/* Global Quick Search Dialog */}
       <Dialog modal={true} open={searchDialogOpen} onOpenChange={setSearchDialogOpen}>
