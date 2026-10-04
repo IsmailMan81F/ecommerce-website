@@ -398,7 +398,7 @@ export const AdminStorePage: React.FC = () => {
 
         <CardContent className="p-4 sm:p-6 md:p-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <section className="flex min-h-[360px] min-w-0 flex-col gap-4 pb-4">
+            <section className="space-y-4 min-w-0">
               <div className="flex items-center gap-2">
                 <Ruler className="h-4 w-4 text-[var(--mid-gray)]" />
                 <h3 className="text-[14px] font-medium text-[var(--ink)]">
@@ -406,7 +406,7 @@ export const AdminStorePage: React.FC = () => {
                 </h3>
               </div>
 
-              <div className="min-h-40 max-h-64 flex-1 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
+              <div className="max-h-64 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
                 {storeSettings.variantOptions.sizes.length > 0 ? (
                   storeSettings.variantOptions.sizes.map((size) => (
                     <div key={size} className="flex items-center justify-between gap-3 py-2">
@@ -431,7 +431,7 @@ export const AdminStorePage: React.FC = () => {
                 )}
               </div>
 
-              <form onSubmit={handleAddSize} className="mt-auto flex items-center gap-2">
+              <form onSubmit={handleAddSize} className="flex items-center gap-2">
                 <Input
                   value={newSize}
                   onChange={(e) => setNewSize(e.target.value)}
@@ -446,7 +446,7 @@ export const AdminStorePage: React.FC = () => {
               </form>
             </section>
 
-            <section className="flex min-h-[360px] min-w-0 flex-col gap-4 pb-4">
+            <section className="space-y-4 min-w-0">
               <div className="flex items-center gap-2">
                 <Palette className="h-4 w-4 text-[var(--mid-gray)]" />
                 <h3 className="text-[14px] font-medium text-[var(--ink)]">
@@ -454,7 +454,7 @@ export const AdminStorePage: React.FC = () => {
                 </h3>
               </div>
 
-              <div className="min-h-40 max-h-64 flex-1 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
+              <div className="max-h-64 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
                 {storeSettings.variantOptions.colors.length > 0 ? (
                   storeSettings.variantOptions.colors.map((color) => (
                     <div key={color.name} className="flex items-center justify-between gap-3 py-2">
@@ -491,7 +491,7 @@ export const AdminStorePage: React.FC = () => {
                 )}
               </div>
 
-              <form onSubmit={handleAddColor} className="mt-auto flex items-center gap-2">
+              <form onSubmit={handleAddColor} className="flex items-center gap-2">
                 <Input
                   value={newColorName}
                   onChange={(e) => setNewColorName(e.target.value)}

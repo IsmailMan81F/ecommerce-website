@@ -33,6 +33,7 @@ export const AdminLayout: React.FC = () => {
   const { unreadMessagesCount } = useStore();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const [mobileBackdropVisible, setMobileBackdropVisible] = useState(false);
 
   const isRtl = i18n.language === "ar";
 
@@ -80,10 +81,18 @@ export const AdminLayout: React.FC = () => {
   return (
     <div className="min-h-screen w-full max-w-full flex bg-[var(--canvas)] text-[var(--ink)] transition-colors duration-200 overflow-x-clip">
       {/* Mobile backdrop */}
-      {mobileSidebarOpen && (
+      {mobileBackdropVisible && (
         <div
-          className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs"
+          data-state={mobileSidebarOpen ? "open" : "closed"}
+          className={`sheet-overlay lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-xs ${
+            mobileSidebarOpen ? "" : "pointer-events-none"
+          }`}
           onClick={() => setMobileSidebarOpen(false)}
+          onAnimationEnd={(event) => {
+            if (!mobileSidebarOpen && event.animationName === "sheet-fade-out") {
+              setMobileBackdropVisible(false);
+            }
+          }}
         />
       )}
 
@@ -225,12 +234,12 @@ export const AdminLayout: React.FC = () => {
 
       {/* Main Content Area: offset appropriately for LTR (pl) or RTL (pr) */}
       <div
-        className={`flex-1 flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-clip ${
+        className={`flex-1 flex flex-col min-h-screen w-full max-w-full min-w-0 overflow-x-clip pt-16 lg:pt-0 ${
           isRtl ? "lg:pr-[260px] lg:pl-0" : "lg:pl-[260px] lg:pr-0"
         }`}
       >
         {/* Mobile & Tablet Top Sticky Navigation Bar */}
-        <header className="lg:hidden sticky top-0 z-40 h-16 w-full bg-[var(--surface-alt)]/95 backdrop-blur-md border-b border-[var(--hairline)] flex items-center justify-between px-4 shrink-0 shadow-2xs">
+        <header className="lg:hidden fixed inset-x-0 top-0 z-30 h-16 w-full bg-[var(--surface-alt)]/95 backdrop-blur-md border-b border-[var(--hairline)] flex items-center justify-between px-4 shadow-2xs">
           <div className="flex items-center gap-2">
             <span className="text-[18px] font-semibold tracking-tight text-[var(--ink)]">
               KØRD
@@ -258,7 +267,14 @@ export const AdminLayout: React.FC = () => {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+              onClick={() => {
+                if (mobileSidebarOpen) {
+                  setMobileSidebarOpen(false);
+                } else {
+                  setMobileBackdropVisible(true);
+                  setMobileSidebarOpen(true);
+                }
+              }}
               aria-label="Toggle admin sidebar"
             >
               {mobileSidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
