@@ -235,7 +235,7 @@ export const AdminOrdersPage: React.FC = () => {
           <div className="overflow-x-auto">
             {/* Desktop Table View */}
             <div className="hidden md:block">
-              <Table>
+              <Table className="border-separate border-spacing-y-2">
                 <TableHeader>
                   <TableRow className="border-[var(--hairline)] hover:bg-transparent">
                     <TableHead className="w-[120px] text-caption">{t("admin.orderId")}</TableHead>
@@ -253,7 +253,7 @@ export const AdminOrdersPage: React.FC = () => {
                       <TableRow
                         key={order.id}
                         onClick={() => setSelectedOrder(order)}
-                        className="cursor-pointer transition-colors hover:bg-[var(--surface-alt)]/60"
+                        className="cursor-pointer bg-[var(--surface-alt)] transition-colors hover:bg-[var(--hairline)]"
                       >
                         <TableCell className="font-mono text-[12px] font-semibold text-[var(--ink)]">
                           {order.id}
@@ -323,13 +323,13 @@ export const AdminOrdersPage: React.FC = () => {
             </div>
 
             {/* Mobile / Small Screens View */}
-            <div className="md:hidden divide-y divide-[var(--hairline)]">
+            <div className="md:hidden space-y-3 p-3">
               {filteredOrders.length > 0 ? (
                 filteredOrders.map((order) => (
                   <div
                     key={order.id}
                     onClick={() => setSelectedOrder(order)}
-                    className="p-4 space-y-3 cursor-pointer transition-colors hover:bg-[var(--surface-alt)]/50 active:bg-[var(--surface-alt)]"
+                    className="rounded-[16px] border border-[var(--hairline)] bg-[var(--surface-alt)]/50 p-4 space-y-3 cursor-pointer transition-colors hover:bg-[var(--surface-alt)] active:bg-[var(--hairline)]"
                   >
                     <div className="flex items-center justify-between gap-2">
                       <div className="flex items-center gap-1.5">
