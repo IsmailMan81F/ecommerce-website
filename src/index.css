@@ -117,6 +117,50 @@ html {
   overflow-x: clip;
 }
 
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--mid-gray) var(--surface-alt);
+}
+
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background-color: var(--surface-alt);
+  border-radius: 3px;
+  padding: 1px;
+}
+
+*::-webkit-scrollbar-track:hover {
+  background-color: var(--hairline);
+}
+
+*::-webkit-scrollbar-track:active {
+  background-color: var(--canvas);
+}
+
+*::-webkit-scrollbar-thumb {
+  min-height: 40px;
+  background-color: var(--mid-gray);
+  border-radius: 3px;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--ink-soft);
+}
+
+*::-webkit-scrollbar-thumb:active {
+  background-color: var(--ink);
+}
+
+*::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
 body {
   font-family: var(--font-sans);
   background-color: var(--canvas);
