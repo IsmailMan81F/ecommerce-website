@@ -465,9 +465,9 @@ export const AdminCategoriesPage: React.FC = () => {
       {/* ADD / EDIT CATEGORY DIALOG */}
       {/* ========================================================================= */}
       <Dialog open={formOpen} onOpenChange={setFormOpen}>
-        <DialogContent className="max-w-xl rounded-[20px] bg-[var(--paper)] border-[var(--hairline)] p-0 overflow-hidden">
-          <form onSubmit={handleSaveCategory}>
-            <DialogHeader className="p-6 pb-4 border-b border-[var(--hairline)]">
+        <DialogContent className="max-w-xl max-h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-3rem)] rounded-[20px] bg-[var(--paper)] border-[var(--hairline)] p-0 overflow-hidden flex flex-col">
+          <form onSubmit={handleSaveCategory} className="flex min-h-0 flex-1 flex-col">
+            <DialogHeader className="shrink-0 p-6 pb-4 border-b border-[var(--hairline)]">
               <DialogTitle className="text-heading text-[var(--ink)]">
                 {editingCategory ? t("admin.editCategory") : t("admin.addNewCategory")}
               </DialogTitle>
@@ -478,7 +478,7 @@ export const AdminCategoriesPage: React.FC = () => {
               </DialogDescription>
             </DialogHeader>
 
-            <div className="p-6 space-y-5 max-h-[70vh] overflow-y-auto">
+            <div className="min-h-0 flex-1 p-6 space-y-5 overflow-y-auto overscroll-contain">
               {/* Category Name */}
               <div className="space-y-1.5">
                 <Label htmlFor="category-name" className="text-[13px] font-medium text-[var(--ink)]">
@@ -648,7 +648,7 @@ export const AdminCategoriesPage: React.FC = () => {
               </div>
             </div>
 
-            <DialogFooter className="p-4 sm:p-6 border-t border-[var(--hairline)] bg-[var(--canvas)] flex items-center justify-end gap-2">
+            <DialogFooter className="shrink-0 p-4 sm:p-6 border-t border-[var(--hairline)] bg-[var(--canvas)] flex items-center justify-end gap-2">
               <Button
                 type="button"
                 variant="outline"
