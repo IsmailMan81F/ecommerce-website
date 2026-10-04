@@ -145,11 +145,22 @@ export interface StoreDeliverySettings {
   homeFee: number;
 }
 
+export interface StoreColorOption {
+  name: string;
+  hex: string;
+}
+
+export interface StoreVariantOptions {
+  sizes: string[];
+  colors: StoreColorOption[];
+}
+
 export interface StoreSettings {
   general: StoreGeneralInfo;
   location: StoreLocationInfo;
   hours: StoreHours;
   social: StoreSocialMedia;
   delivery: StoreDeliverySettings;
+  variantOptions: StoreVariantOptions;
 }
 

@@ -3,7 +3,6 @@ import { useTranslation } from "react-i18next";
 import { useStore } from "@/context/StoreContext";
 import { toast } from "sonner";
 import {
-  Store,
   MapPin,
   Clock,
   Share2,
@@ -15,11 +14,14 @@ import {
   Instagram,
   Facebook,
   MessageCircle,
+  Palette,
+  Plus,
+  Ruler,
+  Trash2,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
@@ -42,6 +44,7 @@ export const AdminStorePage: React.FC = () => {
     updateStoreHours,
     updateStoreSocial,
     updateStoreDelivery,
+    updateStoreVariantOptions,
   } = useStore();
 
   // Local state initialized from storeSettings
@@ -50,6 +53,9 @@ export const AdminStorePage: React.FC = () => {
   const [hoursForm, setHoursForm] = useState(storeSettings.hours);
   const [socialForm, setSocialForm] = useState(storeSettings.social);
   const [deliveryForm, setDeliveryForm] = useState(storeSettings.delivery);
+  const [newSize, setNewSize] = useState("");
+  const [newColorName, setNewColorName] = useState("");
+  const [newColorHex, setNewColorHex] = useState("#000000");
 
   // Sync if storeSettings change externally
   useEffect(() => {
@@ -58,21 +64,78 @@ export const AdminStorePage: React.FC = () => {
     setHoursForm(storeSettings.hours);
     setSocialForm(storeSettings.social);
     setDeliveryForm(storeSettings.delivery);
-  }, [storeSettings]);
+  }, [
+    storeSettings.general,
+    storeSettings.location,
+    storeSettings.hours,
+    storeSettings.social,
+    storeSettings.delivery,
+  ]);
 
-  // Save Handlers
-  const handleSaveGeneral = (e: React.FormEvent) => {
+  const handleAddSize = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!generalForm.storeName.trim()) {
-      toast.error(t("admin.storeName"));
+    const size = newSize.trim();
+    if (!size) {
+      toast.error(t("admin.variantSizeRequired"));
       return;
     }
-    updateStoreGeneral(generalForm);
-    toast.success(t("admin.saveGeneralSuccess"));
+    if (storeSettings.variantOptions.sizes.some((item) => item.toLowerCase() === size.toLowerCase())) {
+      toast.error(t("admin.variantSizeExists"));
+      return;
+    }
+
+    updateStoreVariantOptions({
+      ...storeSettings.variantOptions,
+      sizes: [...storeSettings.variantOptions.sizes, size],
+    });
+    setNewSize("");
+    toast.success(t("admin.variantSizeAdded"));
   };
 
+  const handleRemoveSize = (size: string) => {
+    updateStoreVariantOptions({
+      ...storeSettings.variantOptions,
+      sizes: storeSettings.variantOptions.sizes.filter((item) => item !== size),
+    });
+    toast.success(t("admin.variantSizeRemoved"));
+  };
+
+  const handleAddColor = (e: React.FormEvent) => {
+    e.preventDefault();
+    const name = newColorName.trim();
+    if (!name) {
+      toast.error(t("admin.variantColorRequired"));
+      return;
+    }
+    if (storeSettings.variantOptions.colors.some((color) => color.name.toLowerCase() === name.toLowerCase())) {
+      toast.error(t("admin.variantColorExists"));
+      return;
+    }
+
+    updateStoreVariantOptions({
+      ...storeSettings.variantOptions,
+      colors: [...storeSettings.variantOptions.colors, { name, hex: newColorHex }],
+    });
+    setNewColorName("");
+    setNewColorHex("#000000");
+    toast.success(t("admin.variantColorAdded"));
+  };
+
+  const handleRemoveColor = (name: string) => {
+    updateStoreVariantOptions({
+      ...storeSettings.variantOptions,
+      colors: storeSettings.variantOptions.colors.filter((color) => color.name !== name),
+    });
+    toast.success(t("admin.variantColorRemoved"));
+  };
+
+  // Save Handlers
   const handleSaveLocation = (e: React.FormEvent) => {
     e.preventDefault();
+    updateStoreGeneral({
+      email: generalForm.email,
+      phone: generalForm.phone,
+    });
     updateStoreLocation(locationForm);
     toast.success(t("admin.saveLocationSuccess"));
   };
@@ -107,61 +170,27 @@ export const AdminStorePage: React.FC = () => {
         </p>
       </div>
 
-      {/* 1. General Information Card */}
+      {/* 1. Contact & Location Card */}
       <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
             <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
-              <Store className="h-4 w-4" />
+              <MapPin className="h-4 w-4" />
             </div>
             <div>
               <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                {t("admin.generalInfoTitle")}
+                {t("admin.contactLocationTitle")}
               </CardTitle>
               <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                {t("admin.generalInfoDesc")}
+                {t("admin.contactLocationDesc")}
               </CardDescription>
             </div>
           </div>
         </CardHeader>
 
         <CardContent className="p-4 sm:p-6 md:p-8">
-          <form onSubmit={handleSaveGeneral} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Store Name */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="storeName" className="text-[13px] font-medium text-[var(--ink)]">
-                  {t("admin.storeName")}
-                </Label>
-                <Input
-                  id="storeName"
-                  value={generalForm.storeName}
-                  onChange={(e) =>
-                    setGeneralForm({ ...generalForm, storeName: e.target.value })
-                  }
-                  placeholder="KØRD"
-                  className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] h-10"
-                  required
-                />
-              </div>
-
-              {/* Description */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="storeDescription" className="text-[13px] font-medium text-[var(--ink)]">
-                  {t("admin.storeDesc")}
-                </Label>
-                <Textarea
-                  id="storeDescription"
-                  value={generalForm.description}
-                  onChange={(e) =>
-                    setGeneralForm({ ...generalForm, description: e.target.value })
-                  }
-                  rows={3}
-                  placeholder={t("admin.storeDescPlaceholder")}
-                  className="bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px] resize-none"
-                />
-              </div>
-
+          <form onSubmit={handleSaveLocation} className="space-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {/* Store Email */}
               <div className="space-y-2">
                 <Label htmlFor="storeEmail" className="text-[13px] font-medium text-[var(--ink)]">
@@ -205,38 +234,6 @@ export const AdminStorePage: React.FC = () => {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t border-[var(--hairline)]">
-              <Button
-                type="submit"
-                className="rounded-[14px] px-6 h-10 font-medium text-[13px] bg-[var(--ink)] text-[var(--paper)] hover:opacity-90"
-              >
-                {t("common.saveChanges")}
-              </Button>
-            </div>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* 2. Contact & Location Card */}
-      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
-        <CardHeader className="border-b border-[var(--hairline)] pb-5">
-          <div className="flex items-center gap-2.5">
-            <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
-              <MapPin className="h-4 w-4" />
-            </div>
-            <div>
-              <CardTitle className="text-subheading font-medium text-[var(--ink)]">
-                {t("admin.contactLocationTitle")}
-              </CardTitle>
-              <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
-                {t("admin.contactLocationDesc")}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-
-        <CardContent className="p-4 sm:p-6 md:p-8">
-          <form onSubmit={handleSaveLocation} className="space-y-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {/* Country */}
               <div className="space-y-2">
@@ -381,7 +378,146 @@ export const AdminStorePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 3. Opening Hours Card */}
+      {/* 2. Product Variant Options Card */}
+      <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
+        <CardHeader className="border-b border-[var(--hairline)] pb-5">
+          <div className="flex items-center gap-2.5">
+            <div className="h-8 w-8 rounded-full bg-[var(--surface-alt)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)]">
+              <Palette className="h-4 w-4" />
+            </div>
+            <div>
+              <CardTitle className="text-subheading font-medium text-[var(--ink)]">
+                {t("admin.variantCustomizationTitle")}
+              </CardTitle>
+              <CardDescription className="text-caption text-[var(--mid-gray)] text-[12px]">
+                {t("admin.variantCustomizationDesc")}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-4 sm:p-6 md:p-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <section className="space-y-4 min-w-0">
+              <div className="flex items-center gap-2">
+                <Ruler className="h-4 w-4 text-[var(--mid-gray)]" />
+                <h3 className="text-[14px] font-medium text-[var(--ink)]">
+                  {t("admin.variantSizes")}
+                </h3>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
+                {storeSettings.variantOptions.sizes.length > 0 ? (
+                  storeSettings.variantOptions.sizes.map((size) => (
+                    <div key={size} className="flex items-center justify-between gap-3 py-2">
+                      <span className="text-[13px] text-[var(--ink)]">{size}</span>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="iconSm"
+                        onClick={() => handleRemoveSize(size)}
+                        title={t("admin.removeVariantSize", { size })}
+                        aria-label={t("admin.removeVariantSize", { size })}
+                        className="shrink-0 text-[var(--ember)] hover:text-[var(--ember)] hover:bg-[var(--ember)]/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-4 text-[13px] text-[var(--mid-gray)]">
+                    {t("admin.noVariantSizes")}
+                  </p>
+                )}
+              </div>
+
+              <form onSubmit={handleAddSize} className="flex items-center gap-2">
+                <Input
+                  value={newSize}
+                  onChange={(e) => setNewSize(e.target.value)}
+                  placeholder={t("admin.newVariantSizePlaceholder")}
+                  aria-label={t("admin.newVariantSizePlaceholder")}
+                  className="h-10 min-w-0 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px]"
+                />
+                <Button type="submit" className="h-10 shrink-0 gap-1.5 rounded-[14px]">
+                  <Plus className="h-4 w-4" />
+                  <span>{t("admin.addSize")}</span>
+                </Button>
+              </form>
+            </section>
+
+            <section className="space-y-4 min-w-0">
+              <div className="flex items-center gap-2">
+                <Palette className="h-4 w-4 text-[var(--mid-gray)]" />
+                <h3 className="text-[14px] font-medium text-[var(--ink)]">
+                  {t("admin.variantColors")}
+                </h3>
+              </div>
+
+              <div className="max-h-64 overflow-y-auto divide-y divide-[var(--hairline)] border-y border-[var(--hairline)]">
+                {storeSettings.variantOptions.colors.length > 0 ? (
+                  storeSettings.variantOptions.colors.map((color) => (
+                    <div key={color.name} className="flex items-center justify-between gap-3 py-2">
+                      <div
+                        className="flex min-w-0 items-center gap-2"
+                        dir={i18n.dir(i18n.language)}
+                      >
+                        <span
+                          aria-hidden="true"
+                          className="h-4 w-4 shrink-0 rounded-full border border-[var(--hairline)]"
+                          style={{ backgroundColor: color.hex }}
+                        />
+                        <span className="truncate text-[13px] text-[var(--ink)]">
+                          {color.name}
+                        </span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="iconSm"
+                        onClick={() => handleRemoveColor(color.name)}
+                        title={t("admin.removeVariantColor", { color: color.name })}
+                        aria-label={t("admin.removeVariantColor", { color: color.name })}
+                        className="shrink-0 text-[var(--ember)] hover:text-[var(--ember)] hover:bg-[var(--ember)]/10"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))
+                ) : (
+                  <p className="py-4 text-[13px] text-[var(--mid-gray)]">
+                    {t("admin.noVariantColors")}
+                  </p>
+                )}
+              </div>
+
+              <form onSubmit={handleAddColor} className="flex items-center gap-2">
+                <Input
+                  value={newColorName}
+                  onChange={(e) => setNewColorName(e.target.value)}
+                  placeholder={t("admin.newVariantColorPlaceholder")}
+                  aria-label={t("admin.newVariantColorPlaceholder")}
+                  className="h-10 min-w-0 flex-1 bg-[var(--surface-alt)] border-[var(--hairline)] rounded-[14px] text-[13px]"
+                />
+                <Input
+                  type="color"
+                  value={newColorHex}
+                  onChange={(e) => setNewColorHex(e.target.value)}
+                  aria-label={t("admin.variantColorSwatch")}
+                  title={t("admin.variantColorSwatch")}
+                  className="h-10 w-12 shrink-0 cursor-pointer rounded-[12px] p-1"
+                />
+                <Button type="submit" className="h-10 shrink-0 gap-1.5 rounded-[14px]">
+                  <Plus className="h-4 w-4" />
+                  <span>{t("admin.addColor")}</span>
+                </Button>
+              </form>
+            </section>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* 2. Opening Hours Card */}
       <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
@@ -629,7 +765,7 @@ export const AdminStorePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 4. Social Links Card */}
+      {/* 3. Social Links Card */}
       <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">
@@ -731,7 +867,7 @@ export const AdminStorePage: React.FC = () => {
         </CardContent>
       </Card>
 
-      {/* 5. Delivery Card */}
+      {/* 4. Delivery Card */}
       <Card className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] overflow-hidden shadow-2xs w-full max-w-full">
         <CardHeader className="border-b border-[var(--hairline)] pb-5">
           <div className="flex items-center gap-2.5">

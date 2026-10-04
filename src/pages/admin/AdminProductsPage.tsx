@@ -54,39 +54,19 @@ interface VariantRow {
   isAvailable: boolean;
 }
 
-const SIZE_OPTIONS = [
-  "XS",
-  "S",
-  "M",
-  "L",
-  "XL",
-  "XXL",
-  "XXXL",
-  "36",
-  "38",
-  "40",
-  "42",
-  "44",
-  "46",
-  "48",
-  "50",
-  "52",
-  "54",
-];
-
-const COLOR_OPTIONS = ["Black", "White", "Gray", "Red", "Blue"];
-
 export const AdminProductsPage: React.FC = () => {
   const { t } = useTranslation();
   const {
     products,
     categories,
+    storeSettings,
     toggleProductAvailability,
     addProduct,
     updateProduct,
     deleteProduct,
     addCategory,
   } = useStore();
+  const { sizes: sizeOptions, colors: colorOptions } = storeSettings.variantOptions;
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("all");
@@ -758,8 +738,8 @@ export const AdminProductsPage: React.FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {[
-                            ...SIZE_OPTIONS,
-                            ...(variant.size && !SIZE_OPTIONS.includes(variant.size)
+                            ...sizeOptions,
+                            ...(variant.size && !sizeOptions.includes(variant.size)
                               ? [variant.size]
                               : []),
                           ].map((size) => (
@@ -782,8 +762,8 @@ export const AdminProductsPage: React.FC = () => {
                         </SelectTrigger>
                         <SelectContent>
                           {[
-                            ...COLOR_OPTIONS,
-                            ...(variant.color && !COLOR_OPTIONS.includes(variant.color)
+                            ...colorOptions.map((color) => color.name),
+                            ...(variant.color && !colorOptions.some((color) => color.name === variant.color)
                               ? [variant.color]
                               : []),
                           ].map((color) => (

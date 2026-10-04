@@ -535,6 +535,36 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
     officeFee: 500,
     homeFee: 800,
   },
+  variantOptions: {
+    sizes: [
+      "XS",
+      "S",
+      "M",
+      "L",
+      "XL",
+      "2XL",
+      "XXL",
+      "3XL",
+      "XXXL",
+      "36",
+      "38",
+      "40",
+      "42",
+      "44",
+      "46",
+      "48",
+      "50",
+      "52",
+      "54",
+    ],
+    colors: [
+      { name: "Black", hex: "#000000" },
+      { name: "White", hex: "#ffffff" },
+      { name: "Gray", hex: "#808080" },
+      { name: "Red", hex: "#ff0000" },
+      { name: "Blue", hex: "#0000ff" },
+    ],
+  },
 };
 
 export const ALGERIAN_WILAYAS = [

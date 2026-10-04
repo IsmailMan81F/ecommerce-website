@@ -11,6 +11,7 @@ import {
   StoreHours,
   StoreSocialMedia,
   StoreDeliverySettings,
+  StoreVariantOptions,
 } from "@/types";
 import {
   PRODUCTS,
@@ -32,6 +33,7 @@ interface StoreContextType {
   updateStoreHours: (hours: StoreHours) => void;
   updateStoreSocial: (social: Partial<StoreSocialMedia>) => void;
   updateStoreDelivery: (delivery: Partial<StoreDeliverySettings>) => void;
+  updateStoreVariantOptions: (variantOptions: StoreVariantOptions) => void;
   toggleProductAvailability: (productId: string) => void;
   addProduct: (productData: Omit<Product, "id" | "slug"> & { slug?: string }) => Product;
   updateProduct: (productId: string, updates: Partial<Product>) => void;
@@ -503,6 +505,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     }));
   };
 
+  const updateStoreVariantOptions = (variantOptions: StoreVariantOptions) => {
+    setStoreSettings((prev) => ({
+      ...prev,
+      variantOptions,
+    }));
+  };
+
   return (
     <StoreContext.Provider
       value={{
@@ -517,6 +526,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         updateStoreHours,
         updateStoreSocial,
         updateStoreDelivery,
+        updateStoreVariantOptions,
         toggleProductAvailability,
         addProduct,
         updateProduct,
