@@ -43,11 +43,15 @@ interface SupabaseFooterStoreRow {
   instagram_url: string;
   facebook_url: string;
   opening_schedule: unknown;
+  product_variants: unknown;
+  delivery_service?: boolean | null;
+  office_fee?: number | null;
+  home_fee?: number | null;
 }
 
 const CLOSED_FOOTER_HOURS: StoreHours = {
-  saturdayToThursday: { isOpen: false, openTime: "", closeTime: "" },
-  friday: { isOpen: false, openTime: "", closeTime: "" },
+  saturday_thursday: { status: "closed", time: { open: null, close: null } },
+  friday: { status: "closed", time: { open: null, close: null } },
 };
 
 interface StoreContextType {
@@ -98,7 +102,7 @@ const PRODUCTS_STORAGE_KEY = "kord_clothing_store_products_v3";
 const CATEGORIES_STORAGE_KEY = "kord_clothing_store_categories_v3";
 const ORDERS_STORAGE_KEY = "kord_clothing_store_orders_v3";
 const MESSAGES_STORAGE_KEY = "kord_clothing_store_messages_v3";
-const STORE_SETTINGS_STORAGE_KEY = "kord_clothing_store_settings_v3";
+const STORE_SETTINGS_STORAGE_KEY = "kord_clothing_store_settings_v4";
 
 export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -149,7 +153,14 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         localStorage.getItem(STORE_SETTINGS_STORAGE_KEY) ||
         sessionStorage.getItem(STORE_SETTINGS_STORAGE_KEY);
       if (stored) {
-        return { ...INITIAL_STORE_SETTINGS, ...JSON.parse(stored) };
+        const parsed = JSON.parse(stored);
+        const hours = (parsed.hours?.saturday_thursday && parsed.hours?.friday)
+          ? parsed.hours
+          : INITIAL_STORE_SETTINGS.hours;
+        const variantOptions = (parsed.variantOptions?.sizes && Array.isArray(parsed.variantOptions.sizes))
+          ? parsed.variantOptions
+          : INITIAL_STORE_SETTINGS.variantOptions;
+        return { ...INITIAL_STORE_SETTINGS, ...parsed, hours, variantOptions };
       }
     } catch {
       // ignore
@@ -214,7 +225,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
           .limit(3),
         supabase
           .from("store")
-          .select("country,commune,street_address,google_maps_url,instagram_url,facebook_url,opening_schedule")
+          .select("country,commune,street_address,google_maps_url,instagram_url,facebook_url,opening_schedule,product_variants,delivery_service,office_fee,home_fee")
           .order("id", { ascending: true })
           .limit(1)
           .maybeSingle(),
@@ -242,10 +253,43 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         console.error("Failed to load footer store settings:", storeResult.error);
       } else if (storeResult.data) {
         const row = storeResult.data as unknown as SupabaseFooterStoreRow;
-        const schedule = row.opening_schedule as Partial<StoreHours> | null;
-        const hours = schedule?.saturdayToThursday && schedule.friday
-          ? schedule as StoreHours
-          : CLOSED_FOOTER_HOURS;
+        const schedule = row.opening_schedule as any;
+        let hours: StoreHours = CLOSED_FOOTER_HOURS;
+        if (schedule?.saturday_thursday && schedule?.friday) {
+          hours = {
+            saturday_thursday: {
+              status: schedule.saturday_thursday.status === "closed" ? "closed" : "open",
+              time: {
+                open: schedule.saturday_thursday.time?.open ?? null,
+                close: schedule.saturday_thursday.time?.close ?? null,
+              },
+            },
+            friday: {
+              status: schedule.friday.status === "open" ? "open" : "closed",
+              time: {
+                open: schedule.friday.time?.open ?? null,
+                close: schedule.friday.time?.close ?? null,
+              },
+            },
+          };
+        } else if (schedule?.saturdayToThursday && schedule?.friday) {
+          hours = {
+            saturday_thursday: {
+              status: schedule.saturdayToThursday.isOpen ? "open" : "closed",
+              time: {
+                open: schedule.saturdayToThursday.openTime || null,
+                close: schedule.saturdayToThursday.closeTime || null,
+              },
+            },
+            friday: {
+              status: schedule.friday.isOpen ? "open" : "closed",
+              time: {
+                open: schedule.friday.openTime || null,
+                close: schedule.friday.closeTime || null,
+              },
+            },
+          };
+        }
 
         setFooterStoreData({
           location: {
@@ -260,6 +304,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
             facebook: row.facebook_url,
           },
         });
+
+        const storeVariants = row.product_variants as { sizes?: string[] } | null;
+        const deliveryService = typeof row.delivery_service === "boolean" ? row.delivery_service : undefined;
+        const officeFee = typeof row.office_fee === "number" ? row.office_fee : undefined;
+        const homeFee = typeof row.home_fee === "number" ? row.home_fee : undefined;
+
+        setStoreSettings((prev) => ({
+          ...prev,
+          hours,
+          ...(storeVariants?.sizes && Array.isArray(storeVariants.sizes) && {
+            variantOptions: {
+              ...prev.variantOptions,
+              sizes: storeVariants.sizes,
+            },
+          }),
+          delivery: {
+            deliveryEnabled: deliveryService !== undefined ? deliveryService : prev.delivery.deliveryEnabled,
+            officeFee: officeFee !== undefined ? officeFee : prev.delivery.officeFee,
+            homeFee: homeFee !== undefined ? homeFee : prev.delivery.homeFee,
+          },
+        }));
       }
 
       setFooterDataLoading(false);
@@ -597,6 +662,13 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       ...prev,
       hours,
     }));
+    supabase
+      .from("store")
+      .update({ opening_schedule: hours })
+      .neq("id", 0)
+      .then(({ error }) => {
+        if (error) console.error("Failed to sync opening_schedule to Supabase:", error);
+      });
   };
 
   const updateStoreSocial = (social: Partial<StoreSocialMedia>) => {
@@ -611,6 +683,27 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       ...prev,
       delivery: { ...prev.delivery, ...delivery },
     }));
+
+    const updatePayload: Record<string, unknown> = {};
+    if (delivery.deliveryEnabled !== undefined) {
+      updatePayload.delivery_service = delivery.deliveryEnabled;
+    }
+    if (delivery.officeFee !== undefined) {
+      updatePayload.office_fee = delivery.officeFee;
+    }
+    if (delivery.homeFee !== undefined) {
+      updatePayload.home_fee = delivery.homeFee;
+    }
+
+    if (Object.keys(updatePayload).length > 0) {
+      supabase
+        .from("store")
+        .update(updatePayload)
+        .neq("id", 0)
+        .then(({ error }) => {
+          if (error) console.error("Failed to sync delivery settings to Supabase:", error);
+        });
+    }
   };
 
   const updateStoreVariantOptions = (variantOptions: StoreVariantOptions) => {

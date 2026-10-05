@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { RotateCcw } from "lucide-react";
+import { DEFAULT_SIZES } from "@/lib/data";
 
 interface FilterBarProps {
   filters: FilterState;
@@ -23,7 +24,7 @@ export const FilterBar: React.FC<FilterBarProps> = ({
   filters,
   onFilterChange,
   onResetFilters,
-  availableSizes = ["Standard", "Small (22cm)", "Medium (30cm)", "Large (38cm)", "Compact (13-inch)"],
+  availableSizes = DEFAULT_SIZES,
   totalResultsCount,
 }) => {
   const { t } = useTranslation();

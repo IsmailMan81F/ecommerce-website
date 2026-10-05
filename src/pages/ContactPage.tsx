@@ -124,8 +124,8 @@ export const ContactPage: React.FC = () => {
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">{t("footer.hoursTitle")}</p>
                   <p className="font-medium text-[var(--ink)]">
-                    {storeSettings?.hours?.saturdayToThursday
-                      ? `${t("footer.satThu")}: ${storeSettings.hours.saturdayToThursday.isOpen ? `${storeSettings.hours.saturdayToThursday.openTime} – ${storeSettings.hours.saturdayToThursday.closeTime}` : "Closed"} · ${t("footer.friOnly")}: ${storeSettings.hours.friday.isOpen ? `${storeSettings.hours.friday.openTime} – ${storeSettings.hours.friday.closeTime}` : "Closed"}`
+                    {storeSettings?.hours?.saturday_thursday
+                      ? `${t("footer.satThu")}: ${storeSettings.hours.saturday_thursday.status === "open" && storeSettings.hours.saturday_thursday.time?.open && storeSettings.hours.saturday_thursday.time?.close ? `${storeSettings.hours.saturday_thursday.time.open} – ${storeSettings.hours.saturday_thursday.time.close}` : t("admin.closed")} · ${t("footer.friOnly")}: ${storeSettings.hours.friday?.status === "open" && storeSettings.hours.friday.time?.open && storeSettings.hours.friday.time?.close ? `${storeSettings.hours.friday.time.open} – ${storeSettings.hours.friday.time.close}` : t("admin.closed")}`
                       : CONTACT_INFO.hours}
                   </p>
                 </div>

@@ -4,7 +4,7 @@ import prodTailoredPants from "@/assets/images/prod_tailored_pants_1790714562232
 import prodLeatherShoes from "@/assets/images/prod_leather_shoes_1790714573794.jpg";
 import prodDerbyShoes from "@/assets/images/prod_derby_shoes_1790714587137.jpg";
 import prodGraphicTee from "@/assets/images/prod_graphic_tee_1790714599285.jpg";
-import { Category, Product, Order, ContactMessage, StoreSettings } from "@/types";
+import { Category, Product, Order, ContactMessage, StoreSettings, StoreHours } from "@/types";
 
 export const HERO_IMAGE = heroClothingImg;
 
@@ -497,6 +497,46 @@ export const INITIAL_CONTACT_MESSAGES: ContactMessage[] = [
   },
 ];
 
+export const DEFAULT_SIZES: string[] = [
+  "S",
+  "M",
+  "L",
+  "XL",
+  "XXL",
+  "35",
+  "36",
+  "37",
+  "38",
+  "39",
+  "40",
+  "41",
+  "42",
+  "43",
+  "44",
+  "One Size",
+];
+
+export const DEFAULT_PRODUCT_VARIANTS = {
+  sizes: DEFAULT_SIZES,
+};
+
+export const INITIAL_OPENING_SCHEDULE: StoreHours = {
+  saturday_thursday: {
+    status: "open",
+    time: {
+      open: "09:00",
+      close: "20:00",
+    },
+  },
+  friday: {
+    status: "closed",
+    time: {
+      open: null,
+      close: null,
+    },
+  },
+};
+
 export const INITIAL_STORE_SETTINGS: StoreSettings = {
   general: {
     storeName: "KØRD Apparel",
@@ -512,18 +552,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
     googleMapsUrl: "https://maps.google.com/?q=Hydra+Algiers",
     whatsapp: "+213 550 12 34 56",
   },
-  hours: {
-    saturdayToThursday: {
-      isOpen: true,
-      openTime: "09:00",
-      closeTime: "19:00",
-    },
-    friday: {
-      isOpen: false,
-      openTime: "14:30",
-      closeTime: "19:00",
-    },
-  },
+  hours: INITIAL_OPENING_SCHEDULE,
   social: {
     instagram: "https://instagram.com/kord.apparel",
     facebook: "https://facebook.com/kordapparel",
@@ -536,27 +565,7 @@ export const INITIAL_STORE_SETTINGS: StoreSettings = {
     homeFee: 800,
   },
   variantOptions: {
-    sizes: [
-      "XS",
-      "S",
-      "M",
-      "L",
-      "XL",
-      "2XL",
-      "XXL",
-      "3XL",
-      "XXXL",
-      "36",
-      "38",
-      "40",
-      "42",
-      "44",
-      "46",
-      "48",
-      "50",
-      "52",
-      "54",
-    ],
+    sizes: DEFAULT_SIZES,
     colors: [
       { name: "Black", hex: "#000000" },
       { name: "White", hex: "#ffffff" },

@@ -10,6 +10,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { lockViewportScroll } from "@/lib/scrollLock";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/lib/supabase";
+import { DEFAULT_SIZES } from "@/lib/data";
 
 const PRODUCTS_PER_PAGE = 10;
 
@@ -83,7 +84,7 @@ export const CategoriesPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([]);
   const [categoriesLoading, setCategoriesLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
-  const [allSizes, setAllSizes] = useState<string[]>([]);
+  const [allSizes, setAllSizes] = useState<string[]>(DEFAULT_SIZES);
   const [productsLoading, setProductsLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
   const [loadFailed, setLoadFailed] = useState(false);
@@ -91,6 +92,7 @@ export const CategoriesPage: React.FC = () => {
   const [hasMore, setHasMore] = useState(false);
   const [totalResultsCount, setTotalResultsCount] = useState(0);
   const requestVersion = useRef(0);
+  const activeCategoryRef = useRef<HTMLAnchorElement | null>(null);
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -107,16 +109,27 @@ export const CategoriesPage: React.FC = () => {
   const activeCategoryId = activeCategory?.id;
 
   useEffect(() => {
+    if (slug && activeCategoryRef.current) {
+      activeCategoryRef.current.scrollIntoView({ block: "nearest" });
+    }
+  }, [slug]);
+
+  useEffect(() => {
     let isMounted = true;
 
     const loadCategoryOptions = async () => {
       try {
-        const [categoryResult, sizeResult] = await Promise.all([
+        const [categoryResult, storeResult] = await Promise.all([
           supabase
             .from("category")
             .select("id,name,description,image_url,product(id)")
             .order("name", { ascending: true }),
-          supabase.from("product_variant").select("size").order("size").limit(1000),
+          supabase
+            .from("store")
+            .select("product_variants")
+            .order("id", { ascending: true })
+            .limit(1)
+            .maybeSingle(),
         ]);
 
         if (!isMounted) return;
@@ -135,11 +148,13 @@ export const CategoriesPage: React.FC = () => {
           })));
         }
 
-        if (sizeResult.error) {
-          console.error("Failed to load catalog sizes:", sizeResult.error);
-        } else {
-          const sizeRows = (sizeResult.data ?? []) as { size: string }[];
-          setAllSizes([...new Set(sizeRows.map((row) => row.size).filter(Boolean))]);
+        if (storeResult.error) {
+          console.error("Failed to load catalog sizes:", storeResult.error);
+        } else if (storeResult.data) {
+          const storeVariants = storeResult.data.product_variants as { sizes?: string[] } | null;
+          if (storeVariants?.sizes && Array.isArray(storeVariants.sizes) && storeVariants.sizes.length > 0) {
+            setAllSizes(storeVariants.sizes);
+          }
         }
       } catch (error) {
         console.error("Failed to load catalog options:", error);
@@ -440,6 +455,7 @@ export const CategoriesPage: React.FC = () => {
                 {t("home.disciplines")}
               </p>
               <nav className="flex flex-col gap-1">
+                {/* "All" Category Option */}
                 <Link
                   to="/categories"
                   className={`flex items-center justify-between px-3 py-2.5 rounded-[14px] text-[14px] transition-colors ${
@@ -454,31 +470,35 @@ export const CategoriesPage: React.FC = () => {
                   </span>
                 </Link>
 
-                {categoriesLoading ? (
-                  Array.from({ length: 3 }, (_, index) => (
-                    <Skeleton key={index} className="h-10 w-full rounded-[14px]" />
-                  ))
-                ) : (
-                  categories.map((cat) => {
-                    const isActive = slug === cat.slug;
-                    return (
-                      <Link
-                        key={cat.id}
-                        to={`/categories/${cat.slug}`}
-                        className={`flex items-center justify-between px-3 py-2.5 rounded-[14px] text-[14px] transition-colors ${
-                          isActive
-                            ? "bg-[var(--paper)] text-[var(--ink)] font-medium shadow-xs"
-                            : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                        }`}
-                      >
-                        <span className="truncate pe-2">{cat.name}</span>
-                        <span className="text-[12px] tabular-nums font-mono text-[var(--mid-gray)]">
-                          {cat.itemCount}
-                        </span>
-                      </Link>
-                    );
-                  })
-                )}
+                {/* Show 3 other categories visible with internal scrollbar for hidden categories */}
+                <div className="flex flex-col gap-1 max-h-[136px] overflow-y-auto pe-1.5 focus:outline-none">
+                  {categoriesLoading ? (
+                    Array.from({ length: 3 }, (_, index) => (
+                      <Skeleton key={index} className="h-10 w-full rounded-[14px]" />
+                    ))
+                  ) : (
+                    categories.map((cat) => {
+                      const isActive = slug === cat.slug;
+                      return (
+                        <Link
+                          key={cat.id}
+                          ref={isActive ? activeCategoryRef : undefined}
+                          to={`/categories/${cat.slug}`}
+                          className={`flex items-center justify-between px-3 py-2.5 rounded-[14px] text-[14px] transition-colors ${
+                            isActive
+                              ? "bg-[var(--paper)] text-[var(--ink)] font-medium shadow-xs"
+                              : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                          }`}
+                        >
+                          <span className="truncate pe-2">{cat.name}</span>
+                          <span className="text-[12px] tabular-nums font-mono text-[var(--mid-gray)]">
+                            {cat.itemCount}
+                          </span>
+                        </Link>
+                      );
+                    })
+                  )}
+                </div>
               </nav>
             </div>
 

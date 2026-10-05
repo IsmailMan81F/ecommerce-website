@@ -121,15 +121,27 @@ export interface StoreLocationInfo {
   whatsapp: string;
 }
 
-export interface DayHourSchedule {
-  isOpen: boolean;
-  openTime: string;
-  closeTime: string;
+export type ScheduleDayStatus = "open" | "closed";
+
+export interface ScheduleDayTime {
+  open: string | null;
+  close: string | null;
+}
+
+export interface DaySchedule {
+  status: ScheduleDayStatus;
+  time: ScheduleDayTime;
 }
 
 export interface StoreHours {
-  saturdayToThursday: DayHourSchedule;
-  friday: DayHourSchedule;
+  saturday_thursday: DaySchedule;
+  friday: DaySchedule;
+}
+
+export type OpeningSchedule = StoreHours;
+
+export interface ProductVariantsConfig {
+  sizes: string[];
 }
 
 export interface StoreSocialMedia {

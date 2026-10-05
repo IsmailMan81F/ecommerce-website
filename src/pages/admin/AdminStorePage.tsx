@@ -549,12 +549,12 @@ export const AdminStorePage: React.FC = () => {
                     <Badge
                       variant="outline"
                       className={`text-[11px] px-2 py-0.5 rounded-[8px] ${
-                        hoursForm.saturdayToThursday.isOpen
+                        hoursForm.saturday_thursday?.status === "open"
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                           : "bg-neutral-500/10 text-[var(--mid-gray)] border-[var(--hairline)]"
                       }`}
                     >
-                      {hoursForm.saturdayToThursday.isOpen ? t("admin.open") : t("admin.closed")}
+                      {hoursForm.saturday_thursday?.status === "open" ? t("admin.open") : t("admin.closed")}
                     </Badge>
                   </div>
                   <p className="text-[12px] text-[var(--mid-gray)]">
@@ -564,18 +564,21 @@ export const AdminStorePage: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Hours inputs if open: spacious inputs for start and finish times */}
-                  {hoursForm.saturdayToThursday.isOpen && (
+                  {hoursForm.saturday_thursday?.status === "open" && (
                     <div className="flex items-center gap-2 bg-[var(--paper)] px-3 py-1.5 rounded-[14px] border border-[var(--hairline)] shadow-2xs">
                       <div className="flex flex-col">
                         <Input
                           type="time"
-                          value={hoursForm.saturdayToThursday.openTime}
+                          value={hoursForm.saturday_thursday.time?.open ?? "09:00"}
                           onChange={(e) =>
                             setHoursForm({
                               ...hoursForm,
-                              saturdayToThursday: {
-                                ...hoursForm.saturdayToThursday,
-                                openTime: e.target.value,
+                              saturday_thursday: {
+                                ...hoursForm.saturday_thursday,
+                                time: {
+                                  ...hoursForm.saturday_thursday.time,
+                                  open: e.target.value,
+                                },
                               },
                             })
                           }
@@ -586,13 +589,16 @@ export const AdminStorePage: React.FC = () => {
                       <div className="flex flex-col">
                         <Input
                           type="time"
-                          value={hoursForm.saturdayToThursday.closeTime}
+                          value={hoursForm.saturday_thursday.time?.close ?? "20:00"}
                           onChange={(e) =>
                             setHoursForm({
                               ...hoursForm,
-                              saturdayToThursday: {
-                                ...hoursForm.saturdayToThursday,
-                                closeTime: e.target.value,
+                              saturday_thursday: {
+                                ...hoursForm.saturday_thursday,
+                                time: {
+                                  ...hoursForm.saturday_thursday.time,
+                                  close: e.target.value,
+                                },
                               },
                             })
                           }
@@ -609,14 +615,17 @@ export const AdminStorePage: React.FC = () => {
                       onClick={() =>
                         setHoursForm({
                           ...hoursForm,
-                          saturdayToThursday: {
-                            ...hoursForm.saturdayToThursday,
-                            isOpen: true,
+                          saturday_thursday: {
+                            status: "open",
+                            time: {
+                              open: hoursForm.saturday_thursday.time?.open || "09:00",
+                              close: hoursForm.saturday_thursday.time?.close || "20:00",
+                            },
                           },
                         })
                       }
                       className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
-                        hoursForm.saturdayToThursday.isOpen
+                        hoursForm.saturday_thursday?.status === "open"
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
@@ -628,14 +637,17 @@ export const AdminStorePage: React.FC = () => {
                       onClick={() =>
                         setHoursForm({
                           ...hoursForm,
-                          saturdayToThursday: {
-                            ...hoursForm.saturdayToThursday,
-                            isOpen: false,
+                          saturday_thursday: {
+                            status: "closed",
+                            time: {
+                              open: null,
+                              close: null,
+                            },
                           },
                         })
                       }
                       className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
-                        !hoursForm.saturdayToThursday.isOpen
+                        hoursForm.saturday_thursday?.status === "closed"
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
@@ -656,12 +668,12 @@ export const AdminStorePage: React.FC = () => {
                     <Badge
                       variant="outline"
                       className={`text-[11px] px-2 py-0.5 rounded-[8px] ${
-                        hoursForm.friday.isOpen
+                        hoursForm.friday?.status === "open"
                           ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
                           : "bg-neutral-500/10 text-[var(--mid-gray)] border-[var(--hairline)]"
                       }`}
                     >
-                      {hoursForm.friday.isOpen ? t("admin.open") : t("admin.closed")}
+                      {hoursForm.friday?.status === "open" ? t("admin.open") : t("admin.closed")}
                     </Badge>
                   </div>
                   <p className="text-[12px] text-[var(--mid-gray)]">
@@ -671,18 +683,21 @@ export const AdminStorePage: React.FC = () => {
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 w-full sm:w-auto justify-between sm:justify-end">
                   {/* Hours inputs if open: spacious inputs for start and finish times */}
-                  {hoursForm.friday.isOpen && (
+                  {hoursForm.friday?.status === "open" && (
                     <div className="flex items-center gap-2 bg-[var(--paper)] px-3 py-1.5 rounded-[14px] border border-[var(--hairline)] shadow-2xs">
                       <div className="flex flex-col">
                         <Input
                           type="time"
-                          value={hoursForm.friday.openTime}
+                          value={hoursForm.friday.time?.open ?? "09:00"}
                           onChange={(e) =>
                             setHoursForm({
                               ...hoursForm,
                               friday: {
                                 ...hoursForm.friday,
-                                openTime: e.target.value,
+                                time: {
+                                  ...hoursForm.friday.time,
+                                  open: e.target.value,
+                                },
                               },
                             })
                           }
@@ -693,13 +708,16 @@ export const AdminStorePage: React.FC = () => {
                       <div className="flex flex-col">
                         <Input
                           type="time"
-                          value={hoursForm.friday.closeTime}
+                          value={hoursForm.friday.time?.close ?? "20:00"}
                           onChange={(e) =>
                             setHoursForm({
                               ...hoursForm,
                               friday: {
                                 ...hoursForm.friday,
-                                closeTime: e.target.value,
+                                time: {
+                                  ...hoursForm.friday.time,
+                                  close: e.target.value,
+                                },
                               },
                             })
                           }
@@ -717,13 +735,16 @@ export const AdminStorePage: React.FC = () => {
                         setHoursForm({
                           ...hoursForm,
                           friday: {
-                            ...hoursForm.friday,
-                            isOpen: true,
+                            status: "open",
+                            time: {
+                              open: hoursForm.friday.time?.open || "09:00",
+                              close: hoursForm.friday.time?.close || "20:00",
+                            },
                           },
                         })
                       }
                       className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
-                        hoursForm.friday.isOpen
+                        hoursForm.friday?.status === "open"
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}
@@ -736,13 +757,16 @@ export const AdminStorePage: React.FC = () => {
                         setHoursForm({
                           ...hoursForm,
                           friday: {
-                            ...hoursForm.friday,
-                            isOpen: false,
+                            status: "closed",
+                            time: {
+                              open: null,
+                              close: null,
+                            },
                           },
                         })
                       }
                       className={`px-3 py-1 text-[12px] font-medium rounded-[8px] transition-colors cursor-pointer ${
-                        !hoursForm.friday.isOpen
+                        hoursForm.friday?.status === "closed"
                           ? "bg-[var(--ink)] text-[var(--paper)]"
                           : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
                       }`}

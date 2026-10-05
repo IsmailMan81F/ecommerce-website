@@ -8,10 +8,11 @@ import { FilterBar } from "@/components/FilterBar";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/context/StoreContext";
+import { DEFAULT_SIZES } from "@/lib/data";
 
 export const SearchPage: React.FC = () => {
   const { t } = useTranslation();
-  const { products } = useStore();
+  const { products, storeSettings } = useStore();
   const [searchParams, setSearchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
   const [searchInput, setSearchInput] = useState(query);
@@ -48,12 +49,13 @@ export const SearchPage: React.FC = () => {
     });
   };
 
-  // Extract all distinct sizes available across products
+  // Sizes available for filtering
   const allSizes = useMemo(() => {
-    const set = new Set<string>();
-    products.forEach((p) => p.sizes.forEach((s) => set.add(s)));
-    return Array.from(set);
-  }, [products]);
+    if (storeSettings?.variantOptions?.sizes?.length) {
+      return storeSettings.variantOptions.sizes;
+    }
+    return DEFAULT_SIZES;
+  }, [storeSettings?.variantOptions?.sizes]);
 
   const searchResults = useMemo(() => {
     const cleanQuery = query.toLowerCase().trim();

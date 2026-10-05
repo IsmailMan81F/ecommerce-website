@@ -29,10 +29,7 @@ export const Footer: React.FC = () => {
   const footerCategoriesToShow = footerCategories ?? [];
   const footerSettings = footerStoreData ?? {
     location: storeSettings.location,
-    hours: {
-      saturdayToThursday: { isOpen: false, openTime: "", closeTime: "" },
-      friday: { isOpen: false, openTime: "", closeTime: "" },
-    },
+    hours: storeSettings.hours,
     social: {
       facebook: storeSettings.social.facebook,
       instagram: storeSettings.social.instagram,
@@ -199,16 +196,20 @@ export const Footer: React.FC = () => {
                   <div>
                     <p className="font-medium text-[var(--ink)]">{t("footer.satThu")}</p>
                     <p className="text-[var(--mid-gray)] text-[12px] mt-0.5">
-                      {footerSettings.hours.saturdayToThursday.isOpen
-                        ? `${footerSettings.hours.saturdayToThursday.openTime} – ${footerSettings.hours.saturdayToThursday.closeTime}`
+                      {footerSettings.hours.saturday_thursday?.status === "open" &&
+                      footerSettings.hours.saturday_thursday.time?.open &&
+                      footerSettings.hours.saturday_thursday.time?.close
+                        ? `${footerSettings.hours.saturday_thursday.time.open} – ${footerSettings.hours.saturday_thursday.time.close}`
                         : t("admin.closed")}
                     </p>
                   </div>
                   <div className="pt-2 border-t border-[var(--hairline)]">
                     <p className="font-medium text-[var(--ink)]">{t("footer.friOnly")}</p>
                     <p className="text-[var(--mid-gray)] text-[12px] mt-0.5">
-                      {footerSettings.hours.friday.isOpen
-                        ? `${footerSettings.hours.friday.openTime} – ${footerSettings.hours.friday.closeTime}`
+                      {footerSettings.hours.friday?.status === "open" &&
+                      footerSettings.hours.friday.time?.open &&
+                      footerSettings.hours.friday.time?.close
+                        ? `${footerSettings.hours.friday.time.open} – ${footerSettings.hours.friday.time.close}`
                         : t("admin.closed")}
                     </p>
                   </div>

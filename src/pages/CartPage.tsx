@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import {
@@ -9,6 +9,7 @@ import {
   Building2,
   Home,
   PackageCheck,
+  AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -30,16 +31,75 @@ import { formatPrice } from "@/lib/utils";
 import { useStore } from "@/context/StoreContext";
 import { ALGERIAN_WILAYAS } from "@/lib/data";
 import { formatWilaya } from "@/i18n/wilayas";
-
-// Delivery pricing templates
-const OFFICE_DELIVERY_PRICE = 15;
-const HOME_DELIVERY_PRICE = 25;
+import { supabase } from "@/lib/supabase";
+import { StoreDeliverySettings } from "@/types";
 
 export const CartPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { items, subtotal, clearCart } = useCart();
-  const { createOrder } = useStore();
+  const { createOrder, storeSettings, updateStoreDelivery } = useStore();
+
+  // Delivery Configuration fetched from Supabase store table
+  const [deliveryLoading, setDeliveryLoading] = useState(true);
+  const [deliveryConfig, setDeliveryConfig] = useState<StoreDeliverySettings>({
+    deliveryEnabled: storeSettings.delivery.deliveryEnabled,
+    officeFee: storeSettings.delivery.officeFee,
+    homeFee: storeSettings.delivery.homeFee,
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchDeliveryInfo = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("store")
+          .select("delivery_service, office_fee, home_fee")
+          .order("id", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (!isMounted) return;
+
+        if (error) {
+          console.error("Failed to fetch delivery information from Supabase:", error);
+        } else if (data) {
+          const config: StoreDeliverySettings = {
+            deliveryEnabled: typeof data.delivery_service === "boolean" ? data.delivery_service : false,
+            officeFee: typeof data.office_fee === "number" ? data.office_fee : 0,
+            homeFee: typeof data.home_fee === "number" ? data.home_fee : 0,
+          };
+          setDeliveryConfig(config);
+          updateStoreDelivery(config);
+        }
+      } catch (err) {
+        console.error("Error fetching delivery info from Supabase:", err);
+      } finally {
+        if (isMounted) {
+          setDeliveryLoading(false);
+        }
+      }
+    };
+
+    void fetchDeliveryInfo();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [updateStoreDelivery]);
+
+  // Keep in sync with storeSettings if modified elsewhere
+  useEffect(() => {
+    if (!deliveryLoading) {
+      setDeliveryConfig(storeSettings.delivery);
+    }
+  }, [storeSettings.delivery, deliveryLoading]);
+
+  // Pull delivery config (live from DB)
+  const deliveryEnabled = deliveryConfig.deliveryEnabled;
+  const HOME_DELIVERY_PRICE = deliveryConfig.homeFee;
+  const OFFICE_DELIVERY_PRICE = deliveryConfig.officeFee;
 
   // Workflow Step State (1: Bag, 2: Form, 3: Summary)
   const [step, setStep] = useState<1 | 2 | 3>(1);
@@ -60,12 +120,21 @@ export const CartPage: React.FC = () => {
   const [confirmedOrderId, setConfirmedOrderId] = useState("");
 
   // Calculate delivery fee dynamically based on selected delivery type
-  const deliveryFee = deliveryType === "home" ? HOME_DELIVERY_PRICE : OFFICE_DELIVERY_PRICE;
+  const deliveryFee = !deliveryEnabled
+    ? 0
+    : deliveryType === "home"
+    ? HOME_DELIVERY_PRICE
+    : OFFICE_DELIVERY_PRICE;
   const grandTotal = subtotal + deliveryFee;
 
   // Validation before going to Step 3
   const handleValidateFormAndProceed = (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!deliveryEnabled) {
+      toast.error(t("cart.deliveryServiceDisabled"));
+      return;
+    }
 
     const errors: Record<string, string> = {};
     if (!firstName.trim()) errors.firstName = t("common.required");
@@ -100,6 +169,11 @@ export const CartPage: React.FC = () => {
 
   // Final Order Submission in Step 3
   const handleFinalOrderSubmit = () => {
+    if (!deliveryEnabled) {
+      toast.error(t("cart.deliveryServiceDisabled"));
+      return;
+    }
+
     if (items.length === 0) {
       toast.error(t("cart.emptyTitle"));
       setStep(1);
@@ -368,6 +442,19 @@ export const CartPage: React.FC = () => {
 
           {/* Step 1 Bottom Action */}
           <div className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] p-6 space-y-4">
+            {!deliveryLoading && !deliveryEnabled && (
+              <div className="rounded-[18px] border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/25 p-4 flex items-start gap-3 text-amber-900 dark:text-amber-200 text-[13px]">
+                <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <span className="font-semibold block">
+                    {t("cart.deliveryServiceDisabled")}
+                  </span>
+                  <span className="text-[12px] text-amber-800/80 dark:text-amber-300/80 block">
+                    {t("cart.deliveryServiceDisabledDesc")}
+                  </span>
+                </div>
+              </div>
+            )}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-body">
               <div>
                 <span className="text-[13px] text-[var(--mid-gray)] block font-normal">
@@ -544,58 +631,124 @@ export const CartPage: React.FC = () => {
 
                 {/* Delivery Type Option Selector */}
                 <div className="space-y-2.5 pt-2">
-                  <Label>{t("cart.deliveryTypeLabel")} *</Label>
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {/* Home Delivery Card */}
-                    <div
-                      onClick={() => setDeliveryType("home")}
-                      className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
-                        deliveryType === "home"
-                          ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
-                          : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Home className="h-4 w-4 text-[var(--ink)]" />
-                          <span className="text-[14px] font-medium text-[var(--ink)]">
-                            {t("cart.homeDelivery")}
-                          </span>
-                        </div>
-                        <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
-                          {formatPrice(HOME_DELIVERY_PRICE)}
-                        </span>
-                      </div>
-                      <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
-                        {t("cart.homeDeliveryDesc")}
-                      </p>
-                    </div>
-
-                    {/* Delivery to Office / Stop Desk Card */}
-                    <div
-                      onClick={() => setDeliveryType("office")}
-                      className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
-                        deliveryType === "office"
-                          ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
-                          : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-[var(--ink)]" />
-                          <span className="text-[14px] font-medium text-[var(--ink)]">
-                            {t("cart.officeDelivery")}
-                          </span>
-                        </div>
-                        <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
-                          {formatPrice(OFFICE_DELIVERY_PRICE)}
-                        </span>
-                      </div>
-                      <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
-                        {t("cart.officeDeliveryDesc")}
-                      </p>
-                    </div>
+                  <div className="flex items-center justify-between">
+                    <Label>{t("cart.deliveryTypeLabel")} *</Label>
+                    {!deliveryLoading && !deliveryEnabled && (
+                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
+                        {t("cart.serviceDisabled")}
+                      </span>
+                    )}
                   </div>
+
+                  {deliveryLoading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/50 animate-pulse space-y-2 h-[88px]" />
+                      <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/50 animate-pulse space-y-2 h-[88px]" />
+                    </div>
+                  ) : !deliveryEnabled ? (
+                    <div className="space-y-3.5">
+                      <div className="rounded-[18px] border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/25 p-4 sm:p-5 flex items-start gap-3.5 text-amber-900 dark:text-amber-200">
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="text-[14px] font-semibold text-amber-900 dark:text-amber-100">
+                            {t("cart.deliveryServiceDisabled")}
+                          </p>
+                          <p className="text-[13px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
+                            {t("cart.deliveryServiceDisabledDesc")}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Delivery pricing preview cards (muted/disabled with accurate prices from Supabase) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 opacity-60 pointer-events-none select-none">
+                        <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/40 space-y-1.5 cursor-not-allowed">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Home className="h-4 w-4 text-[var(--mid-gray)]" />
+                              <span className="text-[14px] font-medium text-[var(--mid-gray)]">
+                                {t("cart.homeDelivery")}
+                              </span>
+                            </div>
+                            <span className="font-mono text-[13px] font-semibold text-[var(--mid-gray)]">
+                              {formatPrice(HOME_DELIVERY_PRICE)}
+                            </span>
+                          </div>
+                          <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                            {t("cart.homeDeliveryDesc")}
+                          </p>
+                        </div>
+
+                        <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/40 space-y-1.5 cursor-not-allowed">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <Building2 className="h-4 w-4 text-[var(--mid-gray)]" />
+                              <span className="text-[14px] font-medium text-[var(--mid-gray)]">
+                                {t("cart.officeDelivery")}
+                              </span>
+                            </div>
+                            <span className="font-mono text-[13px] font-semibold text-[var(--mid-gray)]">
+                              {formatPrice(OFFICE_DELIVERY_PRICE)}
+                            </span>
+                          </div>
+                          <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                            {t("cart.officeDeliveryDesc")}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Home Delivery Card */}
+                      <div
+                        onClick={() => setDeliveryType("home")}
+                        className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
+                          deliveryType === "home"
+                            ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
+                            : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Home className="h-4 w-4 text-[var(--ink)]" />
+                            <span className="text-[14px] font-medium text-[var(--ink)]">
+                              {t("cart.homeDelivery")}
+                            </span>
+                          </div>
+                          <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
+                            {formatPrice(HOME_DELIVERY_PRICE)}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                          {t("cart.homeDeliveryDesc")}
+                        </p>
+                      </div>
+
+                      {/* Delivery to Office / Stop Desk Card */}
+                      <div
+                        onClick={() => setDeliveryType("office")}
+                        className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
+                          deliveryType === "office"
+                            ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
+                            : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-[var(--ink)]" />
+                            <span className="text-[14px] font-medium text-[var(--ink)]">
+                              {t("cart.officeDelivery")}
+                            </span>
+                          </div>
+                          <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
+                            {formatPrice(OFFICE_DELIVERY_PRICE)}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                          {t("cart.officeDeliveryDesc")}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Street Address */}
@@ -653,9 +806,14 @@ export const CartPage: React.FC = () => {
               <Button
                 type="submit"
                 size="lg"
-                className="w-full sm:w-auto rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] cursor-pointer"
+                disabled={!deliveryEnabled || deliveryLoading}
+                className="w-full sm:w-auto rounded-[18px] px-8 gap-2 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>{t("cart.reviewOrder")}</span>
+                <span>
+                  {!deliveryEnabled
+                    ? t("cart.deliveryServiceDisabled")
+                    : t("cart.reviewOrder")}
+                </span>
                 <ArrowRight className="h-4 w-4 rtl:rotate-180" />
               </Button>
             </div>
@@ -799,7 +957,7 @@ export const CartPage: React.FC = () => {
                       </span>
                     </div>
                     <span className="font-mono text-[13px] text-[var(--ink)] font-medium">
-                      {t("common.shipping")}: {formatPrice(deliveryFee)}
+                      {t("common.shipping")}: {deliveryEnabled ? formatPrice(deliveryFee) : t("cart.serviceDisabled")}
                     </span>
                   </div>
 
@@ -826,7 +984,7 @@ export const CartPage: React.FC = () => {
                     {t("common.shipping")} ({deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")})
                   </span>
                   <span className="text-[var(--ink)] font-medium tabular-nums">
-                    {formatPrice(deliveryFee)}
+                    {deliveryEnabled ? formatPrice(deliveryFee) : t("cart.serviceDisabled")}
                   </span>
                 </div>
 
@@ -864,11 +1022,16 @@ export const CartPage: React.FC = () => {
             <Button
               type="button"
               size="lg"
+              disabled={!deliveryEnabled}
               onClick={handleFinalOrderSubmit}
-              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs cursor-pointer"
+              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <PackageCheck className="h-4 w-4" />
-              <span>{t("cart.placeOrderBtn")} · {formatPrice(grandTotal)}</span>
+              <span>
+                {!deliveryEnabled
+                  ? t("cart.deliveryServiceDisabled")
+                  : `${t("cart.placeOrderBtn")} · ${formatPrice(grandTotal)}`}
+              </span>
             </Button>
           </div>
         </div>
