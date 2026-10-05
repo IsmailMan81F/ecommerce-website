@@ -622,42 +622,33 @@ export const CartPage: React.FC = () => {
                       <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/50 animate-pulse space-y-2 h-[88px]" />
                       <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/50 animate-pulse space-y-2 h-[88px]" />
                     </div>
-                  ) : (
+                  ) : !deliveryEnabled ? (
                     <div className="space-y-3.5">
                       {/* Remark banner in Step 2 when delivery is disabled */}
-                      {!deliveryEnabled && (
-                        <div className="rounded-[18px] border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/25 p-4 sm:p-5 flex items-start gap-3.5 text-amber-900 dark:text-amber-200">
-                          <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                          <div className="space-y-1">
-                            <p className="text-[14px] font-semibold text-amber-900 dark:text-amber-100">
-                              {t("cart.deliveryServiceDisabled")}
-                            </p>
-                            <p className="text-[13px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
-                              {t("cart.deliveryServiceDisabledDesc")}
-                            </p>
-                          </div>
+                      <div className="rounded-[18px] border border-amber-200 dark:border-amber-900/60 bg-amber-50/80 dark:bg-amber-950/25 p-4 sm:p-5 flex items-start gap-3.5 text-amber-900 dark:text-amber-200">
+                        <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
+                        <div className="space-y-1">
+                          <p className="text-[14px] font-semibold text-amber-900 dark:text-amber-100">
+                            {t("cart.deliveryServiceDisabled")}
+                          </p>
+                          <p className="text-[13px] text-amber-800/80 dark:text-amber-300/80 leading-relaxed">
+                            {t("cart.deliveryServiceDisabledDesc")}
+                          </p>
                         </div>
-                      )}
+                      </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                        {/* Home Delivery Card */}
-                        <div
-                          onClick={() => setDeliveryType("home")}
-                          className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
-                            deliveryType === "home"
-                              ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
-                              : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
-                          }`}
-                        >
+                      {/* Delivery pricing preview cards (muted/disabled with accurate original prices from Supabase) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 opacity-60 pointer-events-none select-none">
+                        <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/40 space-y-1.5 cursor-not-allowed">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Home className="h-4 w-4 text-[var(--ink)]" />
-                              <span className="text-[14px] font-medium text-[var(--ink)]">
+                              <Home className="h-4 w-4 text-[var(--mid-gray)]" />
+                              <span className="text-[14px] font-medium text-[var(--mid-gray)]">
                                 {t("cart.homeDelivery")}
                               </span>
                             </div>
-                            <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
-                              {formatPrice(!deliveryEnabled ? 0 : HOME_DELIVERY_PRICE)}
+                            <span className="font-mono text-[13px] font-semibold text-[var(--mid-gray)]">
+                              {formatPrice(HOME_DELIVERY_PRICE)}
                             </span>
                           </div>
                           <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
@@ -665,30 +656,74 @@ export const CartPage: React.FC = () => {
                           </p>
                         </div>
 
-                        {/* Delivery to Office / Stop Desk Card */}
-                        <div
-                          onClick={() => setDeliveryType("office")}
-                          className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
-                            deliveryType === "office"
-                              ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
-                              : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
-                          }`}
-                        >
+                        <div className="p-4 rounded-[18px] border border-[var(--hairline)] bg-[var(--surface-alt)]/40 space-y-1.5 cursor-not-allowed">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <Building2 className="h-4 w-4 text-[var(--ink)]" />
-                              <span className="text-[14px] font-medium text-[var(--ink)]">
+                              <Building2 className="h-4 w-4 text-[var(--mid-gray)]" />
+                              <span className="text-[14px] font-medium text-[var(--mid-gray)]">
                                 {t("cart.officeDelivery")}
                               </span>
                             </div>
-                            <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
-                              {formatPrice(!deliveryEnabled ? 0 : OFFICE_DELIVERY_PRICE)}
+                            <span className="font-mono text-[13px] font-semibold text-[var(--mid-gray)]">
+                              {formatPrice(OFFICE_DELIVERY_PRICE)}
                             </span>
                           </div>
                           <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
                             {t("cart.officeDeliveryDesc")}
                           </p>
                         </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
+                      {/* Home Delivery Card */}
+                      <div
+                        onClick={() => setDeliveryType("home")}
+                        className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
+                          deliveryType === "home"
+                            ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
+                            : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Home className="h-4 w-4 text-[var(--ink)]" />
+                            <span className="text-[14px] font-medium text-[var(--ink)]">
+                              {t("cart.homeDelivery")}
+                            </span>
+                          </div>
+                          <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
+                            {formatPrice(HOME_DELIVERY_PRICE)}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                          {t("cart.homeDeliveryDesc")}
+                        </p>
+                      </div>
+
+                      {/* Delivery to Office / Stop Desk Card */}
+                      <div
+                        onClick={() => setDeliveryType("office")}
+                        className={`p-4 rounded-[18px] border transition-all cursor-pointer space-y-1.5 ${
+                          deliveryType === "office"
+                            ? "border-[var(--ink)] bg-[var(--surface-alt)] shadow-xs"
+                            : "border-[var(--hairline)] hover:border-[var(--mid-gray)]"
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <Building2 className="h-4 w-4 text-[var(--ink)]" />
+                            <span className="text-[14px] font-medium text-[var(--ink)]">
+                              {t("cart.officeDelivery")}
+                            </span>
+                          </div>
+                          <span className="font-mono text-[13px] font-semibold text-[var(--ink)]">
+                            {formatPrice(OFFICE_DELIVERY_PRICE)}
+                          </span>
+                        </div>
+                        <p className="text-[12px] text-[var(--mid-gray)] leading-relaxed">
+                          {t("cart.officeDeliveryDesc")}
+                        </p>
                       </div>
                     </div>
                   )}
