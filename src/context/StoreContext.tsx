@@ -13,6 +13,7 @@ import {
   StoreDeliverySettings,
   StoreVariantOptions,
 } from "@/types";
+import { supabase } from "@/lib/supabase";
 import {
   PRODUCTS,
   CATEGORIES,
@@ -21,6 +22,34 @@ import {
   INITIAL_STORE_SETTINGS,
 } from "@/lib/data";
 
+interface FooterStoreData {
+  location: Pick<StoreLocationInfo, "country" | "city" | "address" | "googleMapsUrl">;
+  hours: StoreHours;
+  social: Pick<StoreSocialMedia, "facebook" | "instagram">;
+}
+
+interface SupabaseFooterCategoryRow {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+}
+
+interface SupabaseFooterStoreRow {
+  country: string;
+  commune: string | null;
+  street_address: string | null;
+  google_maps_url: string;
+  instagram_url: string;
+  facebook_url: string;
+  opening_schedule: unknown;
+}
+
+const CLOSED_FOOTER_HOURS: StoreHours = {
+  saturdayToThursday: { isOpen: false, openTime: "", closeTime: "" },
+  friday: { isOpen: false, openTime: "", closeTime: "" },
+};
+
 interface StoreContextType {
   products: Product[];
   categories: Category[];
@@ -28,6 +57,9 @@ interface StoreContextType {
   messages: ContactMessage[];
   unreadMessagesCount: number;
   storeSettings: StoreSettings;
+  footerCategories: Category[] | null;
+  footerStoreData: FooterStoreData | null;
+  footerDataLoading: boolean;
   updateStoreGeneral: (general: Partial<StoreGeneralInfo>) => void;
   updateStoreLocation: (location: Partial<StoreLocationInfo>) => void;
   updateStoreHours: (hours: StoreHours) => void;
@@ -124,6 +156,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     }
     return INITIAL_STORE_SETTINGS;
   });
+  const [footerCategories, setFooterCategories] = useState<Category[] | null>(null);
+  const [footerStoreData, setFooterStoreData] = useState<FooterStoreData | null>(null);
+  const [footerDataLoading, setFooterDataLoading] = useState(true);
 
   // Sync to sessionStorage & localStorage
   useEffect(() => {
@@ -166,6 +201,79 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
       // ignore
     }
   }, [storeSettings]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadFooterData = async () => {
+      const [categoryResult, storeResult] = await Promise.all([
+        supabase
+          .from("category")
+          .select("id,name,description,image_url")
+          .order("created_at", { ascending: true })
+          .limit(3),
+        supabase
+          .from("store")
+          .select("country,commune,street_address,google_maps_url,instagram_url,facebook_url,opening_schedule")
+          .order("id", { ascending: true })
+          .limit(1)
+          .maybeSingle(),
+      ]);
+
+      if (!isMounted) return;
+
+      if (categoryResult.error) {
+        console.error("Failed to load footer categories:", categoryResult.error);
+      } else {
+        const rows = (categoryResult.data ?? []) as unknown as SupabaseFooterCategoryRow[];
+        setFooterCategories(
+          rows.map((row) => ({
+            id: row.id,
+            name: row.name,
+            slug: row.name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || row.id,
+            description: row.description ?? "",
+            image: row.image_url ?? "",
+            itemCount: 0,
+          }))
+        );
+      }
+
+      if (storeResult.error) {
+        console.error("Failed to load footer store settings:", storeResult.error);
+      } else if (storeResult.data) {
+        const row = storeResult.data as unknown as SupabaseFooterStoreRow;
+        const schedule = row.opening_schedule as Partial<StoreHours> | null;
+        const hours = schedule?.saturdayToThursday && schedule.friday
+          ? schedule as StoreHours
+          : CLOSED_FOOTER_HOURS;
+
+        setFooterStoreData({
+          location: {
+            country: row.country,
+            city: row.commune ?? "",
+            address: row.street_address ?? "",
+            googleMapsUrl: row.google_maps_url,
+          },
+          hours,
+          social: {
+            instagram: row.instagram_url,
+            facebook: row.facebook_url,
+          },
+        });
+      }
+
+      setFooterDataLoading(false);
+    };
+
+    void loadFooterData().catch((error: unknown) => {
+      console.error("Failed to load footer data:", error);
+      if (isMounted) setFooterDataLoading(false);
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const unreadMessagesCount = useMemo(() => {
     return messages.filter((m) => m.status === "unread" || m.isRead === false).length;
@@ -521,6 +629,9 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
         messages,
         unreadMessagesCount,
         storeSettings,
+        footerCategories,
+        footerStoreData,
+        footerDataLoading,
         updateStoreGeneral,
         updateStoreLocation,
         updateStoreHours,
