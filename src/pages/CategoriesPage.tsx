@@ -1,21 +1,96 @@
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { SlidersHorizontal, RotateCcw } from "lucide-react";
-import { FilterState } from "@/types";
+import { Category, FilterState, Product, ProductVariant } from "@/types";
 import { ProductCard } from "@/components/ProductCard";
 import { FilterBar } from "@/components/FilterBar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { useStore } from "@/context/StoreContext";
 import { lockViewportScroll } from "@/lib/scrollLock";
+import { Skeleton } from "@/components/ui/skeleton";
+import { supabase } from "@/lib/supabase";
+
+const PRODUCTS_PER_PAGE = 10;
+
+interface SupabaseCategoryRow {
+  id: string;
+  name: string;
+  description: string | null;
+  image_url: string | null;
+  product?: { id: string }[] | null;
+}
+
+interface SupabaseProductRow {
+  id: string;
+  name: string;
+  description: string | null;
+  category_id: string;
+  price: number;
+  old_price: number | null;
+  best_seller: boolean;
+  is_out_of_stock: boolean;
+  details: unknown;
+  product_image?: { image_url: string }[] | null;
+  product_variant?: Omit<ProductVariant, "isAvailable">[] | null;
+}
+
+const toSlug = (value: string) =>
+  value.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+
+const mapProduct = (row: SupabaseProductRow, categories: Category[]): Product => {
+  const category = categories.find((candidate) => candidate.id === row.category_id);
+  const variants = (row.product_variant ?? []).map((variant) => ({
+    ...variant,
+    isAvailable: !row.is_out_of_stock && variant.stock > 0,
+  }));
+  const details = row.details;
+  const features = Array.isArray(details)
+    ? details.filter((detail): detail is string => typeof detail === "string")
+    : [];
+  const specs = details && typeof details === "object" && !Array.isArray(details)
+    ? Object.fromEntries(
+        Object.entries(details).filter((entry): entry is [string, string] => typeof entry[1] === "string")
+      )
+    : undefined;
+
+  return {
+    id: row.id,
+    name: row.name,
+    slug: toSlug(row.name) || row.id,
+    categorySlug: category?.slug ?? row.category_id,
+    categoryName: category?.name ?? "",
+    price: row.price,
+    originalPrice: row.old_price ?? undefined,
+    description: row.description ?? "",
+    features,
+    images: (row.product_image ?? []).map((image) => image.image_url).filter(Boolean),
+    sizes: [...new Set(variants.map((variant) => variant.size))],
+    colors: [...new Set(variants.map((variant) => variant.color))],
+    variants,
+    stock: variants.reduce((total, variant) => total + variant.stock, 0),
+    isAvailable: !row.is_out_of_stock,
+    isBestSeller: row.best_seller,
+    specs,
+  };
+};
 
 export const CategoriesPage: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { slug } = useParams<{ slug?: string }>();
-  const { products, categories } = useStore();
-
   const isRtl = i18n.language === "ar";
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [allSizes, setAllSizes] = useState<string[]>([]);
+  const [productsLoading, setProductsLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
+  const [totalResultsCount, setTotalResultsCount] = useState(0);
+  const requestVersion = useRef(0);
 
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
@@ -29,6 +104,161 @@ export const CategoriesPage: React.FC = () => {
     if (!slug) return null;
     return categories.find((c) => c.slug === slug) || null;
   }, [slug, categories]);
+  const activeCategoryId = activeCategory?.id;
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadCategoryOptions = async () => {
+      try {
+        const [categoryResult, sizeResult] = await Promise.all([
+          supabase
+            .from("category")
+            .select("id,name,description,image_url,product(id)")
+            .order("name", { ascending: true }),
+          supabase.from("product_variant").select("size").order("size").limit(1000),
+        ]);
+
+        if (!isMounted) return;
+
+        if (categoryResult.error) {
+          console.error("Failed to load catalog categories:", categoryResult.error);
+        } else {
+          const rows = (categoryResult.data ?? []) as unknown as SupabaseCategoryRow[];
+          setCategories(rows.map((row) => ({
+            id: row.id,
+            name: row.name,
+            slug: toSlug(row.name) || row.id,
+            description: row.description ?? "",
+            image: row.image_url ?? "",
+            itemCount: row.product?.length ?? 0,
+          })));
+        }
+
+        if (sizeResult.error) {
+          console.error("Failed to load catalog sizes:", sizeResult.error);
+        } else {
+          const sizeRows = (sizeResult.data ?? []) as { size: string }[];
+          setAllSizes([...new Set(sizeRows.map((row) => row.size).filter(Boolean))]);
+        }
+      } catch (error) {
+        console.error("Failed to load catalog options:", error);
+      } finally {
+        if (isMounted) setCategoriesLoading(false);
+      }
+    };
+
+    void loadCategoryOptions();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const fetchProductPage = async (pageNumber: number, categoryId?: string) => {
+    const needsVariantJoin =
+      (filters.size && filters.size !== "all") || filters.availability === "in-stock";
+    const variantJoin = needsVariantJoin ? "product_variant!inner" : "product_variant";
+    let query = supabase
+      .from("product")
+      .select(
+        `id,name,description,category_id,price,old_price,best_seller,is_out_of_stock,details,product_image(image_url),${variantJoin}(id,size,color,stock)`,
+        { count: "exact" }
+      );
+
+    if (categoryId) query = query.eq("category_id", categoryId);
+    if (filters.size && filters.size !== "all") {
+      query = query.eq("product_variant.size", filters.size);
+    }
+    if (filters.availability === "in-stock") {
+      query = query.eq("is_out_of_stock", false).gt("product_variant.stock", 0);
+    }
+
+    if (filters.priceRange === "under-200") query = query.lt("price", 4000);
+    if (filters.priceRange === "200-500") query = query.gte("price", 4000).lte("price", 6000);
+    if (filters.priceRange === "500-1000") query = query.gte("price", 6000).lte("price", 8000);
+    if (filters.priceRange === "over-1000") query = query.gt("price", 8000);
+
+    if (filters.sortBy === "price-asc") query = query.order("price", { ascending: true });
+    if (filters.sortBy === "price-desc") query = query.order("price", { ascending: false });
+    if (filters.sortBy === "name-asc") query = query.order("name", { ascending: true });
+
+    const from = (pageNumber - 1) * PRODUCTS_PER_PAGE;
+    return query.range(from, from + PRODUCTS_PER_PAGE - 1);
+  };
+
+  const sortFeatured = (items: Product[]) =>
+    filters.sortBy === "featured"
+      ? items.sort((first, second) => Number(second.isBestSeller) - Number(first.isBestSeller))
+      : items;
+
+  useEffect(() => {
+    if (categoriesLoading) return;
+
+    const version = ++requestVersion.current;
+    let isCurrent = true;
+    setProducts([]);
+    setPage(1);
+    setHasMore(false);
+    setTotalResultsCount(0);
+    setLoadFailed(false);
+    setProductsLoading(true);
+
+    const loadFirstPage = async () => {
+      if (slug && !activeCategoryId) {
+        setProductsLoading(false);
+        return;
+      }
+
+      try {
+        const { data, error, count } = await fetchProductPage(1, activeCategoryId);
+        if (!isCurrent || version !== requestVersion.current) return;
+        if (error) throw error;
+
+        const rows = (data ?? []) as unknown as SupabaseProductRow[];
+        const mappedProducts = rows.map((row) => mapProduct(row, categories));
+        setProducts(sortFeatured(mappedProducts));
+        setTotalResultsCount(count ?? mappedProducts.length);
+        setHasMore(count === null ? mappedProducts.length === PRODUCTS_PER_PAGE : count > mappedProducts.length);
+      } catch (error) {
+        console.error("Failed to load catalog products:", error);
+        if (isCurrent && version === requestVersion.current) setLoadFailed(true);
+      } finally {
+        if (isCurrent && version === requestVersion.current) setProductsLoading(false);
+      }
+    };
+
+    void loadFirstPage();
+    return () => {
+      isCurrent = false;
+      requestVersion.current += 1;
+    };
+  }, [categoriesLoading, categories, activeCategoryId, slug, filters.size, filters.priceRange, filters.availability, filters.sortBy]);
+
+  const handleLoadMore = async () => {
+    if (loadingMore || productsLoading || !hasMore) return;
+
+    const version = requestVersion.current;
+    const nextPage = page + 1;
+    setLoadingMore(true);
+    setLoadFailed(false);
+    try {
+      const { data, error, count } = await fetchProductPage(nextPage, activeCategoryId);
+      if (version !== requestVersion.current) return;
+      if (error) throw error;
+
+      const rows = (data ?? []) as unknown as SupabaseProductRow[];
+      const mappedProducts = rows.map((row) => mapProduct(row, categories));
+      setProducts((current) => sortFeatured([...current, ...mappedProducts]));
+      setPage(nextPage);
+      setTotalResultsCount(count ?? Math.max(totalResultsCount, (nextPage - 1) * PRODUCTS_PER_PAGE + mappedProducts.length));
+      setHasMore(count === null ? mappedProducts.length === PRODUCTS_PER_PAGE : nextPage * PRODUCTS_PER_PAGE < count);
+    } catch (error) {
+      console.error("Failed to load more catalog products:", error);
+      setLoadFailed(true);
+    } finally {
+      if (version === requestVersion.current) setLoadingMore(false);
+    }
+  };
 
   const handleFilterChange = (key: keyof FilterState, value: string) => {
     setFilters((prev) => ({
@@ -46,49 +276,7 @@ export const CategoriesPage: React.FC = () => {
     });
   };
 
-  // Filtered and sorted products
-  const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      // Category filter
-      if (slug && product.categorySlug !== slug) {
-        return false;
-      }
-
-      // Size filter
-      if (filters.size && filters.size !== "all") {
-        if (!product.sizes.includes(filters.size)) {
-          return false;
-        }
-      }
-
-      // Price range
-      if (filters.priceRange && filters.priceRange !== "all") {
-        if (filters.priceRange === "under-200" && product.price >= 4000) return false;
-        if (filters.priceRange === "200-500" && (product.price < 4000 || product.price > 6000)) return false;
-        if (filters.priceRange === "500-1000" && (product.price < 6000 || product.price > 8000)) return false;
-        if (filters.priceRange === "over-1000" && product.price <= 8000) return false;
-      }
-
-      // Availability
-      if (filters.availability === "in-stock" && (!product.isAvailable || product.stock <= 0)) {
-        return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      if (filters.sortBy === "price-asc") return a.price - b.price;
-      if (filters.sortBy === "price-desc") return b.price - a.price;
-      if (filters.sortBy === "name-asc") return a.name.localeCompare(b.name);
-      return 0; // featured default
-    });
-  }, [slug, filters, products]);
-
-  // Extract all distinct sizes available across products
-  const allSizes = useMemo(() => {
-    const set = new Set<string>();
-    products.forEach((p) => p.sizes.forEach((s) => set.add(s)));
-    return Array.from(set);
-  }, [products]);
+  const filteredProducts = products;
 
   const isFiltered =
     Boolean(filters.size && filters.size !== "all") ||
@@ -170,26 +358,36 @@ export const CategoriesPage: React.FC = () => {
                         >
                           <span>{t("footer.allObjects")}</span>
                           <span className="text-caption text-[var(--mid-gray)] tabular-nums">
-                            {products.length}
+                            {totalResultsCount}
                           </span>
                         </Link>
-                        {categories.map((cat) => (
-                          <Link
-                            key={cat.id}
-                            to={`/categories/${cat.slug}`}
-                            onClick={() => setMobileFilterOpen(false)}
-                            className={`px-3 py-2.5 rounded-[14px] text-body transition-colors flex items-center justify-between ${
-                              slug === cat.slug
-                                ? "bg-[var(--surface-alt)] font-medium text-[var(--ink)]"
-                                : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                            }`}
-                          >
-                            <span>{cat.name}</span>
-                            <span className="text-caption text-[var(--mid-gray)] tabular-nums">
-                              {cat.itemCount}
-                            </span>
-                          </Link>
-                        ))}
+                        {categoriesLoading ? (
+                          Array.from({ length: 3 }, (_, index) => (
+                            <Skeleton key={index} className="h-10 w-full rounded-[14px]" />
+                          ))
+                        ) : categories.length > 0 ? (
+                          categories.map((cat) => (
+                            <Link
+                              key={cat.id}
+                              to={`/categories/${cat.slug}`}
+                              onClick={() => setMobileFilterOpen(false)}
+                              className={`px-3 py-2.5 rounded-[14px] text-body transition-colors flex items-center justify-between ${
+                                slug === cat.slug
+                                  ? "bg-[var(--surface-alt)] font-medium text-[var(--ink)]"
+                                  : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                              }`}
+                            >
+                              <span>{cat.name}</span>
+                              <span className="text-caption text-[var(--mid-gray)] tabular-nums">
+                                {cat.itemCount}
+                              </span>
+                            </Link>
+                          ))
+                        ) : (
+                          <p className="px-3 py-2 text-[13px] text-[var(--mid-gray)]">
+                            {t("categories.noCategoriesFound")}
+                          </p>
+                        )}
                       </div>
                     </div>
 
@@ -200,7 +398,7 @@ export const CategoriesPage: React.FC = () => {
                         onFilterChange={handleFilterChange}
                         onResetFilters={handleResetFilters}
                         availableSizes={allSizes}
-                        totalResultsCount={filteredProducts.length}
+                        totalResultsCount={totalResultsCount}
                       />
                     </div>
                   </div>
@@ -213,7 +411,7 @@ export const CategoriesPage: React.FC = () => {
                     className="flex-1 min-w-[160px] rounded-[18px] bg-[var(--ink-soft)] hover:bg-[var(--ink)] text-[var(--paper)] h-11 cursor-pointer"
                     onClick={() => setMobileFilterOpen(false)}
                   >
-                    {t("categories.viewObject")} ({filteredProducts.length})
+                    {t("categories.viewObject")} ({totalResultsCount})
                   </Button>
                   {isFiltered && (
                     <Button
@@ -252,29 +450,35 @@ export const CategoriesPage: React.FC = () => {
                 >
                   <span>{t("footer.allObjects")}</span>
                   <span className="text-[12px] tabular-nums font-mono">
-                    {products.length}
+                    {totalResultsCount}
                   </span>
                 </Link>
 
-                {categories.map((cat) => {
-                  const isActive = slug === cat.slug;
-                  return (
-                    <Link
-                      key={cat.id}
-                      to={`/categories/${cat.slug}`}
-                      className={`flex items-center justify-between px-3 py-2.5 rounded-[14px] text-[14px] transition-colors ${
-                        isActive
-                          ? "bg-[var(--paper)] text-[var(--ink)] font-medium shadow-xs"
-                          : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
-                      }`}
-                    >
-                      <span className="truncate pe-2">{cat.name}</span>
-                      <span className="text-[12px] tabular-nums font-mono text-[var(--mid-gray)]">
-                        {cat.itemCount}
-                      </span>
-                    </Link>
-                  );
-                })}
+                {categoriesLoading ? (
+                  Array.from({ length: 3 }, (_, index) => (
+                    <Skeleton key={index} className="h-10 w-full rounded-[14px]" />
+                  ))
+                ) : (
+                  categories.map((cat) => {
+                    const isActive = slug === cat.slug;
+                    return (
+                      <Link
+                        key={cat.id}
+                        to={`/categories/${cat.slug}`}
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-[14px] text-[14px] transition-colors ${
+                          isActive
+                            ? "bg-[var(--paper)] text-[var(--ink)] font-medium shadow-xs"
+                            : "text-[var(--mid-gray)] hover:text-[var(--ink)]"
+                        }`}
+                      >
+                        <span className="truncate pe-2">{cat.name}</span>
+                        <span className="text-[12px] tabular-nums font-mono text-[var(--mid-gray)]">
+                          {cat.itemCount}
+                        </span>
+                      </Link>
+                    );
+                  })
+                )}
               </nav>
             </div>
 
@@ -293,11 +497,31 @@ export const CategoriesPage: React.FC = () => {
             onFilterChange={handleFilterChange}
             onResetFilters={handleResetFilters}
             availableSizes={allSizes}
-            totalResultsCount={filteredProducts.length}
+            totalResultsCount={totalResultsCount}
           />
 
           {/* Product Grid */}
-          {filteredProducts.length > 0 ? (
+          {productsLoading ? (
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
+              {Array.from({ length: PRODUCTS_PER_PAGE }, (_, index) => (
+                <div key={index} className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] p-4 sm:p-5">
+                  <Skeleton className="aspect-[4/3] w-full rounded-[18px]" />
+                  <div className="mt-4 space-y-3">
+                    <Skeleton className="h-3 w-1/3" />
+                    <Skeleton className="h-5 w-4/5" />
+                  </div>
+                  <div className="mt-6 flex items-center justify-between border-t border-[var(--hairline)] pt-4">
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-8 w-16 rounded-[18px]" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : loadFailed && filteredProducts.length === 0 ? (
+            <div className="rounded-[24px] border border-[var(--hairline)] bg-[var(--paper)] p-12 text-center text-[14px] text-[var(--mid-gray)]">
+              {t("categories.catalogLoadFailed")}
+            </div>
+          ) : filteredProducts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
               {filteredProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
@@ -318,6 +542,26 @@ export const CategoriesPage: React.FC = () => {
               >
                 <RotateCcw className="h-4 w-4 rtl:rotate-180" />
                 <span>{t("categories.resetFilters")}</span>
+              </Button>
+            </div>
+          )}
+
+          {loadFailed && filteredProducts.length > 0 && (
+            <p className="text-center text-[13px] text-[var(--mid-gray)]">
+              {t("categories.loadMoreFailed")}
+            </p>
+          )}
+
+          {hasMore && !productsLoading && filteredProducts.length > 0 && (
+            <div className="flex justify-center pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleLoadMore}
+                disabled={loadingMore}
+                className="min-w-36 rounded-[18px]"
+              >
+                {loadingMore ? t("categories.loadingMore") : t("categories.loadMore")}
               </Button>
             </div>
           )}

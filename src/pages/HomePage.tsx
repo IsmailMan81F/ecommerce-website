@@ -69,6 +69,8 @@ export const HomePage: React.FC = () => {
           .limit(4),
       ]);
 
+      console.log(categoryResult, productResult);
+
       if (!isMounted) return;
 
       let categoryRows: SupabaseCategoryRow[] = [];
