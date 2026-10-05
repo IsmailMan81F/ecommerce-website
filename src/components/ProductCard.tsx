@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
+import { Plus, Image as ImageIcon } from "lucide-react";
 import { Product } from "@/types";
 import { Button } from "@/components/ui/button";
 import { formatPrice } from "@/lib/utils";
@@ -27,12 +27,21 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <Link to={`/product/${product.slug}`} className="block focus:outline-none">
         {/* Product Image Frame */}
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-[18px] bg-[var(--canvas)] mb-4">
-          <img
-            src={product.images[0]}
-            alt={product.name}
-            referrerPolicy="no-referrer"
-            className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-          />
+          {product.images && product.images.length > 0 && product.images[0] ? (
+            <img
+              src={product.images[0]}
+              alt={product.name}
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover object-center transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+            />
+          ) : (
+            <div className="flex h-full w-full flex-col items-center justify-center bg-[var(--surface-alt)] text-[var(--mid-gray)] select-none">
+              <ImageIcon className="h-8 w-8 stroke-[1.25] opacity-40 mb-1" />
+              <span className="text-[11px] font-medium tracking-wide">
+                {t("common.noImage")}
+              </span>
+            </div>
+          )}
 
           {/* Quiet Status Text Tag if best seller or low stock */}
           {product.isBestSeller && (

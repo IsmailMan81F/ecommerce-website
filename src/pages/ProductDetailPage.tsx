@@ -8,6 +8,7 @@ import {
   ArrowLeft,
   ArrowRight,
   AlertCircle,
+  Image as ImageIcon,
 } from "lucide-react";
 import { formatPrice } from "@/lib/utils";
 import { useCart } from "@/context/CartContext";
@@ -23,7 +24,6 @@ import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/context/StoreContext";
 import { supabase } from "@/lib/supabase";
 import { Product } from "@/types";
-import { HERO_IMAGE } from "@/lib/data";
 
 interface SupabaseProductDetailRow {
   id: string;
@@ -78,8 +78,8 @@ const mapDetailProduct = (
 
   const rawImages = (row.product_image ?? []).map((img) => img.image_url).filter(Boolean);
   const categoryName = row.category?.name || fallbackCategoryName || "Catalog";
-  const fallbackImage = row.category?.image_url || HERO_IMAGE;
-  const images = rawImages.length > 0 ? rawImages : [fallbackImage];
+  const fallbackImage = row.category?.image_url;
+  const images = rawImages.length > 0 ? rawImages : (fallbackImage ? [fallbackImage] : []);
 
   const sizes = [...new Set(variants.map((v) => v.size).filter(Boolean))];
   const colors = [...new Set(variants.map((v) => v.color).filter(Boolean))];
@@ -110,7 +110,6 @@ export const ProductDetailPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const { addToCart } = useCart();
-  const { products: storeProducts } = useStore();
 
   const [product, setProduct] = useState<Product | null>(null);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
@@ -164,18 +163,7 @@ export const ProductDetailPage: React.FC = () => {
         if (!isMounted) return;
 
         if (!productRow) {
-          // Fallback to store products
-          const local = storeProducts.find((p) => p.slug === slug || p.id === slug);
-          if (local) {
-            setProduct(local);
-            setRelatedProducts(
-              storeProducts
-                .filter((p) => p.categorySlug === local.categorySlug && p.id !== local.id)
-                .slice(0, 3)
-            );
-          } else {
-            setProduct(null);
-          }
+          setProduct(null);
           setProductLoading(false);
           return;
         }
@@ -212,7 +200,7 @@ export const ProductDetailPage: React.FC = () => {
     return () => {
       isMounted = false;
     };
-  }, [slug, storeProducts]);
+  }, [slug]);
 
   // Derived stock & variant collections
   const variants = useMemo(() => product?.variants ?? [], [product]);
@@ -434,67 +422,76 @@ export const ProductDetailPage: React.FC = () => {
               </div>
             )}
 
-            <Carousel
-              dir="ltr"
-              setApi={setCarouselApi}
-              opts={{
-                loop: true,
-                direction: "ltr",
-              }}
-              className="w-full overflow-hidden rounded-[24px] border border-[var(--hairline)] bg-[var(--canvas)] shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]"
-            >
-              <CarouselContent dir="ltr">
-                {product.images.map((img, index) => (
-                  <CarouselItem key={index}>
-                    <div
-                      className="relative aspect-[4/3] sm:aspect-[1/1] w-full cursor-zoom-in"
-                      onClick={() => setZoomImage(img)}
-                    >
-                      <img
-                        src={img}
-                        alt={`${product.name} perspective ${index + 1}`}
-                        referrerPolicy="no-referrer"
-                        className={`h-full w-full object-cover object-center ${
-                          isProductOutOfStock ? "grayscale-[25%] opacity-90" : ""
-                        }`}
-                      />
-                      <div className="absolute top-4 right-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Maximize2 className="h-4 w-4" />
+            {product.images && product.images.length > 0 ? (
+              <Carousel
+                dir="ltr"
+                setApi={setCarouselApi}
+                opts={{
+                  loop: true,
+                  direction: "ltr",
+                }}
+                className="w-full overflow-hidden rounded-[24px] border border-[var(--hairline)] bg-[var(--canvas)] shadow-[0_1px_3px_0_rgba(0,0,0,0.02)]"
+              >
+                <CarouselContent dir="ltr">
+                  {product.images.map((img, index) => (
+                    <CarouselItem key={index}>
+                      <div
+                        className="relative aspect-[4/3] sm:aspect-[1/1] w-full cursor-zoom-in"
+                        onClick={() => setZoomImage(img)}
+                      >
+                        <img
+                          src={img}
+                          alt={`${product.name} perspective ${index + 1}`}
+                          referrerPolicy="no-referrer"
+                          className={`h-full w-full object-cover object-center ${
+                            isProductOutOfStock ? "grayscale-[25%] opacity-90" : ""
+                          }`}
+                        />
+                        <div className="absolute top-4 right-4 bg-[var(--paper)]/80 backdrop-blur-xs p-2 rounded-full border border-[var(--hairline)] text-[var(--ink)] opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Maximize2 className="h-4 w-4" />
+                        </div>
                       </div>
-                    </div>
-                  </CarouselItem>
-                ))}
-              </CarouselContent>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
 
-              {product.images.length > 1 && (
-                <>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="iconSm"
-                    onClick={() => carouselApi?.scrollPrev()}
-                    aria-label="Previous image"
-                    className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
-                  >
-                    <ArrowLeft className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="secondary"
-                    size="iconSm"
-                    onClick={() => carouselApi?.scrollNext()}
-                    aria-label="Next image"
-                    className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
-                  >
-                    <ArrowRight className="h-4 w-4" />
-                  </Button>
-                </>
-              )}
-            </Carousel>
+                {product.images.length > 1 && (
+                  <>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="iconSm"
+                      onClick={() => carouselApi?.scrollPrev()}
+                      aria-label="Previous image"
+                      className="absolute left-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
+                    >
+                      <ArrowLeft className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="iconSm"
+                      onClick={() => carouselApi?.scrollNext()}
+                      aria-label="Next image"
+                      className="absolute right-4 top-1/2 -translate-y-1/2 z-10 h-9 w-9 rounded-full opacity-80 hover:opacity-100 group-hover:opacity-100 transition-opacity bg-[var(--paper)]/90 backdrop-blur-xs text-[var(--ink)] shadow-md cursor-pointer border border-[var(--hairline)]"
+                    >
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
+                  </>
+                )}
+              </Carousel>
+            ) : (
+              <div className="relative aspect-[4/3] sm:aspect-[1/1] w-full overflow-hidden rounded-[24px] border border-[var(--hairline)] bg-[var(--canvas)] flex flex-col items-center justify-center text-[var(--mid-gray)] space-y-2 select-none">
+                <ImageIcon className="h-12 w-12 stroke-[1.25] opacity-40" />
+                <span className="text-[13px] font-medium tracking-wide">
+                  {t("common.noImage")}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Thumbnail Strip */}
-          {product.images.length > 1 && (
+          {product.images && product.images.length > 1 && (
             <div dir="ltr" className="flex items-center gap-3 overflow-x-auto pb-2">
               {product.images.map((img, index) => (
                 <button

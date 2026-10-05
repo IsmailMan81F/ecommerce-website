@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { toast } from "sonner";
-import { Mail, Phone, MapPin, Clock } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,12 +14,28 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CONTACT_INFO } from "@/lib/data";
 import { useStore } from "@/context/StoreContext";
+import { supabase } from "@/lib/supabase";
+import { formatWilaya } from "@/i18n/wilayas";
+
+interface StoreContactData {
+  email: string;
+  phoneNumber: string;
+  country: string;
+  wilaya: string;
+  commune: string;
+  streetAddress: string;
+  googleMapsUrl: string;
+  openingSchedule: any;
+}
 
 export const ContactPage: React.FC = () => {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const { addMessage, storeSettings } = useStore();
+
+  const [storeData, setStoreData] = useState<StoreContactData | null>(null);
+  const [storeLoading, setStoreLoading] = useState(true);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -28,6 +44,72 @@ export const ContactPage: React.FC = () => {
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchContactDetails = async () => {
+      try {
+        const { data, error } = await supabase
+          .from("store")
+          .select("email,phone_number,country,wilaya,commune,street_address,google_maps_url,opening_schedule")
+          .order("id", { ascending: true })
+          .limit(1)
+          .maybeSingle();
+
+        if (!isMounted) return;
+
+        if (error) {
+          console.error("Failed to fetch contact information from Supabase:", error);
+        } else if (data) {
+          setStoreData({
+            email: data.email || "",
+            phoneNumber: data.phone_number || "",
+            country: data.country || "",
+            wilaya: data.wilaya || "",
+            commune: data.commune || "",
+            streetAddress: data.street_address || "",
+            googleMapsUrl: data.google_maps_url || "",
+            openingSchedule: data.opening_schedule,
+          });
+        }
+      } catch (err) {
+        console.error("Error loading store contact info:", err);
+      } finally {
+        if (isMounted) setStoreLoading(false);
+      }
+    };
+
+    void fetchContactDetails();
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
+  const currentEmail = storeData?.email || storeSettings?.general?.email || "";
+  const currentPhone = storeData?.phoneNumber || storeSettings?.general?.phone || "";
+  const currentCountry = storeData?.country || storeSettings?.location?.country || "";
+  const currentWilaya = storeData?.wilaya || storeSettings?.location?.wilaya || "";
+  const currentCommune = storeData?.commune || storeSettings?.location?.city || "";
+  const currentAddress = storeData?.streetAddress || storeSettings?.location?.address || "";
+  const currentMapsUrl = storeData?.googleMapsUrl || storeSettings?.location?.googleMapsUrl || "";
+  const currentSchedule = storeData?.openingSchedule || storeSettings?.hours;
+
+  const formattedWilaya = formatWilaya(currentWilaya, i18n.language) || currentWilaya;
+  const locationParts = [
+    currentAddress,
+    currentCommune && currentCommune.toLowerCase() !== currentWilaya.toLowerCase() ? currentCommune : null,
+    formattedWilaya,
+    currentCountry,
+  ].filter(Boolean);
+  const combinedLocation = locationParts.length > 0
+    ? locationParts.join(", ")
+    : [formattedWilaya, currentCountry].filter(Boolean).join(", ");
+
+  const scheduleData = currentSchedule as any;
+  const satThu = scheduleData?.saturday_thursday;
+  const friday = scheduleData?.friday;
+  const satThuOpen = satThu?.status === "open" && satThu?.time?.open && satThu?.time?.close;
+  const fridayOpen = friday?.status === "open" && friday?.time?.open && friday?.time?.close;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -73,61 +155,113 @@ export const ContactPage: React.FC = () => {
             </h3>
 
             <div className="space-y-5 text-body">
+              {/* Email */}
               <div className="flex items-start gap-4">
                 <div className="h-9 w-9 rounded-full bg-[var(--paper)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)] shrink-0">
                   <Mail className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">Email</p>
-                  <a
-                    href={`mailto:${storeSettings?.general?.email || CONTACT_INFO.conciergeEmail}`}
-                    className="font-medium text-[var(--ink)] hover:underline"
-                  >
-                    {storeSettings?.general?.email || CONTACT_INFO.conciergeEmail}
-                  </a>
+                  {storeLoading ? (
+                    <div className="h-4 w-44 rounded bg-[var(--hairline)]/80 animate-pulse mt-1" />
+                  ) : currentEmail ? (
+                    <a
+                      href={`mailto:${currentEmail}`}
+                      className="font-medium text-[var(--ink)] hover:underline"
+                    >
+                      {currentEmail}
+                    </a>
+                  ) : (
+                    <span className="text-[var(--mid-gray)] text-[14px]">N/A</span>
+                  )}
                 </div>
               </div>
 
+              {/* Phone Number */}
               <div className="flex items-start gap-4">
                 <div className="h-9 w-9 rounded-full bg-[var(--paper)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)] shrink-0">
                   <Phone className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">{t("cart.phoneNumber")}</p>
-                  <a
-                    href={`tel:${storeSettings?.general?.phone || CONTACT_INFO.orderAssistance}`}
-                    className="font-medium text-[var(--ink)] hover:underline tabular-nums"
-                  >
-                    {storeSettings?.general?.phone || CONTACT_INFO.orderAssistance}
-                  </a>
+                  {storeLoading ? (
+                    <div className="h-4 w-32 rounded bg-[var(--hairline)]/80 animate-pulse mt-1" />
+                  ) : currentPhone ? (
+                    <a
+                      href={`tel:${currentPhone}`}
+                      className="font-medium text-[var(--ink)] hover:underline tabular-nums"
+                    >
+                      {currentPhone}
+                    </a>
+                  ) : (
+                    <span className="text-[var(--mid-gray)] text-[14px]">N/A</span>
+                  )}
                 </div>
               </div>
 
+              {/* Location (Combined Country, Wilaya, Address) */}
               <div className="flex items-start gap-4">
                 <div className="h-9 w-9 rounded-full bg-[var(--paper)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)] shrink-0">
                   <MapPin className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">{t("footer.locationTitle")}</p>
-                  <p className="font-medium text-[var(--ink)]">
-                    {storeSettings?.location?.address
-                      ? `${storeSettings.location.address}, ${storeSettings.location.city}, ${storeSettings.location.country}`
-                      : CONTACT_INFO.studioAddress}
-                  </p>
+                  {storeLoading ? (
+                    <div className="h-4 w-52 rounded bg-[var(--hairline)]/80 animate-pulse mt-1" />
+                  ) : combinedLocation ? (
+                    currentMapsUrl ? (
+                      <a
+                        href={currentMapsUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="font-medium text-[var(--ink)] hover:underline inline-flex items-center gap-1.5 leading-relaxed"
+                      >
+                        <span>{combinedLocation}</span>
+                        <ExternalLink className="h-3.5 w-3.5 text-[var(--mid-gray)] shrink-0" />
+                      </a>
+                    ) : (
+                      <p className="font-medium text-[var(--ink)] leading-relaxed">
+                        {combinedLocation}
+                      </p>
+                    )
+                  ) : (
+                    <span className="text-[var(--mid-gray)] text-[14px]">N/A</span>
+                  )}
                 </div>
               </div>
 
+              {/* Opening Hours */}
               <div className="flex items-start gap-4">
                 <div className="h-9 w-9 rounded-full bg-[var(--paper)] border border-[var(--hairline)] flex items-center justify-center text-[var(--ink)] shrink-0">
                   <Clock className="h-4 w-4" />
                 </div>
                 <div>
                   <p className="text-caption text-[var(--mid-gray)]">{t("footer.hoursTitle")}</p>
-                  <p className="font-medium text-[var(--ink)]">
-                    {storeSettings?.hours?.saturday_thursday
-                      ? `${t("footer.satThu")}: ${storeSettings.hours.saturday_thursday.status === "open" && storeSettings.hours.saturday_thursday.time?.open && storeSettings.hours.saturday_thursday.time?.close ? `${storeSettings.hours.saturday_thursday.time.open} – ${storeSettings.hours.saturday_thursday.time.close}` : t("admin.closed")} · ${t("footer.friOnly")}: ${storeSettings.hours.friday?.status === "open" && storeSettings.hours.friday.time?.open && storeSettings.hours.friday.time?.close ? `${storeSettings.hours.friday.time.open} – ${storeSettings.hours.friday.time.close}` : t("admin.closed")}`
-                      : CONTACT_INFO.hours}
-                  </p>
+                  {storeLoading ? (
+                    <div className="space-y-1.5 mt-1">
+                      <div className="h-3.5 w-40 rounded bg-[var(--hairline)]/80 animate-pulse" />
+                      <div className="h-3.5 w-28 rounded bg-[var(--hairline)]/80 animate-pulse" />
+                    </div>
+                  ) : (
+                    <div className="space-y-1 font-medium text-[var(--ink)] text-[14px] mt-0.5">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--mid-gray)] text-[13px]">{t("footer.satThu")}:</span>
+                        <span>
+                          {satThuOpen
+                            ? `${satThu.time.open} – ${satThu.time.close}`
+                            : t("admin.closed")}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[var(--mid-gray)] text-[13px]">{t("footer.friOnly")}:</span>
+                        <span>
+                          {fridayOpen
+                            ? `${friday.time.open} – ${friday.time.close}`
+                            : t("admin.closed")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

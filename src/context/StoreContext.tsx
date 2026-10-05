@@ -36,12 +36,17 @@ interface SupabaseFooterCategoryRow {
 }
 
 interface SupabaseFooterStoreRow {
+  email?: string | null;
+  phone_number?: string | null;
   country: string;
+  wilaya?: string | null;
   commune: string | null;
   street_address: string | null;
   google_maps_url: string;
   instagram_url: string;
+  tiktok_url?: string | null;
   facebook_url: string;
+  whatsapp_url?: string | null;
   opening_schedule: unknown;
   product_variants: unknown;
   delivery_service?: boolean | null;
@@ -225,7 +230,7 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
           .limit(3),
         supabase
           .from("store")
-          .select("country,commune,street_address,google_maps_url,instagram_url,facebook_url,opening_schedule,product_variants,delivery_service,office_fee,home_fee")
+          .select("email,phone_number,country,wilaya,commune,street_address,google_maps_url,instagram_url,tiktok_url,facebook_url,whatsapp_url,opening_schedule,product_variants,delivery_service,office_fee,home_fee")
           .order("id", { ascending: true })
           .limit(1)
           .maybeSingle(),
@@ -312,6 +317,26 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
 
         setStoreSettings((prev) => ({
           ...prev,
+          general: {
+            ...prev.general,
+            ...(row.email && { email: row.email }),
+            ...(row.phone_number && { phone: row.phone_number }),
+          },
+          location: {
+            ...prev.location,
+            country: row.country || prev.location.country,
+            wilaya: row.wilaya || prev.location.wilaya,
+            city: row.commune || prev.location.city,
+            address: row.street_address || prev.location.address,
+            googleMapsUrl: row.google_maps_url || prev.location.googleMapsUrl,
+            ...(row.whatsapp_url && { whatsapp: row.whatsapp_url }),
+          },
+          social: {
+            ...prev.social,
+            facebook: row.facebook_url || prev.social.facebook,
+            instagram: row.instagram_url || prev.social.instagram,
+            ...(row.tiktok_url && { tiktok: row.tiktok_url }),
+          },
           hours,
           ...(storeVariants?.sizes && Array.isArray(storeVariants.sizes) && {
             variantOptions: {
