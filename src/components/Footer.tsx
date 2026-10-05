@@ -21,13 +21,12 @@ export const Footer: React.FC = () => {
   const { t } = useTranslation();
   const { theme, setTheme } = useTheme();
   const {
-    categories,
     storeSettings,
     footerCategories,
     footerStoreData,
     footerDataLoading,
   } = useStore();
-  const footerCategoriesToShow = footerCategories ?? categories.slice(0, 3);
+  const footerCategoriesToShow = footerCategories ?? [];
   const footerSettings = footerStoreData ?? {
     location: storeSettings.location,
     hours: {
