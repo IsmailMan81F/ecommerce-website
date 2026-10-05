@@ -87,7 +87,7 @@ interface StoreContextType {
   updateCategory: (categoryId: string, updates: Partial<Category>) => void;
   deleteCategory: (categoryId: string) => { deletedProductsCount: number };
   updateOrderStatus: (orderId: string, status: OrderStatus) => void;
-  createOrder: (order: Omit<Order, "id" | "createdAt">) => Order;
+  createOrder: (order: Omit<Order, "id" | "createdAt"> & { id?: string }) => Order;
   addMessage: (
     messageData: Omit<ContactMessage, "id" | "createdAt" | "status" | "isRead"> & {
       status?: "unread" | "read" | "replied";
@@ -583,10 +583,10 @@ export const StoreProvider: React.FC<{ children: React.ReactNode }> = ({
     );
   };
 
-  const createOrder = (orderData: Omit<Order, "id" | "createdAt">): Order => {
+  const createOrder = (orderData: Omit<Order, "id" | "createdAt"> & { id?: string }): Order => {
     const newOrder: Order = {
       ...orderData,
-      id: `KRD-${Math.floor(100000 + Math.random() * 900000)}`,
+      id: orderData.id || `KRD-${Math.floor(100000 + Math.random() * 900000)}`,
       createdAt: new Date().toISOString(),
     };
 

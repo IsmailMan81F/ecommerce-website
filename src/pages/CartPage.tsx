@@ -10,6 +10,9 @@ import {
   Home,
   PackageCheck,
   AlertCircle,
+  Loader2,
+  XCircle,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 import { useCart } from "@/context/CartContext";
@@ -115,9 +118,12 @@ export const CartPage: React.FC = () => {
   const [notes, setNotes] = useState("");
   const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
-  // Order Complete State
+  // Order Complete State & Submission / Error States
   const [orderConfirmed, setOrderConfirmed] = useState(false);
   const [confirmedOrderId, setConfirmedOrderId] = useState("");
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [orderFailed, setOrderFailed] = useState(false);
+  const [orderErrorMessage, setOrderErrorMessage] = useState("");
 
   // Calculate delivery fee dynamically based on selected delivery type
   const deliveryFee = !deliveryEnabled
@@ -147,7 +153,7 @@ export const CartPage: React.FC = () => {
       errors.commune = t("common.required");
     }
 
-    if (deliveryType === "home" && !deliveryAddress.trim()) {
+    if (deliveryType === "home" && deliveryEnabled && !deliveryAddress.trim()) {
       errors.deliveryAddress = t("common.required");
     }
 
@@ -163,40 +169,101 @@ export const CartPage: React.FC = () => {
   };
 
   // Final Order Submission in Step 3
-  const handleFinalOrderSubmit = () => {
+  const handleFinalOrderSubmit = async () => {
     if (items.length === 0) {
       toast.error(t("cart.emptyTitle"));
       setStep(1);
       return;
     }
 
-    const created = createOrder({
-      customer: {
-        firstName: firstName.trim(),
-        lastName: lastName.trim(),
-        phoneNumber: phoneNumber.trim(),
-        wilaya,
+    setIsSubmittingOrder(true);
+    setOrderFailed(false);
+    setOrderErrorMessage("");
+
+    try {
+      // Generate unique order ID
+      const orderId = `KRD-${Math.floor(100000 + Math.random() * 900000)}`;
+
+      // Execute insertion request into Supabase "order" table
+      const { error: supabaseError } = await supabase.from("order").insert({
+        id: orderId,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone_number: phoneNumber.trim(),
+        wilaya: wilaya,
         commune: commune.trim(),
-        deliveryType,
-        address: deliveryType === "home" ? deliveryAddress.trim() : undefined,
-        notes: notes.trim() || undefined,
-      },
-      items: [...items],
-      subtotal,
-      shippingFee: deliveryFee,
-      total: grandTotal,
-      status: "confirmed",
-    });
+        delivery_method: deliveryType,
+        address: deliveryType === "home" ? deliveryAddress.trim() : null,
+        notes: notes.trim() || null,
+        status: "confirmed",
+        total_price: Math.round(grandTotal),
+      });
 
-    setConfirmedOrderId(created.id);
-    setOrderConfirmed(true);
-    clearCart();
 
-    toast.success(t("cart.orderConfirmedTitle"), {
-      description: t("cart.orderRegisteredDesc", { id: created.id }),
-      duration: 4500,
-    });
-    window.scrollTo({ top: 0, behavior: "smooth" });
+      console.log({
+        id: orderId,
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone_number: phoneNumber.trim(),
+        wilaya: wilaya,
+        commune: commune.trim(),
+        delivery_method: deliveryType,
+        address: deliveryType === "home" ? deliveryAddress.trim() : null,
+        notes: notes.trim() || null,
+        status: "confirmed",
+        total_price: Math.round(grandTotal),
+      })
+
+      if (supabaseError) {
+        console.error("Supabase order insertion error:", supabaseError);
+        throw supabaseError;
+      }
+
+      // Also register order locally in StoreContext with identical orderId
+      const created = createOrder({
+        id: orderId,
+        customer: {
+          firstName: firstName.trim(),
+          lastName: lastName.trim(),
+          phoneNumber: phoneNumber.trim(),
+          wilaya,
+          commune: commune.trim(),
+          deliveryType,
+          address: deliveryType === "home" ? deliveryAddress.trim() : undefined,
+          notes: notes.trim() || undefined,
+        },
+        items: [...items],
+        subtotal,
+        shippingFee: deliveryFee,
+        total: grandTotal,
+        status: "confirmed",
+      });
+
+      if (!created || !created.id) {
+        throw new Error(t("cart.orderFailedGeneric"));
+      }
+
+      setConfirmedOrderId(orderId);
+      setOrderConfirmed(true);
+      clearCart();
+
+      toast.success(t("cart.orderConfirmedTitle"), {
+        description: t("cart.orderRegisteredDesc", { id: orderId }),
+        duration: 4500,
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } catch (err: any) {
+      console.error("Order submission failed:", err);
+      const message = err?.message || t("cart.orderFailedGeneric");
+      setOrderErrorMessage(message);
+      setOrderFailed(true);
+      toast.error(t("cart.orderFailedTitle"), {
+        description: message,
+      });
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    } finally {
+      setIsSubmittingOrder(false);
+    }
   };
 
   // Empty Bag state
@@ -253,10 +320,11 @@ export const CartPage: React.FC = () => {
               <span className="text-[var(--ink)] font-medium">{commune}, {wilaya}</span>
             </div>
             <div className="flex items-center justify-between text-[var(--mid-gray)]">
-              <span>{t("cart.method")}</span>
-              <span className="text-[var(--ink)] font-medium">
+              {(deliveryEnabled && <><span>{t("cart.method")}</span>
+               <span className="text-[var(--ink)] font-medium">
                 {deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")}
-              </span>
+              </span></>)}
+              
             </div>
           </div>
 
@@ -271,6 +339,103 @@ export const CartPage: React.FC = () => {
                 {t("cart.continueShopping")}
               </Button>
             </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Order Failed Screen
+  if (orderFailed) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 py-16 sm:py-24 animate-in fade-in-50 duration-300">
+        <div className="rounded-[28px] border border-rose-200/80 bg-[var(--paper)] p-8 sm:p-12 text-center space-y-6 shadow-xs">
+          <div className="h-16 w-16 mx-auto rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center text-rose-600">
+            <XCircle className="h-8 w-8" />
+          </div>
+
+          <div className="space-y-2">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-[12px] font-medium bg-rose-50 text-rose-700 border border-rose-200/70">
+              {t("cart.orderFailedBadge")}
+            </span>
+            <h1 className="text-heading text-[var(--ink)]">{t("cart.orderFailedTitle")}</h1>
+            <p className="text-body text-[var(--mid-gray)] text-[14px] max-w-md mx-auto leading-relaxed">
+              {t("cart.orderFailedSubtitle")}
+            </p>
+          </div>
+
+          {/* Error Message Details Callout */}
+          <div className="rounded-[18px] bg-rose-50/70 p-4 text-start text-[13px] border border-rose-200/80 flex items-start gap-3 text-rose-800">
+            <AlertCircle className="h-5 w-5 shrink-0 mt-0.5 text-rose-600" />
+            <div className="space-y-1 flex-1">
+              <p className="font-semibold text-rose-900">{t("cart.errorNotice")}</p>
+              <p className="text-rose-700 leading-relaxed font-sans">{orderErrorMessage || t("cart.orderFailedGeneric")}</p>
+            </div>
+          </div>
+
+          {/* Preserved Order Information */}
+          <div className="rounded-[18px] bg-[var(--surface-alt)] p-4 text-start text-[13px] space-y-2 border border-[var(--hairline)]">
+            <div className="flex items-center justify-between text-[var(--mid-gray)]">
+              <span>{t("cart.recipient")}</span>
+              <span className="text-[var(--ink)] font-medium">{firstName} {lastName}</span>
+            </div>
+            {phoneNumber && (
+              <div className="flex items-center justify-between text-[var(--mid-gray)]">
+                <span>{t("cart.contactNumber")}</span>
+                <span className="text-[var(--ink)] font-medium">{phoneNumber}</span>
+              </div>
+            )}
+            <div className="flex items-center justify-between text-[var(--mid-gray)]">
+              <span>{t("cart.destination")}</span>
+              <span className="text-[var(--ink)] font-medium">{commune}, {wilaya}</span>
+            </div>
+            <div className="flex items-center justify-between text-[var(--mid-gray)]">
+              <span>{t("cart.method")}</span>
+              <span className="text-[var(--ink)] font-medium">
+                {deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")}
+              </span>
+            </div>
+            <div className="flex items-center justify-between text-[var(--mid-gray)] pt-1 border-t border-[var(--hairline)]">
+              <span>{t("cart.grandTotal")}</span>
+              <span className="text-[var(--ink)] font-semibold font-mono text-[14px]">
+                {formatPrice(grandTotal)}
+              </span>
+            </div>
+          </div>
+
+          {/* Action CTAs */}
+          <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+            <Button
+              size="lg"
+              onClick={handleFinalOrderSubmit}
+              disabled={isSubmittingOrder}
+              className="w-full sm:w-auto rounded-[18px] px-8 gap-2 cursor-pointer bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[14px] font-medium disabled:opacity-60 disabled:cursor-not-allowed"
+            >
+              {isSubmittingOrder ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{t("cart.placingOrder")}</span>
+                </>
+              ) : (
+                <>
+                  <RotateCcw className="h-4 w-4" />
+                  <span>{t("cart.tryAgainBtn")}</span>
+                </>
+              )}
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              disabled={isSubmittingOrder}
+              onClick={() => {
+                setOrderFailed(false);
+                setStep(3);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }}
+              className="w-full sm:w-auto rounded-[18px] h-12 cursor-pointer"
+            >
+              {t("cart.reviewOrder")}
+            </Button>
           </div>
         </div>
       </div>
@@ -304,28 +469,34 @@ export const CartPage: React.FC = () => {
       <nav aria-label="Checkout Progress" className="w-full space-y-2.5 pt-2">
         <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full items-center">
           <div
-            onClick={() => setStep(1)}
+            onClick={() => !isSubmittingOrder && setStep(1)}
             role="button"
             tabIndex={0}
             aria-label="Go to Bag Review"
-            onKeyDown={(e) => e.key === "Enter" && setStep(1)}
-            className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-300 cursor-pointer ${
+            onKeyDown={(e) => !isSubmittingOrder && e.key === "Enter" && setStep(1)}
+            className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-300 ${
+              isSubmittingOrder ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+            } ${
               step >= 1 ? "bg-[var(--ink)]" : "bg-[var(--hairline)]"
             }`}
           />
           <div
-            onClick={() => step > 1 && setStep(2)}
+            onClick={() => !isSubmittingOrder && step > 1 && setStep(2)}
             role="button"
             tabIndex={step >= 2 ? 0 : -1}
             aria-label="Go to Shipping Details"
-            onKeyDown={(e) => e.key === "Enter" && step > 1 && setStep(2)}
+            onKeyDown={(e) => !isSubmittingOrder && e.key === "Enter" && step > 1 && setStep(2)}
             className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-300 ${
-              step >= 2 ? "bg-[var(--ink)] cursor-pointer" : "bg-[var(--hairline)] cursor-default"
+              isSubmittingOrder
+                ? "cursor-not-allowed opacity-70"
+                : step >= 2
+                ? "bg-[var(--ink)] cursor-pointer"
+                : "bg-[var(--hairline)] cursor-default"
             }`}
           />
           <div
             onClick={() => {
-              if (firstName && lastName && phoneNumber && wilaya && commune) {
+              if (!isSubmittingOrder && firstName && lastName && phoneNumber && wilaya && commune) {
                 setStep(3);
               }
             }}
@@ -333,12 +504,16 @@ export const CartPage: React.FC = () => {
             tabIndex={step >= 3 ? 0 : -1}
             aria-label="Go to Summary & Order"
             onKeyDown={(e) => {
-              if (e.key === "Enter" && firstName && lastName && phoneNumber && wilaya && commune) {
+              if (!isSubmittingOrder && e.key === "Enter" && firstName && lastName && phoneNumber && wilaya && commune) {
                 setStep(3);
               }
             }}
             className={`h-1.5 sm:h-2 w-full rounded-full transition-all duration-300 ${
-              step >= 3 ? "bg-[var(--ink)] cursor-pointer" : "bg-[var(--hairline)] cursor-default"
+              isSubmittingOrder
+                ? "cursor-not-allowed opacity-70"
+                : step >= 3
+                ? "bg-[var(--ink)] cursor-pointer"
+                : "bg-[var(--hairline)] cursor-default"
             }`}
           />
         </div>
@@ -347,8 +522,9 @@ export const CartPage: React.FC = () => {
         <div className="grid grid-cols-3 gap-2 sm:gap-3 w-full items-start">
           <button
             type="button"
-            onClick={() => setStep(1)}
-            className="text-start w-full cursor-pointer focus:outline-hidden group"
+            onClick={() => !isSubmittingOrder && setStep(1)}
+            disabled={isSubmittingOrder}
+            className="text-start w-full cursor-pointer focus:outline-hidden group disabled:opacity-60 disabled:cursor-not-allowed"
           >
             <span
               className={`block text-[11px] sm:text-[12px] font-medium leading-tight transition-colors truncate ${
@@ -364,9 +540,9 @@ export const CartPage: React.FC = () => {
 
           <button
             type="button"
-            onClick={() => step > 1 && setStep(2)}
-            disabled={step < 2}
-            className={`text-start w-full focus:outline-hidden group ${
+            onClick={() => !isSubmittingOrder && step > 1 && setStep(2)}
+            disabled={isSubmittingOrder || step < 2}
+            className={`text-start w-full focus:outline-hidden group disabled:opacity-60 disabled:cursor-not-allowed ${
               step >= 2 ? "cursor-pointer" : "cursor-default"
             }`}
           >
@@ -385,12 +561,12 @@ export const CartPage: React.FC = () => {
           <button
             type="button"
             onClick={() => {
-              if (firstName && lastName && phoneNumber && wilaya && commune) {
+              if (!isSubmittingOrder && firstName && lastName && phoneNumber && wilaya && commune) {
                 setStep(3);
               }
             }}
-            disabled={step < 3}
-            className={`text-start w-full focus:outline-hidden group ${
+            disabled={isSubmittingOrder || step < 3}
+            className={`text-start w-full focus:outline-hidden group disabled:opacity-60 disabled:cursor-not-allowed ${
               step >= 3 ? "cursor-pointer" : "cursor-default"
             }`}
           >
@@ -730,7 +906,7 @@ export const CartPage: React.FC = () => {
                 </div>
 
                 {/* Street Address */}
-                {deliveryType === "home" && (
+                {deliveryType === "home" && deliveryEnabled &&(
                   <div className="space-y-1.5 pt-1 animate-in fade-in duration-200">
                     <Label htmlFor="deliveryAddress">{t("cart.streetAddress")} *</Label>
                     <Input
@@ -826,6 +1002,27 @@ export const CartPage: React.FC = () => {
             </CardHeader>
 
             <CardContent className="space-y-8">
+              {/* Submission Error Banner if returned from failed submission */}
+              {orderErrorMessage && (
+                <div className="rounded-[18px] bg-rose-50/75 p-4 text-[13px] border border-rose-200/80 flex items-start justify-between gap-3 text-rose-800 animate-in fade-in-50 duration-200">
+                  <div className="flex items-start gap-2.5">
+                    <AlertCircle className="h-4 w-4 shrink-0 mt-0.5 text-rose-600" />
+                    <div>
+                      <p className="font-semibold text-rose-900">{t("cart.orderFailedTitle")}</p>
+                      <p className="text-rose-700 leading-relaxed mt-0.5">{orderErrorMessage}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setOrderErrorMessage("")}
+                    className="text-rose-500 hover:text-rose-800 text-[13px] font-medium p-1 cursor-pointer leading-none"
+                    aria-label="Dismiss"
+                  >
+                    ✕
+                  </button>
+                </div>
+              )}
+
               {/* Items List Summary */}
               <div className="space-y-3">
                 <p className="text-caption text-[var(--ink)] font-semibold">
@@ -919,6 +1116,7 @@ export const CartPage: React.FC = () => {
                     )}
                   </div>
 
+                  {(deliveryEnabled && <> 
                   <div className="sm:col-span-2 pt-2 border-t border-[var(--hairline)] flex flex-wrap items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       {deliveryType === "home" ? (
@@ -934,6 +1132,7 @@ export const CartPage: React.FC = () => {
                       {t("common.shipping")}: {formatPrice(deliveryFee)}
                     </span>
                   </div>
+                  </>)} 
 
                   {notes && (
                     <div className="sm:col-span-2 pt-2 border-t border-[var(--hairline)] text-[12px]">
@@ -955,7 +1154,7 @@ export const CartPage: React.FC = () => {
 
                 <div className="flex items-center justify-between text-[14px] text-[var(--mid-gray)]">
                   <span>
-                    {t("common.shipping")} ({deliveryType === "home" ? t("cart.homeDelivery") : t("cart.officeDelivery")})
+                    {t("common.shipping")} {deliveryEnabled && (deliveryType === "home" ? (t("cart.homeDelivery")) : (t("cart.officeDelivery")))}
                   </span>
                   <span className="text-[var(--ink)] font-medium tabular-nums">
                     {formatPrice(deliveryFee)}
@@ -983,11 +1182,12 @@ export const CartPage: React.FC = () => {
             <Button
               type="button"
               variant="outline"
+              disabled={isSubmittingOrder}
               onClick={() => {
                 setStep(2);
                 window.scrollTo({ top: 0, behavior: "smooth" });
               }}
-              className="w-full sm:w-auto rounded-[18px] gap-2 h-11 cursor-pointer"
+              className="w-full sm:w-auto rounded-[18px] gap-2 h-11 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <ArrowLeft className="h-4 w-4 rtl:rotate-180" />
               <span>{t("cart.step2")}</span>
@@ -996,11 +1196,21 @@ export const CartPage: React.FC = () => {
             <Button
               type="button"
               size="lg"
+              disabled={isSubmittingOrder}
               onClick={handleFinalOrderSubmit}
-              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs cursor-pointer"
+              className="w-full sm:w-auto rounded-[18px] px-10 gap-2.5 bg-[var(--ink)] hover:bg-[var(--ink-soft)] text-[var(--paper)] h-12 text-[15px] font-medium shadow-xs cursor-pointer disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              <PackageCheck className="h-4 w-4" />
-              <span>{t("cart.placeOrderBtn")} · {formatPrice(grandTotal)}</span>
+              {isSubmittingOrder ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span>{t("cart.placingOrder")}</span>
+                </>
+              ) : (
+                <>
+                  <PackageCheck className="h-4 w-4" />
+                  <span>{t("cart.placeOrderBtn")} · {formatPrice(grandTotal)}</span>
+                </>
+              )}
             </Button>
           </div>
         </div>
