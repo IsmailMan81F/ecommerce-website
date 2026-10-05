@@ -181,6 +181,9 @@ export const resources = {
         authenticityDesc: "Every piece is crafted in certified ateliers, cut from premium sustainable textiles, and inspected individually before dispatch.",
         relatedTitle: "Complete the Look",
         relatedSubtitle: "Pair with complementary essentials",
+        totalStock: "Total stock: {{count}}",
+        variantStock: "{{count}} in stock",
+        variantOutOfStock: "Combination out of stock",
       },
       cart: {
         title: "Shopping Bag",
@@ -796,6 +799,9 @@ export const resources = {
         authenticityDesc: "Chaque pièce est confectionnée dans nos ateliers certifiés, taillée dans des tissus durables haut de gamme et minutieusement inspectée avant expédition.",
         relatedTitle: "Compléter le Look",
         relatedSubtitle: "À associer avec nos pièces complémentaires",
+        totalStock: "Stock total : {{count}}",
+        variantStock: "{{count}} en stock",
+        variantOutOfStock: "Combinaison en rupture",
       },
       cart: {
         title: "Panier d'achat",
@@ -1411,6 +1417,9 @@ export const resources = {
         authenticityDesc: "صُنعت كل قطعة في ورش متخصصة معتمدة، وقُصّت من خامات عضوية مستدامة وفُحصت بعناية قبل الإرسال.",
         relatedTitle: "أكمل إطلالتك",
         relatedSubtitle: "نسّقها مع قطع مكملة ومتناسقة",
+        totalStock: "إجمالي المخزون: {{count}}",
+        variantStock: "{{count}} متوفر",
+        variantOutOfStock: "هذا الخيار غير متوفر",
       },
       cart: {
         title: "سلة التسوق",
